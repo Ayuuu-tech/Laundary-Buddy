@@ -27,7 +27,7 @@ body {
 
 /* Left pane with the background image */
 .left-pane {
-    background: url('login.png') no-repeat center center;
+    background: url('assests/login.png') no-repeat center center;
     background-size: cover;
 }
 

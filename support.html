@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Center - Laundry Buddy</title>
+    <link rel="stylesheet" href="support.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+
+    <header>
+        <div class="container navbar">
+            <a href="#" class="logo">
+                <i class='bx bxs-washer'></i>
+                <span>Laundry Buddy</span>
+            </a>
+            <nav>
+                <ul>
+                    <li><a href="home.html">Home</a></li>
+                    <li><a href="submit.html">Laundry</a></li>
+                    <li><a href="#" class="active">Support</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <i class='bx bx-bell'></i>
+                <a href="profile.html"><img src="assests/profile.png" alt="User Profile"></a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="page-title-header">
+                <h2>Issue with previous order</h2>
+                <a href="history.html" class="btn btn-secondary">Click to see orders</a>
+            </div>
+
+            <div class="support-intro">
+                <h1>Support Center</h1>
+                <p>How can we help you today?</p>
+            </div>
+
+            <div class="support-options">
+                <div class="support-option">
+                    <div class="option-details">
+                        <h3>Report Missing Clothes</h3>
+                        <p>If you've noticed any items missing from your laundry, please report them here.</p>
+                        <button class="btn btn-tertiary">Report</button>
+                    </div>
+                    <div class="option-image">
+                        <img src="assests/tshirt.png" alt="Missing t-shirt">
+                    </div>
+                </div>
+                <div class="support-option">
+                    <div class="option-details">
+                        <h3>Report Damage</h3>
+                        <p>If any of your clothes have been damaged during the laundry process, please report it here.</p>
+                        <button class="btn btn-tertiary">Report</button>
+                    </div>
+                    <div class="option-image">
+                        <img src="assests/scratch.png" alt="Damaged fabric">
+                    </div>
+                </div>
+                <div class="support-option">
+                    <div class="option-details">
+                        <h3>Contact Laundry Manager</h3>
+                        <p>For urgent issues or direct assistance, contact the laundry manager.</p>
+                        <button class="btn btn-tertiary">Contact</button>
+                    </div>
+                    <div class="option-image">
+                        <img src="assests/headphones.png" alt="Headphones for support">
+                    </div>
+                </div>
+            </div>
+
+            <div class="support-form-section">
+                <h2>Submit a Support Request</h2>
+                <form action="#">
+                    <div class="input-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" placeholder="Enter your name">
+                    </div>
+                    <div class="input-group">
+                        <label for="student-id">Student ID</label>
+                        <input type="text" id="student-id" placeholder="Enter your student ID">
+                    </div>
+                    <div class="input-group">
+                        <label for="issue-description">Issue Description</label>
+                        <textarea id="issue-description" rows="5"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                </form>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>Contact us at support@laundrybuddy.com or WhatsApp Helpdesk: +917838274711</p>
+    </footer>
+
+</body>
+</html>

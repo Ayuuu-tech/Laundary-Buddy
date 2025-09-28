@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order History - Laundry Buddy</title>
+    <link rel="stylesheet" href="history.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+
+    <header>
+        <div class="container navbar">
+            <a href="#" class="logo">
+                <i class='bx bxs-washer'></i>
+                <span>Laundry Buddy</span>
+            </a>
+            <nav>
+                <ul>
+                    <li><a href="home.html">Home</a></li>
+                    <li><a href="laundry.html" class="active">Laundry</a></li>
+                    <li><a href="support.html">Support</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <i class='bx bx-bell'></i>
+                <a href="profile.html"><img src="assests/profile.png" alt="User Profile"></a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <h1>Your Past Orders</h1>
+
+            <div class="summary-card">
+                <p>Total Orders</p>
+                <span>12</span>
+            </div>
+
+            <div class="orders-toolbar">
+                <div class="search-bar">
+                    <i class='bx bx-search'></i>
+                    <input type="text" placeholder="Search orders">
+                </div>
+                <div class="filter-tabs">
+                    <button class="filter-btn">This Week</button>
+                    <button class="filter-btn">This Month</button>
+                    <button class="filter-btn active">All Time</button>
+                    <button class="filter-btn">Completed</button>
+                    <button class="filter-btn">Cancelled</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Clothes Count</th>
+                            <th>Status</th>
+                            <th>Feedback</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>July 20, 2024</td>
+                            <td>3 shirts, 2 pants, 1 bedsheet</td>
+                            <td><span class="status-pill status-processing">In Process</span></td>
+                            <td><a href="#" class="rate-link">Rate</a></td>
+                        </tr>
+                        <tr>
+                            <td>July 13, 2024</td>
+                            <td>2 shirts, 1 pant</td>
+                            <td><span class="status-pill status-completed">Completed</span></td>
+                            <td><a href="#" class="rate-link">Rate</a></td>
+                        </tr>
+                        <tr>
+                            <td>June 25, 2024</td>
+                            <td>1 shirt, 1 pant, 1 bedsheet</td>
+                            <td><span class="status-pill status-completed">Completed</span></td>
+                            <td><a href="#" class="rate-link">Rate</a></td>
+                        </tr>
+                        <tr>
+                            <td>June 10, 2024</td>
+                            <td>2 shirts, 2 pants</td>
+                            <td><span class="status-pill status-completed">Completed</span></td>
+                            <td><a href="#" class="rate-link">Rate</a></td>
+                        </tr>
+                        <tr>
+                            <td>May 22, 2024</td>
+                            <td>1 shirt, 1 pant</td>
+                            <td><span class="status-pill status-completed">Completed</span></td>
+                            <td><a href="#" class="rate-link">Rate</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
