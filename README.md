@@ -184,7 +184,7 @@ If you encounter any issues or have questions:
 
 <div align="center">
 
-**Made with ❤️ for students, by students**
+**Made by Ayushmaan Yadav**
 
 [🌟 Star this repo](https://github.com/your-username/laundry-buddy) • [🍴 Fork it](https://github.com/your-username/laundry-buddy/fork) • [📝 Report Bug](https://github.com/your-username/laundry-buddy/issues)
 
