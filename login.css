@@ -1,0 +1,157 @@
+/* =========== GENERAL STYLES & VARIABLES =========== */
+:root {
+    --primary-color: #F97316; /* Orange */
+    --text-color: #1F2937; /* Very Dark Gray */
+    --label-color: #4B5563; /* Medium Gray */
+    --form-bg-color: #FFFFFF;
+    --border-color: #D1D5DB; /* Gray for borders */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    color: var(--text-color);
+}
+
+/* =========== SPLIT SCREEN LAYOUT =========== */
+.split-screen-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    height: 100vh; /* Full viewport height */
+}
+
+/* Left pane with the background image */
+.left-pane {
+    background: url('login.png') no-repeat center center;
+    background-size: cover;
+}
+
+/* Right pane for the form content */
+.right-pane {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--form-bg-color);
+}
+
+.form-wrapper {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+/* =========== FORM & CONTENT STYLES =========== */
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--text-color);
+    margin-bottom: 20px;
+}
+
+.logo i {
+    font-size: 28px;
+    margin-right: 8px;
+    color: var(--primary-color);
+}
+
+.form-wrapper h2 {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--label-color);
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--label-color);
+    margin-bottom: 8px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
+}
+
+.btn {
+    padding: 12px 24px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #EA580C; /* Darker Orange */
+}
+
+.signup-link {
+    margin-top: 25px;
+    font-size: 14px;
+    color: var(--label-color);
+    text-align: center;
+}
+
+.signup-link a {
+    color: var(--primary-color);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.signup-link a:hover {
+    text-decoration: underline;
+}
+
+
+/* =========== RESPONSIVE STYLES for smaller screens =========== */
+@media (max-width: 768px) {
+    .split-screen-container {
+        grid-template-columns: 1fr; /* Stack to a single column */
+    }
+
+    /* Hide the image on mobile to save space and focus on the form */
+    .left-pane {
+        display: none;
+    }
+
+    .form-wrapper {
+      padding: 20px 30px;
+    }
+}

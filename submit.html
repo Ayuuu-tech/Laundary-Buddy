@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Laundry - Laundry Buddy</title>
+    <link rel="stylesheet" href="submit.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+
+    <header>
+        <div class="container navbar">
+            <a href="#" class="logo">
+                <i class='bx bxs-washer'></i>
+                <span>Laundry Buddy</span>
+            </a>
+            <nav>
+                <ul>
+                    <li><a href="home.html">Home</a></li>
+                    <li><a href="#" class="active">Laundry</a></li>
+                    <li><a href="#">Support</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <i class='bx bx-bell'></i>
+                <img src="profile.png" alt="User Profile">
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="form-container">
+            <div class="form-image-wrapper">
+                <img src="submit.png" alt="Washing Machine">
+            </div>
+
+            <h2>Submit Laundry</h2>
+
+            <div class="progress-step">
+                <p>Step 1 of 3</p>
+                <div class="progress-bar">
+                    <div class="progress-bar-fill"></div>
+                </div>
+            </div>
+
+            <form action="#">
+                <div class="input-group">
+                    <label for="clothes-count">Clothes Count</label>
+                    <input type="number" id="clothes-count" placeholder="Enter number of clothes">
+                </div>
+
+                <div class="input-group">
+                    <label for="clothes-type">Clothes Type</label>
+                    <select id="clothes-type">
+                        <option value="" disabled selected>Select type</option>
+                        <option value="regular">Regular Wear</option>
+                        <option value="delicates">Delicates</option>
+                        <option value="bedding">Bedding & Linens</option>
+                        <option value="heavy">Heavy Duty (Jeans, Jackets)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="special-notes">Special Notes</label>
+                    <textarea id="special-notes" rows="4" placeholder="Any special instructions..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+</body>
+</html>

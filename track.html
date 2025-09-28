@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Laundry - Laundry Buddy</title>
+    <link rel="stylesheet" href="track.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+
+    <header>
+        <div class="container navbar">
+            <a href="#" class="logo">
+                <i class='bx bxs-washer'></i>
+                <span>Laundry Buddy</span>
+            </a>
+            <nav>
+                <ul>
+                    <li><a href="home.html">Home</a></li>
+                    <li><a href="#" class="active">Laundry</a></li>
+                    <li><a href="#">Support</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <i class='bx bx-bell'></i>
+                <img src="profile.png" alt="User Profile">
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container track-container">
+            <div class="tracking-info">
+                <h1>Track Your Laundry</h1>
+                
+                <div class="input-group">
+                    <input type="text" id="token-number" placeholder="Enter Token Number">
+                </div>
+
+                <button type="button" class="btn btn-secondary btn-icon">
+                    <i class='bx bx-qr-scan'></i>
+                    Scan QR Code
+                </button>
+
+                <div class="status-section">
+                    <h2>Laundry Status</h2>
+                    <p class="status-text">Ready for Pickup, Estimated Completion: 2:30 PM</p>
+                    <div class="progress-bar">
+                        <div class="progress-bar-fill"></div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-primary">Notify Me When Ready</button>
+            </div>
+
+            <div class="image-pane">
+                <img src="track.png" alt="Folded clothes">
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>
