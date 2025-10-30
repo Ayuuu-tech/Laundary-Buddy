@@ -77,6 +77,7 @@ laundry-buddy/
 ## 🎯 Target Audience
 
 This application is specifically designed for:
+
 - **College Students** living in dormitories
 - **University Campuses** with shared laundry facilities
 - **Student Housing** complexes
@@ -85,12 +86,14 @@ This application is specifically designed for:
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Modern web browser (Chrome, Firefox, Safari, Edge)
 - Basic understanding of web technologies (optional for users)
 
 ### Installation & Setup
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/your-username/laundry-buddy.git
    cd laundry-buddy
@@ -99,6 +102,7 @@ This application is specifically designed for:
 2. **Open the project**
    - Simply open `index.html` in your web browser
    - Or use a local development server:
+
    ```bash
    # Using Python
    python -m http.server 8000
@@ -152,6 +156,7 @@ We welcome contributions! Here's how you can help:
 5. **Open a Pull Request**
 
 ### Contribution Guidelines
+
 - Follow consistent coding style
 - Add comments for complex functionality
 - Test your changes across different browsers
@@ -176,16 +181,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you encounter any issues or have questions:
 
-- **Email**: support@laundrybuddy.com
+- **Email**: [support@laundrybuddy.com](mailto:support@laundrybuddy.com)
 - **GitHub Issues**: [Create an issue](https://github.com/your-username/laundry-buddy/issues)
 - **Documentation**: Check our [Wiki](https://github.com/your-username/laundry-buddy/wiki)
 
 ---
 
-<div align="center">
+---
 
-**Made by Ayushmaan Yadav**
+## Made with ❤️ for students, by students
 
 [🌟 Star this repo](https://github.com/your-username/laundry-buddy) • [🍴 Fork it](https://github.com/your-username/laundry-buddy/fork) • [📝 Report Bug](https://github.com/your-username/laundry-buddy/issues)
-
-</div>

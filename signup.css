@@ -33,7 +33,7 @@ header {
 }
 
 .header-container {
-    max-width: 1100px;
+    max-width: 1280px;
     margin: 0 auto;
     padding: 20px;
 }
@@ -139,4 +139,46 @@ form input:focus {
 
 .login-link a:hover {
     text-decoration: underline;
+}
+
+/* =========== DARK THEME =========== */
+body.dark-theme {
+    --primary-color: #FB923C;
+    --text-color: #FFFFFF;
+    --subtitle-color: #b3b3b3;
+    --background-color: #000000;
+    --form-bg-color: #1a1a1a;
+    --input-bg-color: #0a0a0a;
+    --border-color: #2d2d2d;
+}
+
+body.dark-theme header {
+    background-color: var(--form-bg-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+body.dark-theme .signup-form-card {
+    background-color: var(--form-bg-color);
+    border: 1px solid var(--border-color);
+}
+
+body.dark-theme input,
+body.dark-theme select {
+    background-color: var(--input-bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+
+body.dark-theme input:focus,
+body.dark-theme select:focus {
+    border-color: var(--primary-color);
+    background-color: var(--input-bg-color);
+}
+
+body.dark-theme .login-link {
+    color: var(--subtitle-color);
+}
+
+body.dark-theme .login-link a {
+    color: var(--primary-color);
 }

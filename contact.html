@@ -5,11 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Us - Laundry Buddy</title>
     <link rel="stylesheet" href="contact.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="dark-mode.css">
+    <link rel="stylesheet" href="responsive.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
@@ -17,7 +16,7 @@
 
     <header>
         <div class="container navbar margin">
-            <a href="#" class="logo">
+            <a href="home.html" class="logo">
                 <i class='bx bxs-washer'></i>
                 <span class="pad">Laundry Buddy</span>
             </a>
@@ -31,6 +30,11 @@
                     <li class="pads"><a href="contact.html">Contact</a></li>
                 </ul>
             </nav>
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+                <i class='bx bx-sun'></i>
+                <span class="theme-toggle-slider"></span>
+                <i class='bx bx-moon'></i>
+            </button>
             <a href="profile.html"><div class="profile">
                 <img src="assests/profile.png" alt="User Profile">
             </div></a>
@@ -106,6 +110,12 @@
             </div>
         </main>
     </div>
+
+    <script src="assests/crypto-utils.js"></script>
+    <script src="assests/auth.js"></script>
+    <script src="assests/dark-mode.js"></script>
+    <script src="assests/mobile-menu.js"></script>
+    <script src="assests/contact.js"></script>
 
 </body>
 </html>

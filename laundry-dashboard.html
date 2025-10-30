@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- <meta name="theme-color" content="#F97316"> -->
+  <meta name="description" content="Laundry Buddy - Professional Laundry Management Dashboard">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/favicon.svg">
+  <title>Laundry Dashboard - Laundry Buddy</title>
+  <link rel="stylesheet" href="home.css?v=2.0">
+  <link rel="stylesheet" href="history.css?v=2.0">
+  <link rel="stylesheet" href="modal.css?v=2.0">
+  <link rel="stylesheet" href="dark-mode.css?v=2.0">
+  <link rel="stylesheet" href="responsive.css?v=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+  <header>
+    <div class="container navbar">
+      <a href="home.html" class="logo">
+        <i class='bx bxs-washer'></i>
+        <span>Laundry Buddy</span>
+      </a>
+      <nav>
+        <ul>
+          <li><a href="laundry-dashboard.html" class="active">Dashboard</a></li>
+          <li><a href="#" id="nav-refresh">Refresh</a></li>
+          <li><a href="support.html">Support</a></li>
+        </ul>
+      </nav>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+        <i class='bx bx-sun'></i>
+        <span class="theme-toggle-slider"></span>
+        <i class='bx bx-moon'></i>
+      </button>
+      <div class="header-actions">
+        <button class="btn btn-secondary" id="laundry-logout">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <!-- Pull to refresh indicator -->
+      <div class="pull-refresh-indicator" id="pull-refresh-indicator">
+        <i class='bx bx-refresh bx-spin'></i>
+        <span>Release to refresh</span>
+      </div>
+      
+      <h1>Laundry Staff Dashboard</h1>
+
+      <div class="orders-toolbar">
+        <div class="search-bar">
+          <i class='bx bx-search'></i>
+          <input type="text" id="laundry-search" placeholder="Search by token, student, or room (Press F)" accesskey="f">
+        </div>
+        <div class="filter-group">
+          <select id="status-filter" class="filter-select" aria-label="Filter by status" title="Filter by status">
+            <option value="all">All Status</option>
+            <option value="received">Received</option>
+            <option value="washing">Washing</option>
+            <option value="drying">Drying</option>
+            <option value="folding">Folding</option>
+            <option value="ready-for-pickup">Ready</option>
+            <option value="completed">Completed</option>
+          </select>
+          <select id="date-filter" class="filter-select" aria-label="Filter by date range" title="Filter by date range">
+            <option value="all">All Time</option>
+            <option value="today">Today</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+          </select>
+          <select id="priority-filter" class="filter-select" aria-label="Filter by priority" title="Filter by priority">
+            <option value="all">All Priority</option>
+            <option value="urgent">Urgent Only</option>
+            <option value="express">Express Only</option>
+            <option value="normal">Normal Only</option>
+          </select>
+        </div>
+        <button class="btn btn-secondary" id="scan-qr-btn"><i class='bx bx-qr-scan'></i> Scan QR</button>
+        <button class="btn btn-secondary" id="refresh-btn" title="Refresh (Press R)"><i class='bx bx-refresh'></i> Refresh</button>
+        <button class="btn btn-secondary" id="export-btn" title="Export (Press E)"><i class='bx bx-download'></i> Export</button>
+      </div>
+
+      <div class="bulk-actions-bar" id="bulk-actions-bar">
+        <span id="bulk-selection-count">0 selected</span>
+        <button class="btn btn-secondary" id="bulk-mark-ready"><i class='bx bx-package'></i> Mark Ready</button>
+        <button class="btn btn-secondary" id="bulk-mark-completed"><i class='bx bx-check'></i> Mark Completed</button>
+        <button class="btn btn-secondary" id="bulk-clear"><i class='bx bx-x'></i> Clear</button>
+      </div>
+
+      <div class="card-section">
+        <div class="stats-grid">
+          <div class="stat-card stat-primary">
+            <div class="stat-icon"><i class='bx bx-receipt'></i></div>
+            <div class="stat-info">
+              <h3>Total Orders</h3>
+              <p id="stat-total" class="stat-number">0</p>
+              <span class="stat-label">All time</span>
+            </div>
+          </div>
+          <div class="stat-card stat-warning">
+            <div class="stat-icon"><i class='bx bx-time-five'></i></div>
+            <div class="stat-info">
+              <h3>In Process</h3>
+              <p id="stat-inprocess" class="stat-number">0</p>
+              <span class="stat-label">Active orders</span>
+            </div>
+          </div>
+          <div class="stat-card stat-success">
+            <div class="stat-icon"><i class='bx bx-package'></i></div>
+            <div class="stat-info">
+              <h3>Ready</h3>
+              <p id="stat-ready" class="stat-number">0</p>
+              <span class="stat-label">For pickup</span>
+            </div>
+          </div>
+          <div class="stat-card stat-info">
+            <div class="stat-icon"><i class='bx bx-check-circle'></i></div>
+            <div class="stat-info">
+              <h3>Completed</h3>
+              <p id="stat-completed" class="stat-number">0</p>
+              <span class="stat-label">Today</span>
+            </div>
+          </div>
+          <div class="stat-card stat-danger">
+            <div class="stat-icon"><i class='bx bx-error'></i></div>
+            <div class="stat-info">
+              <h3>Urgent</h3>
+              <p id="stat-urgent" class="stat-number">0</p>
+              <span class="stat-label">Priority orders</span>
+            </div>
+          </div>
+          <div class="stat-card stat-secondary">
+            <div class="stat-icon"><i class='bx bx-timer'></i></div>
+            <div class="stat-info">
+              <h3>Avg Time</h3>
+              <p id="stat-avgtime" class="stat-number">--</p>
+              <span class="stat-label">Completion time</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <h2>Today's Batches</h2>
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th><input type="checkbox" id="select-all-checkbox" title="Select all"></th>
+              <th>Priority</th>
+              <th>Token</th>
+              <th>Student</th>
+              <th>Room</th>
+              <th>Status</th>
+              <th>Submitted</th>
+              <th>ETA</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="laundry-table-body">
+            <tr><td colspan="8">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- PWA Install Prompt -->
+  <div class="pwa-install-prompt hidden" id="pwa-install-prompt">
+    <div class="pwa-prompt-content">
+      <i class='bx bx-mobile-alt'></i>
+      <div class="pwa-prompt-text">
+        <h3>Install Laundry Buddy</h3>
+        <p>Add to home screen for faster access!</p>
+      </div>
+      <div class="pwa-prompt-actions">
+        <button class="btn btn-primary" id="pwa-install-btn">Install</button>
+        <button class="btn btn-secondary" id="pwa-dismiss-btn">Not now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay hidden" id="loading-overlay">
+    <div class="loading-spinner">
+      <i class='bx bx-loader-alt bx-spin'></i>
+      <p>Loading...</p>
+    </div>
+  </div>
+
+  <!-- QR Code Scanner Modal -->
+  <div id="qr-scanner-modal">
+    <div class="modal-content">
+      <button id="close-scanner" aria-label="Close scanner">&times;</button>
+      <h2>Scan QR Code</h2>
+      <div id="qr-reader"></div>
+      <div id="qr-scanner-status">Position the QR code within the frame</div>
+      <div class="scanner-controls">
+        <label for="qr-camera-select">Camera</label>
+        <select id="qr-camera-select"></select>
+        <div class="button-group">
+          <button id="qr-toggle-torch" class="btn btn-secondary" title="Toggle flash/torch"><i class='bx bx-flash'></i> Torch</button>
+          <button id="qr-retry" class="btn btn-secondary" title="Restart scanning"><i class='bx bx-refresh'></i> Retry</button>
+        </div>
+      </div>
+      <button id="use-file-upload" class="btn btn-secondary">
+        <i class='bx bx-upload'></i> Upload QR Code Image
+      </button>
+      <div class="qr-manual">
+        <label for="qr-manual-input">Or paste token / QR content</label>
+        <input id="qr-manual-input" type="text" placeholder="e.g., LB-20251025-1234 or a URL with ?token=...">
+        <div class="button-group">
+          <button id="qr-manual-submit" class="btn btn-secondary"><i class='bx bx-search'></i> Find Order</button>
+        </div>
+        <div id="qr-manual-error" class="qr-manual-error" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Details Modal -->
+  <div id="detail-modal">
+    <div class="modal-content">
+      <button id="close-detail" aria-label="Close details">&times;</button>
+      <h2>Order Details</h2>
+      <div class="details-body">
+        <div class="details-row"><strong>Token:</strong> <span id="detail-token">-</span></div>
+        <div class="details-row"><strong>Student:</strong> <span id="detail-name">-</span></div>
+        <div class="details-row"><strong>Room:</strong> <span id="detail-room">-</span></div>
+        <div class="details-row"><strong>Priority:</strong> <span id="detail-priority" class="priority-badge">Normal</span></div>
+        <div class="details-row"><strong>Status:</strong> <span id="detail-status" class="status-pill">-</span></div>
+        <div class="details-row"><strong>Submitted:</strong> <span id="detail-submitted">-</span></div>
+        <div class="details-row"><strong>ETA:</strong> <span id="detail-eta">-</span></div>
+
+        <div class="details-section">
+          <h3>Items</h3>
+          <ul id="detail-items" class="details-list"></ul>
+        </div>
+
+        <div class="details-section">
+          <h3>History</h3>
+          <ul id="detail-history" class="details-list"></ul>
+        </div>
+
+  <div class="button-group">
+          <button class="btn btn-secondary" id="detail-advance"><i class='bx bx-chevrons-right'></i> Advance</button>
+          <button class="btn btn-secondary" id="detail-ready"><i class='bx bx-package'></i> Mark Ready</button>
+          <button class="btn btn-secondary" id="detail-complete"><i class='bx bx-check'></i> Complete</button>
+          <button class="btn btn-danger" id="detail-toggle-urgent" title="Toggle urgent priority"><i class='bx bx-error'></i> Toggle Urgent</button>
+          <button class="btn btn-secondary" id="detail-cancel"><i class='bx bx-x'></i> Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="assests/crypto-utils.js"></script>
+  <script src="assests/laundry-auth.js"></script>
+  <script src="assests/dark-mode.js"></script>
+  <script src="assests/keyboard-shortcuts.js"></script>
+  <script src="assests/data-exporter.js"></script>
+  <script src="assests/performance-enhancements.js"></script>
+  <script src="assests/laundry-enhancements.js"></script>
+  <script src="assests/laundry-dashboard.js?v=1.3"></script>
+</body>
+<!-- Created: 2025 -->
+</html>

@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile - Laundry Buddy</title>
-    <link rel="stylesheet" href="profile.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="profile.css?v=2.0">
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="dark-mode.css?v=2.0">
+    <link rel="stylesheet" href="responsive.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
@@ -14,10 +15,15 @@
 
     <header>
         <div class="container navbar">
-            <a href="#" class="logo">
+            <a href="home.html" class="logo">
                 <i class='bx bxs-washer'></i>
                 <span>Laundry Buddy</span>
             </a>
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+                <i class='bx bx-sun'></i>
+                <span class="theme-toggle-slider"></span>
+                <i class='bx bx-moon'></i>
+            </button>
             <div class="header-actions">
                 <i class='bx bx-bell'></i>
                 <img src="assests/profile.png" alt="User Profile">
@@ -28,7 +34,14 @@
     <main>
         <div class="profile-container">
             <div class="profile-header">
-                <img src="assests/profile.png" alt="User Avatar" class="avatar">
+                <div class="avatar-wrapper">
+                    <img src="assests/profile.png" alt="User Avatar" class="avatar" id="profile-avatar">
+                    <div class="avatar-overlay">
+                        <i class='bx bx-camera'></i>
+                        <span>Change Photo</span>
+                    </div>
+                    <input type="file" id="avatar-upload" accept="image/*" aria-label="Upload profile photo">
+                </div>
                 <h2>laundary</h2>
                 <p>laundary@bmu.edu.in</p>
             </div>
@@ -77,6 +90,13 @@
             </div>
         </div>
     </main>
+
+    <script src="assests/crypto-utils.js"></script>
+    <script src="assests/auth.js"></script>
+    <script src="assests/dark-mode.js"></script>
+    <script src="assests/mobile-menu.js"></script>
+    <script src="assests/keyboard-shortcuts.js"></script>
+    <script src="assests/profile.js"></script>
 
 </body>
 </html>

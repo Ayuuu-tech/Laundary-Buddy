@@ -1,43 +1,4 @@
-/* =========== GENERAL STYLES & VARIABLES =========== */
-:root {
-    --primary-color: #4F46E5; /* Using a blue from the screenshot for links */
-    --text-color: #1F2937;
-    --text-light: #6B7280;
-    --background-color: #F9FAFB;
-    --white-color: #FFFFFF;
-    --border-color: #E5E7EB;
-    --status-completed-bg: #D1FAE5;
-    --status-completed-text: #065F46;
-    --status-processing-bg: #DBEAFE;
-    --status-processing-text: #1E40AF;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Poppins', sans-serif;
-    background-color: var(--white-color);
-    color: var(--text-color);
-}
-
-.container {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-/* =========== HEADER & NAVBAR (Consistent) =========== */
-header {
-    background-color: var(--white-color);
-    border-bottom: 1px solid var(--border-color);
-}
-.navbar {
-    display: flex; justify-content: space-between; align-items: center; height: 70px;
-}
+/* Deprecated file. All styles moved into page-specific CSS or responsive.css. */
 .logo {
     display: flex; align-items: center; font-size: 22px; font-weight: 700; 
     text-decoration: none; color: var(--text-color);

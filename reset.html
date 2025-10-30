@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Laundry Buddy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .reset-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+            border-radius: 8px;
+        }
+        
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .info-box code {
+            background: #e0e7ff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #4c1d95;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin: 10px;
+            font-weight: 600;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .btn-secondary:hover {
+            box-shadow: 0 10px 30px rgba(240, 147, 251, 0.4);
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+            display: block;
+        }
+        
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+            display: block;
+        }
+        
+        .current-data {
+            background: #fff7ed;
+            border: 1px solid #fb923c;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .current-data h3 {
+            color: #c2410c;
+            margin-bottom: 10px;
+        }
+        
+        .current-data pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        /* Utilities */
+        .hidden { display: none !important; }
+        .muted-note { margin-top: 30px; font-size: 0.9rem; color: #999; }
+    </style>
+</head>
+<body>
+    <div class="reset-container">
+        <div class="icon">🔧</div>
+        <h1>Laundry Buddy Reset Tool</h1>
+        <p>This tool will help you reset your Laundry Buddy data and create a fresh demo user account.</p>
+        
+        <div class="info-box">
+            <h3>📋 What This Does:</h3>
+            <p>
+                1. Clears all existing user data from localStorage<br>
+                2. Creates a new demo user with properly hashed password<br>
+                3. Reloads the application<br>
+            </p>
+        </div>
+        
+        <div id="current-data" class="current-data hidden">
+            <h3>Current Data in localStorage:</h3>
+            <pre id="data-preview"></pre>
+        </div>
+        
+        <div>
+            <button class="btn" onclick="checkData()">Check Current Data</button>
+            <button class="btn btn-secondary" onclick="resetData()">Reset & Create Demo User</button>
+        </div>
+        
+        <div id="status" class="status"></div>
+        
+        <p class="muted-note">
+            ⚠️ Warning: This will delete all your existing orders and user data!
+        </p>
+    </div>
+
+    <script>
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = 'status ' + type;
+        }
+        
+        function checkData() {
+            const users = localStorage.getItem('laundryBuddy_users');
+            const currentUser = localStorage.getItem('laundryBuddy_currentUser');
+            
+            const dataPreview = document.getElementById('data-preview');
+            const currentDataDiv = document.getElementById('current-data');
+            
+            if (users) {
+                const usersData = JSON.parse(users);
+                dataPreview.textContent = JSON.stringify({
+                    users: usersData,
+                    currentUser: currentUser ? JSON.parse(currentUser) : null
+                }, null, 2);
+                currentDataDiv.style.display = 'block';
+                showStatus(`Found ${usersData.length} user(s) in storage`, 'success');
+            } else {
+                dataPreview.textContent = 'No data found in localStorage';
+                currentDataDiv.style.display = 'block';
+                showStatus('No existing data found. Ready to create demo user.', 'success');
+            }
+        }
+        
+        async function resetData() {
+            if (!confirm('Are you sure? This will delete all your data!')) {
+                return;
+            }
+            
+            try {
+                // Clear all Laundry Buddy data
+                localStorage.removeItem('laundryBuddy_users');
+                localStorage.removeItem('laundryBuddy_currentUser');
+                localStorage.removeItem('laundryBuddy_theme');
+                localStorage.removeItem('laundryBuddy_sortPreference');
+                
+                showStatus('Data cleared! Creating demo user...', 'success');
+                
+                // Wait a bit for user to see the message
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Redirect to login page
+                showStatus('Redirecting to login page...', 'success');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                window.location.href = 'login.html';
+                
+            } catch (error) {
+                console.error('Reset error:', error);
+                showStatus('Error: ' + error.message, 'error');
+            }
+        }
+        
+        // Auto-check data on load
+        window.addEventListener('load', () => {
+            setTimeout(checkData, 500);
+        });
+    </script>
+</body>
+</html>

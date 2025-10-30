@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Submit Laundry - Laundry Buddy</title>
-    <link rel="stylesheet" href="submit.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="submit.css?v=2.0">
+    <link rel="stylesheet" href="modal.css?v=2.0">
+    <link rel="stylesheet" href="dark-mode.css?v=2.0">
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="responsive.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
@@ -14,7 +16,7 @@
 
     <header>
         <div class="container navbar">
-            <a href="#" class="logo">
+            <a href="home.html" class="logo">
                 <i class='bx bxs-washer'></i>
                 <span>Laundry Buddy</span>
             </a>
@@ -22,9 +24,15 @@
                 <ul>
                     <li><a href="home.html">Home</a></li>
                     <li><a href="#" class="active">Laundry</a></li>
+                    <li><a href="history.html">History</a></li>
                     <li><a href="support.html">Support</a></li>
                 </ul>
             </nav>
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+                <i class='bx bx-sun'></i>
+                <span class="theme-toggle-slider"></span>
+                <i class='bx bx-moon'></i>
+            </button>
             <div class="header-actions">
                 <i class='bx bx-bell'></i>
                 <a href="profile.html"><img src="assests/profile.png" alt="User Profile"></a>
@@ -76,6 +84,34 @@
             </form>
         </div>
     </main>
+
+    <!-- QR Code Modal -->
+    <div id="qr-code-modal">
+        <div class="modal-content">
+            <button id="close-qr-modal" aria-label="Close modal">&times;</button>
+            <h2>🎉 Laundry Submitted!</h2>
+            <div id="qr-code-container"></div>
+            <p id="token-display"></p>
+            <p class="qr-instructions">Scan this QR code to track your laundry</p>
+            <div class="button-group">
+                <button id="download-qr">
+                    <i class='bx bx-download'></i> Download QR
+                </button>
+                <button id="track-now">
+                    <i class='bx bx-search'></i> Track Now
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include QRCode.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="assests/crypto-utils.js"></script>
+    <script src="assests/auth.js"></script>
+    <script src="assests/dark-mode.js"></script>
+    <script src="assests/mobile-menu.js"></script>
+    <script src="assests/keyboard-shortcuts.js"></script>
+    <script src="assests/submit.js"></script>
 
 </body>
 </html>

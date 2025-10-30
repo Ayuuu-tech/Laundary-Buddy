@@ -4,11 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Laundry Buddy</title>
-    <link rel="stylesheet" href="login.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="login.css?v=2.2">
+    <link rel="stylesheet" href="form-validation.css">
+    <link rel="stylesheet" href="loading.css">
+    <link rel="stylesheet" href="toast.css">
+    <link rel="stylesheet" href="modal.css?v=2.2">
+    <link rel="stylesheet" href="dark-mode.css?v=2.2">
+    <link rel="stylesheet" href="responsive.css?v=1.0">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <script src="assests/pwa-installer.js"></script>
 </head>
 <body>
 
@@ -18,21 +24,21 @@
 
         <div class="right-pane">
             <div class="form-wrapper">
-                <a href="#" class="logo">
+                <a href="home.html" class="logo">
                     <i class='bx bxs-washer'></i>
                     <span>Laundry Buddy</span>
                 </a>
                 
                 <h2>Your clothes, our care</h2>
 
-                <form action="home.html">
+                <form action="home.html" autocomplete="on">
                     <div class="input-group">
                         <label for="email">Student ID/Email</label>
-                        <input type="text" id="email" placeholder="Enter your ID or email" required>
+                        <input type="text" id="email" placeholder="Enter your ID or email" required autocomplete="username">
                     </div>
                     <div class="input-group">
                         <label for="password">Password</label>
-                        <input type="password" id="password" placeholder="Enter your password" required>
+                        <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
                     </div>
                     <button type="submit" class="btn btn-primary">Login</button>
                 </form>
@@ -40,9 +46,25 @@
                 <p class="signup-link">
                     Don't have an account? <a href="signup.html">Sign up</a>
                 </p>
+                <p class="signup-link">
+                    Are you Laundry Staff? <a href="laundry-login.html">Login here</a>
+                </p>
             </div>
         </div>
     </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="assests/toast-manager.js"></script>
+    <script src="assests/loading-manager.js"></script>
+    <script src="assests/form-validator.js"></script>
+    <script src="assests/crypto-utils.js"></script>
+    <script src="assests/auth.js"></script>
+    <script src="assests/dark-mode.js"></script>
+    <script src="assests/mobile-menu.js"></script>
+    <script src="assests/keyboard-shortcuts.js"></script>
+    <script src="assests/login.js?v=2.6"></script>
 
 </body>
 </html>

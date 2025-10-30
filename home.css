@@ -32,7 +32,8 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    /* Expanded for 15.6" laptop at ~110% zoom */
+    max-width: 1280px;
     margin: 0 auto;
     padding: 0 20px;
 }
@@ -85,6 +86,10 @@ nav a:hover, nav a.active {
     color: var(--primary-color);
 }
 
+.theme-toggle {
+    margin: 0 20px;
+}
+
 .profile img {
     width: 40px;
     height: 40px;
@@ -124,12 +129,14 @@ nav a:hover, nav a.active {
 .hero h1 {
     font-size: 42px;
     font-weight: 700;
+    color: #FFFFFF;
 }
 
 .hero p {
     font-size: 18px;
     margin: 10px 0 30px;
     opacity: 0.9;
+    color: #FFFFFF;
 }
 
 .btn {
@@ -168,6 +175,12 @@ nav a:hover, nav a.active {
 .card-section h2 {
     font-size: 28px;
     margin-bottom: 20px;
+}
+
+/* Card Links */
+.card-link {
+    text-decoration: none;
+    color: black;
 }
 
 .quick-access-grid, .features-grid {
@@ -276,6 +289,73 @@ footer {
     margin-top: 15px;
     color: #9CA3AF;
     font-size: 14px;
+}
+
+/* =========== DARK THEME STYLES =========== */
+body.dark-theme {
+    --primary-color: #FB923C;
+    --secondary-color: #1a1a1a;
+    --text-color: #FFFFFF;
+    --text-light: #b3b3b3;
+    --background-color: #000000;
+    --white-color: #1a1a1a;
+    --border-color: #2d2d2d;
+}
+
+body.dark-theme header {
+    background-color: var(--white-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+body.dark-theme .hero {
+    background-blend-mode: overlay;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+body.dark-theme .hero h1,
+body.dark-theme .hero p {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+body.dark-theme .quick-access-card {
+    background-color: var(--white-color);
+    border: 1px solid var(--border-color);
+}
+
+body.dark-theme .quick-access-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(251, 146, 60, 0.2);
+}
+
+body.dark-theme .feature-card {
+    background-color: var(--white-color);
+    border: 1px solid var(--border-color);
+}
+
+body.dark-theme .feature-card:hover {
+    box-shadow: 0 10px 30px rgba(251, 146, 60, 0.15);
+}
+
+body.dark-theme .stats-card {
+    background-color: var(--white-color);
+    border: 1px solid var(--border-color);
+}
+
+body.dark-theme .stats-card h3 {
+    color: var(--primary-color);
+}
+
+body.dark-theme footer {
+    background-color: var(--white-color);
+    border-top: 1px solid var(--border-color);
+}
+
+body.dark-theme .social-icons a {
+    color: var(--text-light);
+}
+
+body.dark-theme .social-icons a:hover {
+    color: var(--primary-color);
 }
 
 

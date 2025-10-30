@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order History - Laundry Buddy</title>
     <link rel="stylesheet" href="history.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="dark-mode.css">
+    <link rel="stylesheet" href="responsive.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
@@ -14,7 +15,7 @@
 
     <header>
         <div class="container navbar">
-            <a href="#" class="logo">
+            <a href="home.html" class="logo">
                 <i class='bx bxs-washer'></i>
                 <span>Laundry Buddy</span>
             </a>
@@ -25,6 +26,11 @@
                     <li><a href="support.html">Support</a></li>
                 </ul>
             </nav>
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+                <i class='bx bx-sun'></i>
+                <span class="theme-toggle-slider"></span>
+                <i class='bx bx-moon'></i>
+            </button>
             <div class="header-actions">
                 <i class='bx bx-bell'></i>
                 <a href="profile.html"><img src="assests/profile.png" alt="User Profile"></a>
@@ -38,13 +44,43 @@
 
             <div class="summary-card">
                 <p>Total Orders</p>
-                <span>12</span>
+<span>0</span>
             </div>
 
             <div class="orders-toolbar">
                 <div class="search-bar">
                     <i class='bx bx-search'></i>
                     <input type="text" placeholder="Search orders">
+                </div>
+                <div class="sort-container">
+                    <i class='bx bx-sort'></i>
+                    <select class="sort-select" aria-label="Sort orders">
+                        <option value="date-newest">Date (Newest First)</option>
+                        <option value="date-oldest">Date (Oldest First)</option>
+                        <option value="status">Status</option>
+                        <option value="items-most">Items (Most First)</option>
+                        <option value="items-least">Items (Least First)</option>
+                    </select>
+                </div>
+                <div class="export-container">
+                    <button class="export-btn" id="export-btn" aria-label="Export orders">
+                        <i class='bx bx-download'></i>
+                        Export
+                    </button>
+                    <div class="export-menu" id="export-menu">
+                        <button class="export-option" data-format="csv">
+                            <i class='bx bx-file'></i>
+                            Export as CSV
+                        </button>
+                        <button class="export-option" data-format="json">
+                            <i class='bx bx-code-alt'></i>
+                            Export as JSON
+                        </button>
+                        <button class="export-option" data-format="pdf">
+                            <i class='bx bx-file-blank'></i>
+                            Export as PDF
+                        </button>
+                    </div>
                 </div>
                 <div class="filter-tabs">
                     <button class="filter-btn">This Week</button>
@@ -67,31 +103,31 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>July 20, 2024</td>
+                            <td>October 25, 2025</td>
                             <td>3 shirts, 2 pants, 1 bedsheet</td>
                             <td><span class="status-pill status-processing">In Process</span></td>
                             <td><a href="#" class="rate-link">Rate</a></td>
                         </tr>
                         <tr>
-                            <td>July 13, 2024</td>
+                            <td>October 25, 2025</td>
                             <td>2 shirts, 1 pant</td>
                             <td><span class="status-pill status-completed">Completed</span></td>
                             <td><a href="#" class="rate-link">Rate</a></td>
                         </tr>
                         <tr>
-                            <td>June 25, 2024</td>
+                            <td>October 25, 2025</td>
                             <td>1 shirt, 1 pant, 1 bedsheet</td>
                             <td><span class="status-pill status-completed">Completed</span></td>
                             <td><a href="#" class="rate-link">Rate</a></td>
                         </tr>
                         <tr>
-                            <td>June 10, 2024</td>
+                            <td>October 25, 2025</td>
                             <td>2 shirts, 2 pants</td>
                             <td><span class="status-pill status-completed">Completed</span></td>
                             <td><a href="#" class="rate-link">Rate</a></td>
                         </tr>
                         <tr>
-                            <td>May 22, 2024</td>
+                            <td>October 25, 2025</td>
                             <td>1 shirt, 1 pant</td>
                             <td><span class="status-pill status-completed">Completed</span></td>
                             <td><a href="#" class="rate-link">Rate</a></td>
@@ -101,5 +137,14 @@
             </div>
         </div>
     </main>
+
+    <script src="assests/crypto-utils.js"></script>
+    <script src="assests/auth.js"></script>
+    <script src="assests/dark-mode.js"></script>
+    <script src="assests/mobile-menu.js"></script>
+    <script src="assests/keyboard-shortcuts.js"></script>
+    <script src="assests/data-exporter.js"></script>
+    <script src="assests/history.js?v=2.1"></script>
+
 </body>
 </html>

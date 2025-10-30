@@ -20,8 +20,13 @@ body {
     color: var(--text-color);
 }
 
+/* Utility helpers */
+.hidden {
+    display: none !important;
+}
+
 .container {
-    max-width: 1100px;
+    max-width: 1280px;
     margin: 0 auto;
     padding: 0 20px;
 }
@@ -194,4 +199,39 @@ main {
     nav {
         display: none; /* Simple hide for mobile */
     }
+}
+
+/* =========== DARK THEME =========== */
+body.dark-theme {
+    --primary-color: #FB923C;
+    --text-color: #FFFFFF;
+    --text-light: #b3b3b3;
+    --background-color: #000000;
+    --white-color: #1a1a1a;
+    --border-color: #2d2d2d;
+}
+
+body.dark-theme header {
+    background-color: var(--white-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+body.dark-theme .track-container {
+    background-color: var(--white-color);
+    border: 1px solid var(--border-color);
+}
+
+body.dark-theme .input-group input {
+    background-color: #0a0a0a;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+
+body.dark-theme .input-group input:focus {
+    border-color: var(--primary-color);
+}
+
+body.dark-theme .status-badge {
+    background-color: #2d2d2d;
+    border: 1px solid var(--border-color);
 }

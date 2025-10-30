@@ -1,0 +1,501 @@
+/**
+ * DARK MODE STYLES
+ * 
+ * Complete dark theme implementation using CSS custom properties.
+ * Provides elegant color palette optimized for low-light environments.
+ * 
+ * Features:
+ * - CSS custom properties for easy theming
+ * - Smooth transitions between themes
+ * - WCAG AA compliant contrast ratios
+ * - Support for all page elements
+ * 
+ * Usage:
+ * Add 'dark-theme' class to <body> element to enable dark mode
+ */
+
+/* =========================================
+   DARK THEME COLOR VARIABLES
+   ========================================= */
+body.dark-theme {
+  /* Primary Colors */
+  --primary-color: #FB923C; /* Orange accent */
+  --primary-hover: #FDBA74;
+  --primary-light: #FED7AA;
+  
+  /* Background Colors - Pure Black & Gray */
+  --background-color: #000000; /* Pure black */
+  --background-secondary: #1a1a1a; /* Very dark gray */
+  --background-tertiary: #2d2d2d; /* Dark gray */
+  --white-color: #1a1a1a; /* Card backgrounds */
+  
+  /* Text Colors - Pure White & Grays */
+  --text-color: #FFFFFF; /* Pure white */
+  --text-light: #b3b3b3; /* Light gray */
+  --text-muted: #808080; /* Medium gray */
+  
+  /* Border Colors - Gray tones */
+  --border-color: #2d2d2d; /* Dark gray borders */
+  --border-light: #404040;
+  
+  /* Status Colors - Adjusted for dark mode */
+  --status-completed-bg: rgba(99, 102, 241, 0.2); /* Indigo with transparency */
+  --status-completed-text: #A5B4FC; /* Light indigo */
+  
+  --status-processing-bg: rgba(251, 146, 60, 0.2); /* Orange with transparency */
+  --status-processing-text: #FDBA74; /* Light orange */
+  
+  --status-cancelled-bg: rgba(239, 68, 68, 0.2); /* Red with transparency */
+  --status-cancelled-text: #FCA5A5; /* Light red */
+  
+  --status-pending-bg: rgba(234, 179, 8, 0.2); /* Yellow with transparency */
+  --status-pending-text: #FDE047; /* Light yellow */
+  
+  /* Input & Form Colors */
+  --input-background: #1a1a1a;
+  --input-border: #2d2d2d;
+  --input-focus-border: var(--primary-color);
+  
+  /* Shadow Colors */
+  --shadow-light: rgba(0, 0, 0, 0.5);
+  --shadow-medium: rgba(0, 0, 0, 0.5);
+  --shadow-heavy: rgba(0, 0, 0, 0.7);
+}
+
+/* =========================================
+   SMOOTH TRANSITIONS
+   ========================================= */
+body,
+.container,
+header,
+.navbar,
+.card,
+.summary-card,
+.orders-toolbar,
+.search-bar,
+.search-bar input,
+.sort-container,
+.sort-select,
+.filter-btn,
+.table-container,
+.orders-table,
+.status-pill,
+.rate-link,
+button,
+input,
+select,
+textarea,
+.modal,
+.toast {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* =========================================
+   DARK MODE THEME TOGGLE BUTTON
+   ========================================= */
+.theme-toggle {
+  position: relative;
+  width: 60px;
+  height: 30px;
+  background-color: var(--border-color);
+  border-radius: 30px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border: none;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
+}
+
+body.dark-theme .theme-toggle {
+  background-color: var(--primary-color);
+}
+
+.theme-toggle-slider {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  left: 4px;
+}
+
+body.dark-theme .theme-toggle-slider {
+  transform: translateX(30px);
+}
+
+.theme-toggle i {
+  font-size: 14px;
+  z-index: 1;
+  color: var(--text-light);
+}
+
+.theme-toggle .bx-sun {
+  color: #F59E0B;
+}
+
+.theme-toggle .bx-moon {
+  color: #b3b3b3;
+}
+
+body.dark-theme .theme-toggle .bx-moon {
+  color: white;
+}
+
+/* =========================================
+   DARK MODE SPECIFIC OVERRIDES
+   ========================================= */
+
+/* Tables */
+body.dark-theme .orders-table th {
+  color: var(--text-light);
+}
+
+body.dark-theme .orders-table tbody tr:hover {
+  background-color: var(--background-tertiary);
+}
+
+/* Links */
+body.dark-theme .rate-link,
+body.dark-theme nav a {
+  color: var(--primary-color);
+}
+
+body.dark-theme .rate-link:hover,
+body.dark-theme nav a:hover {
+  color: var(--primary-hover);
+}
+
+/* Active Navigation */
+body.dark-theme nav a.active {
+  color: var(--primary-color);
+}
+
+/* Buttons */
+body.dark-theme .filter-btn {
+  background-color: var(--background-secondary);
+  border-color: var(--border-color);
+  color: var(--text-light);
+}
+
+body.dark-theme .filter-btn.active,
+body.dark-theme .filter-btn:hover {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+/* Cards and Containers */
+body.dark-theme .summary-card {
+  background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-tertiary) 100%);
+  border: 1px solid var(--border-color);
+}
+
+body.dark-theme .table-container {
+  background-color: var(--white-color);
+  border: 1px solid var(--border-color);
+}
+
+/* Search and Sort */
+body.dark-theme .search-bar input,
+body.dark-theme .sort-container {
+  background-color: var(--input-background);
+  color: var(--text-color);
+  border: 1px solid var(--input-border);
+}
+
+body.dark-theme .search-bar input::placeholder {
+  color: var(--text-muted);
+}
+
+body.dark-theme .search-bar input:focus,
+body.dark-theme .sort-select:focus {
+  border-color: var(--input-focus-border);
+}
+
+/* Scrollbars - Dark Mode */
+body.dark-theme ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+body.dark-theme ::-webkit-scrollbar-track {
+  background: var(--background-secondary);
+}
+
+body.dark-theme ::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 5px;
+}
+
+body.dark-theme ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* =========================================
+   TOAST NOTIFICATIONS - DARK MODE
+   ========================================= */
+body.dark-theme .toast {
+  background-color: var(--background-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  box-shadow: 0 4px 12px var(--shadow-medium);
+}
+
+body.dark-theme .toast.toast-success {
+  border-left-color: #10B981;
+}
+
+body.dark-theme .toast.toast-error {
+  border-left-color: #EF4444;
+}
+
+body.dark-theme .toast.toast-warning {
+  border-left-color: #F59E0B;
+}
+
+body.dark-theme .toast.toast-info {
+  border-left-color: #b3b3b3;
+}
+
+/* =========================================
+   MODAL - DARK MODE
+   ========================================= */
+body.dark-theme .modal-overlay {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+body.dark-theme .modal {
+  background-color: var(--background-secondary);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 20px 60px var(--shadow-heavy);
+}
+
+body.dark-theme .modal-header {
+  border-bottom-color: var(--border-color);
+}
+
+body.dark-theme .modal-footer {
+  border-top-color: var(--border-color);
+}
+
+/* =========================================
+   FORM ELEMENTS - DARK MODE
+   ========================================= */
+body.dark-theme input[type="text"],
+body.dark-theme input[type="email"],
+body.dark-theme input[type="password"],
+body.dark-theme input[type="tel"],
+body.dark-theme input[type="number"],
+body.dark-theme textarea,
+body.dark-theme select {
+  background-color: var(--input-background);
+  border-color: var(--input-border);
+  color: var(--text-color);
+}
+
+body.dark-theme input:focus,
+body.dark-theme textarea:focus,
+body.dark-theme select:focus {
+  border-color: var(--input-focus-border);
+  background-color: var(--background-tertiary);
+}
+
+body.dark-theme input::placeholder,
+body.dark-theme textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* Form Validation - Dark Mode */
+body.dark-theme .form-group.error input,
+body.dark-theme .form-group.error textarea,
+body.dark-theme .form-group.error select {
+  border-color: #EF4444;
+}
+
+body.dark-theme .form-group.success input,
+body.dark-theme .form-group.success textarea,
+body.dark-theme .form-group.success select {
+  border-color: #10B981;
+}
+
+body.dark-theme .error-message {
+  color: #FCA5A5;
+}
+
+body.dark-theme .success-message {
+  color: #86EFAC;
+}
+
+/* =========================================
+   LOADING INDICATORS - DARK MODE
+   ========================================= */
+body.dark-theme .loading-overlay {
+  background-color: rgba(15, 23, 42, 0.9);
+}
+
+body.dark-theme .loading-spinner {
+  border-color: var(--border-color);
+  border-top-color: var(--primary-color);
+}
+
+body.dark-theme .skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--background-secondary) 25%,
+    var(--background-tertiary) 50%,
+    var(--background-secondary) 75%
+  );
+  background-size: 200% 100%;
+}
+
+/* =========================================
+   HEADER & NAVIGATION - DARK MODE
+   ========================================= */
+body.dark-theme header {
+  background-color: var(--white-color);
+  border-bottom-color: var(--border-color);
+}
+
+body.dark-theme .logo {
+  color: var(--text-color);
+}
+
+body.dark-theme .logo i {
+  color: var(--primary-color);
+}
+
+/* =========================================
+   PROFILE PAGE - DARK MODE
+   ========================================= */
+body.dark-theme .profile-card,
+body.dark-theme .stat-card,
+body.dark-theme .qr-card {
+  background-color: var(--white-color);
+  border: 1px solid var(--border-color);
+}
+
+body.dark-theme .profile-avatar {
+  border-color: var(--border-color);
+}
+
+body.dark-theme .stat-value {
+  color: var(--primary-color);
+}
+
+/* =========================================
+   SUBMIT PAGE - DARK MODE
+   ========================================= */
+body.dark-theme .service-option {
+  background-color: var(--white-color);
+  border-color: var(--border-color);
+}
+
+body.dark-theme .service-option.selected {
+  border-color: var(--primary-color);
+  background-color: var(--background-tertiary);
+}
+
+body.dark-theme .service-option:hover {
+  border-color: var(--primary-hover);
+  background-color: var(--background-tertiary);
+}
+
+/* =========================================
+   TRACK PAGE - DARK MODE
+   ========================================= */
+body.dark-theme .timeline-item {
+  border-left-color: var(--border-color);
+}
+
+body.dark-theme .timeline-dot {
+  background-color: var(--background-secondary);
+  border-color: var(--border-color);
+}
+
+body.dark-theme .timeline-item.active .timeline-dot {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+/* =========================================
+   CONFIRMATION MODAL - DARK MODE
+   ========================================= */
+body.dark-theme .confirmation-modal {
+  background-color: var(--background-secondary);
+  border: 1px solid var(--border-color);
+}
+
+body.dark-theme .confirmation-modal-header {
+  border-bottom-color: var(--border-color);
+}
+
+body.dark-theme .confirmation-modal-footer {
+  border-top-color: var(--border-color);
+}
+
+body.dark-theme .confirmation-modal input[type="text"],
+body.dark-theme .confirmation-modal input[type="email"],
+body.dark-theme .confirmation-modal input[type="password"] {
+  background-color: var(--input-background);
+  border-color: var(--input-border);
+  color: var(--text-color);
+}
+
+/* =========================================
+   UTILITY CLASSES - DARK MODE
+   ========================================= */
+body.dark-theme .text-muted {
+  color: var(--text-muted) !important;
+}
+
+body.dark-theme .text-light {
+  color: var(--text-light) !important;
+}
+
+body.dark-theme .bg-light {
+  background-color: var(--background-secondary) !important;
+}
+
+body.dark-theme .border-light {
+  border-color: var(--border-light) !important;
+}
+
+/* =========================================
+   RESPONSIVE - DARK MODE ADJUSTMENTS
+   ========================================= */
+@media (max-width: 768px) {
+  body.dark-theme .theme-toggle {
+    width: 50px;
+    height: 26px;
+  }
+  
+  body.dark-theme .theme-toggle-slider {
+    width: 18px;
+    height: 18px;
+  }
+  
+  body.dark-theme .theme-toggle-slider {
+    transform: translateX(24px);
+  }
+}
+
+/* =========================================
+   PRINT STYLES - DARK MODE
+   ========================================= */
+@media print {
+  body.dark-theme {
+    background-color: white !important;
+    color: black !important;
+  }
+  
+  body.dark-theme * {
+    background-color: white !important;
+    color: black !important;
+    border-color: #ccc !important;
+  }
+}

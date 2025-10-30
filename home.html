@@ -4,17 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home - Laundry Buddy</title>
-    <link rel="stylesheet" href="home.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="manifest" href="/manifest.json">
+    <!-- <meta name="theme-color" content="#F97316"> -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/favicon.svg">
+    <link rel="stylesheet" href="home.css?v=2.0">
+    <link rel="stylesheet" href="dark-mode.css?v=2.0">
+    <link rel="stylesheet" href="responsive.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <script src="assests/pwa-installer.js"></script>
 </head>
 <body>
 
     <header>
         <div class="container navbar">
-            <a href="#" class="logo">
+            <a href="home.html" class="logo">
                 <i class='bx bxs-washer'></i>
                 <span>Laundry Buddy</span>
             </a>
@@ -28,6 +33,11 @@
                     <li><a href="contact.html">Contact</a></li>
                 </ul>
             </nav>
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+                <i class='bx bx-sun'></i>
+                <span class="theme-toggle-slider"></span>
+                <i class='bx bx-moon'></i>
+            </button>
             <a href="profile.html"><div class="profile">
                 <img src="assests/profile.png" alt="User Profile">
             </div></a>
@@ -50,27 +60,27 @@
             <section class="card-section">
                 <h2>Quick Access</h2>
                 <div class="quick-access-grid">
-                    <a href="submit.html" style="text-decoration: none; color:black"><div class="card access-card color-1">
+                    <a href="submit.html" class="card-link"><div class="card access-card color-1">
                         <i class='bx bx-basket'></i>
                         <h3>Submit Laundry</h3>
                         <p>Submit your laundry request</p>
-                    </div> </a>
-                    <a href="track.html"  style="text-decoration: none; color:black" ><div class="card access-card color-2">
+                    </div></a>
+                    <a href="track.html" class="card-link"><div class="card access-card color-2">
                         <i class='bx bx-time-five'></i>
                         <h3>Track Laundry</h3>
                         <p>Track the status of your laundry</p>
                     </div></a>
-                    <a href="history.html" style="text-decoration: none; color:black"><div class="card access-card color-3">
+                    <a href="history.html" class="card-link"><div class="card access-card color-3">
                         <i class='bx bx-list-ul'></i>
                         <h3>Laundry History</h3>
                         <p>View your past laundry submissions</p>
                     </div></a>
-                    <a href="support.html" style="text-decoration: none; color:black"><div class="card access-card color-4">
+                    <a href="support.html" class="card-link"><div class="card access-card color-4">
                         <i class='bx bx-conversation'></i>
                         <h3>Support</h3>
                         <p>Get help with FAQs or chat</p>
                     </div></a>
-                    <a href="contact.html" style="text-decoration: none; color:black"><div class="card access-card color-5">
+                    <a href="contact.html" class="card-link"><div class="card access-card color-5">
                         <i class='bx bx-phone-call'></i>
                         <h3>Contact Us</h3>
                         <p>Contact hostel support for any inquiries</p>
@@ -109,12 +119,19 @@
                 <a href="#">Terms & Conditions</a>
             </div>
             <div class="social-icons">
-                <a href="#"><i class='bx bxl-twitter'></i></a>
-                <a href="#"><i class='bx bxl-instagram-alt'></i></a>
+                <a href="#" aria-label="Follow us on Twitter" title="Twitter"><i class='bx bxl-twitter'></i></a>
+                <a href="#" aria-label="Follow us on Instagram" title="Instagram"><i class='bx bxl-instagram-alt'></i></a>
             </div>
             <p class="copyright">&copy; 2025 Laundry Buddy. All rights reserved.</p>
         </div>
     </footer>
+
+    <script src="assests/crypto-utils.js"></script>
+    <script src="assests/auth.js"></script>
+    <script src="assests/dark-mode.js"></script>
+    <script src="assests/mobile-menu.js"></script>
+    <script src="assests/keyboard-shortcuts.js"></script>
+    <script src="assests/home.js"></script>
 
 </body>
 </html>

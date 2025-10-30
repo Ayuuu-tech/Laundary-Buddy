@@ -1,0 +1,64 @@
+{
+  "name": "Laundry Buddy",
+  "short_name": "LaundryBuddy",
+  "description": "Your personal laundry management solution for college students",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#F97316",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["lifestyle", "utilities"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Submit Order",
+      "short_name": "Submit",
+      "description": "Submit a new laundry order",
+  "url": "/submit.html",
+      "icons": [
+        {
+          "src": "/favicon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Track Order",
+      "short_name": "Track",
+      "description": "Track your current order",
+  "url": "/track.html",
+      "icons": [
+        {
+          "src": "/favicon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Order History",
+      "short_name": "History",
+      "description": "View your past orders",
+  "url": "/history.html",
+      "icons": [
+        {
+          "src": "/favicon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false
+}

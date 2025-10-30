@@ -1,0 +1,375 @@
+/* Loading Indicators - Spinners and overlays */
+
+/* Loading overlay - Full screen */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+}
+
+.loading-overlay.show {
+    display: flex;
+}
+
+/* Loading container */
+.loading-container {
+    text-align: center;
+    color: white;
+}
+
+/* Spinner styles */
+.spinner {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 15px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.spinner.small {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
+    margin: 0;
+}
+
+.spinner.medium {
+    width: 35px;
+    height: 35px;
+    border-width: 3px;
+}
+
+.spinner.large {
+    width: 60px;
+    height: 60px;
+    border-width: 5px;
+}
+
+/* Spinner colors */
+.spinner.primary {
+    border-color: rgba(33, 150, 243, 0.3);
+    border-top-color: #2196F3;
+}
+
+.spinner.success {
+    border-color: rgba(76, 175, 80, 0.3);
+    border-top-color: #4CAF50;
+}
+
+.spinner.danger {
+    border-color: rgba(244, 67, 54, 0.3);
+    border-top-color: #f44336;
+}
+
+.spinner.warning {
+    border-color: rgba(255, 152, 0, 0.3);
+    border-top-color: #FF9800;
+}
+
+/* Spin animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Loading text */
+.loading-text {
+    font-size: 16px;
+    font-weight: 500;
+    margin-top: 10px;
+}
+
+/* Dots animation for loading text */
+.loading-dots::after {
+    content: '';
+    animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+    0%, 20% { content: ''; }
+    40% { content: '.'; }
+    60% { content: '..'; }
+    80%, 100% { content: '...'; }
+}
+
+/* Inline loading (for buttons) */
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.btn-loading .btn-text {
+    visibility: hidden;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* Loading bar (progress) */
+.loading-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: transparent;
+    z-index: 9999;
+    overflow: hidden;
+    display: none;
+}
+
+.loading-bar.show {
+    display: block;
+}
+
+.loading-bar-progress {
+    height: 100%;
+    background: linear-gradient(90deg, #2196F3, #4CAF50, #2196F3);
+    background-size: 200% 100%;
+    animation: loadingBarProgress 1.5s linear infinite;
+}
+
+@keyframes loadingBarProgress {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Skeleton loading (for content) */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+    border-radius: 4px;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.skeleton.text {
+    height: 16px;
+    margin: 8px 0;
+}
+
+.skeleton.title {
+    height: 24px;
+    margin: 12px 0;
+    width: 60%;
+}
+
+.skeleton.avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
+.skeleton.card {
+    height: 200px;
+    width: 100%;
+}
+
+/* Pulse animation (alternative loading) */
+.pulse {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Bounce loader */
+.bounce-loader {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+}
+
+.bounce-loader span {
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.bounce-loader span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.bounce-loader span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+    0%, 80%, 100% {
+        transform: scale(0);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Circular progress */
+.circular-progress {
+    width: 50px;
+    height: 50px;
+    position: relative;
+}
+
+.circular-progress svg {
+    transform: rotate(-90deg);
+}
+
+.circular-progress circle {
+    fill: none;
+    stroke-width: 4;
+    stroke-linecap: round;
+}
+
+.circular-progress .circle-bg {
+    stroke: rgba(255, 255, 255, 0.3);
+}
+
+.circular-progress .circle-progress {
+    stroke: white;
+    stroke-dasharray: 283;
+    stroke-dashoffset: 283;
+    animation: circularProgress 2s ease-in-out infinite;
+}
+
+@keyframes circularProgress {
+    0% {
+        stroke-dashoffset: 283;
+    }
+    50% {
+        stroke-dashoffset: 75;
+    }
+    100% {
+        stroke-dashoffset: 283;
+    }
+}
+
+/* Loading card placeholder */
+.loading-card {
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.loading-card .skeleton {
+    margin: 10px 0;
+}
+
+/* Inline spinner (for text) */
+.inline-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin: 0 5px;
+}
+
+/* Loading state for images */
+.image-loading {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+/* Shimmer effect */
+.shimmer {
+    position: relative;
+    overflow: hidden;
+}
+
+.shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0,
+        rgba(255, 255, 255, 0.3) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Loading state utilities */
+.is-loading {
+    pointer-events: none;
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.hide-while-loading {
+    display: none !important;
+}
+
+/* Responsive loading */
+@media (max-width: 768px) {
+    .spinner {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .loading-text {
+        font-size: 14px;
+    }
+}
