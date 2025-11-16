@@ -236,4 +236,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Made with ❤️ for students, by student
 
-[🌟 Star this repo](https://github.com/your-username/laundry-buddy) • [🍴 Fork it](https://github.com/your-username/laundry-buddy/fork) • [📝 Report Bug](https://github.com/your-username/laundry-buddy/issues)
