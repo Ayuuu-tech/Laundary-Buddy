@@ -220,7 +220,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Authors
 
-- **Your Name** - *Initial work* - [YourGitHub](https://github.com/your-username)
+- Ayushmaan Yadav
 
 ## 🙏 Acknowledgments
 
@@ -229,13 +229,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **College Community** for inspiration and feedback
 - **Open Source Contributors** who make projects like this possible
 
-## 📞 Support
-
-If you encounter any issues or have questions:
-
-- **Email**: [support@laundrybuddy.com](mailto:support@laundrybuddy.com)
-- **GitHub Issues**: [Create an issue](https://github.com/your-username/laundry-buddy/issues)
-- **Documentation**: Check our [Wiki](https://github.com/your-username/laundry-buddy/wiki)
 
 ---
 
