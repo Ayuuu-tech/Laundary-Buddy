@@ -399,8 +399,52 @@
     }
 
     async loadOrdersData() {
-      // Load orders from localStorage (actual user submissions)
+      // Try to load orders from backend API first
       try {
+        if (window.orderManager) {
+          console.log('📦 Fetching orders from backend...');
+          const backendOrders = await window.orderManager.getOrders();
+          
+          if (backendOrders && backendOrders.length > 0) {
+            console.log(`✅ Loaded ${backendOrders.length} orders from backend`);
+            
+            // Convert backend orders to history format
+            const orders = backendOrders.map((order, index) => {
+              const orderDate = new Date(order.createdAt || order.pickupDate || Date.now());
+              const mappedStatus = order.status === 'completed' ? 'completed' : 
+                                  (order.status === 'cancelled' ? 'cancelled' : 'in-process');
+
+              return {
+                id: order.orderNumber || order._id || `ORDER-${index + 1}`,
+                date: orderDate.toISOString(),
+                displayDate: this.formatDisplayDate(orderDate),
+                items: order.items || [],
+                status: mappedStatus,
+                estimatedCompletion: order.deliveryDate || 'Not specified',
+                rating: order.rating || null,
+                totalItems: order.items ? order.items.reduce((sum, item) => sum + (item.count || item.quantity || 0), 0) : 0,
+                orderData: order // Keep full order data for reference
+              };
+            });
+            
+            // Calculate summary
+            const summary = {
+              totalOrders: orders.length,
+              completedOrders: orders.filter(o => o.status === 'completed').length,
+              inProcessOrders: orders.filter(o => o.status === 'in-process').length,
+              cancelledOrders: orders.filter(o => o.status === 'cancelled').length
+            };
+            
+            return { orders, summary };
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ Could not fetch from backend, trying localStorage:', error.message);
+      }
+
+      // Fallback to localStorage (for offline mode or if API fails)
+      try {
+        console.log('📁 Loading orders from localStorage...');
         const currentUser = window.authManager ? window.authManager.getCurrentUser() : null;
         const submissions = JSON.parse(localStorage.getItem('laundryBuddy_submissions') || '[]');
         
@@ -411,6 +455,10 @@
             sub.studentId === currentUser.studentId || 
             sub.hostelRoom === currentUser.hostelRoom
           );
+        }
+        
+        if (userSubmissions.length > 0) {
+          console.log(`✅ Loaded ${userSubmissions.length} orders from localStorage`);
         }
         
         // Convert submissions to orders format
@@ -441,7 +489,7 @@
         
         return { orders, summary };
       } catch (error) {
-        console.error('Error loading orders from localStorage:', error);
+        console.error('❌ Error loading orders from localStorage:', error);
         throw error;
       }
     }

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Order Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; margin-bottom: 20px; }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+            width: 100%;
+        }
+        button:hover { background: #45a049; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        #log {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🧺 Quick Order Test</h1>
+        
+        <button onclick="checkSetup()">1. Check Setup</button>
+        <button onclick="doLogin()">2. Login</button>
+        <button onclick="createOrder()">3. Create Test Order</button>
+        <button onclick="checkOrders()">4. Check Orders in DB</button>
+        
+        <div id="log"></div>
+    </div>
+
+    <script src="assests/api-config.js"></script>
+    <script src="assests/order-api.js"></script>
+    <script src="assests/crypto-utils.js"></script>
+    <script src="assests/auth.js"></script>
+
+    <script>
+        function log(msg, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<div class="${type}">[${time}] ${msg}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(msg);
+        }
+
+        function checkSetup() {
+            log('🔍 Checking setup...', 'info');
+            
+            if (window.orderManager) {
+                log('✅ Order manager: OK', 'success');
+            } else {
+                log('❌ Order manager: NOT FOUND', 'error');
+            }
+
+            if (window.authManager) {
+                log('✅ Auth manager: OK', 'success');
+            } else {
+                log('❌ Auth manager: NOT FOUND', 'error');
+            }
+
+            if (window.apiClient) {
+                log('✅ API client: OK', 'success');
+            } else {
+                log('❌ API client: NOT FOUND', 'error');
+            }
+
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                log('✅ Auth token: Present', 'success');
+            } else {
+                log('⚠️ Auth token: Missing (need to login)', 'error');
+            }
+
+            // Test backend
+            fetch('http://localhost:3000/api/health')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        log('✅ Backend: Running', 'success');
+                    } else {
+                        log('❌ Backend: Error', 'error');
+                    }
+                })
+                .catch(err => {
+                    log('❌ Backend: Not reachable - ' + err.message, 'error');
+                });
+        }
+
+        async function doLogin() {
+            const email = prompt('Email:', '240421@bmu.edu.in');
+            const password = prompt('Password:');
+            
+            if (!email || !password) {
+                log('❌ Login cancelled', 'error');
+                return;
+            }
+
+            log('🔐 Logging in as ' + email + '...', 'info');
+
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('authToken', data.token);
+                    log('✅ Login successful: ' + data.user.name, 'success');
+                    log('Token saved to localStorage', 'success');
+                    
+                    // Update auth manager
+                    if (window.authManager) {
+                        window.authManager.setUser(data.user, data.token);
+                    }
+                } else {
+                    log('❌ Login failed: ' + data.message, 'error');
+                }
+            } catch (error) {
+                log('❌ Login error: ' + error.message, 'error');
+            }
+        }
+
+        async function createOrder() {
+            log('📦 Creating test order...', 'info');
+
+            if (!localStorage.getItem('authToken')) {
+                log('❌ Not logged in! Click "2. Login" first', 'error');
+                return;
+            }
+
+            if (!window.orderManager) {
+                log('❌ Order manager not found!', 'error');
+                return;
+            }
+
+            const orderData = {
+                serviceType: 'regular',
+                pickupDate: new Date().toISOString().split('T')[0],
+                pickupTime: '10:00',
+                deliveryDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                items: [{
+                    type: 'regular',
+                    count: 5,
+                    color: 'mixed'
+                }],
+                totalAmount: 50,
+                address: 'Test Room 101',
+                phone: '9876543210',
+                specialInstructions: 'Quick test order'
+            };
+
+            log('Order data: ' + JSON.stringify(orderData, null, 2), 'info');
+
+            try {
+                const response = await window.orderManager.createOrder(orderData);
+                
+                if (response.success) {
+                    log('✅ Order created successfully!', 'success');
+                    log('Order #: ' + response.order.orderNumber, 'success');
+                    log('Order ID: ' + response.order._id, 'success');
+                    alert('✅ Order Created!\n\nOrder #: ' + response.order.orderNumber);
+                } else {
+                    log('❌ Failed: ' + response.message, 'error');
+                }
+            } catch (error) {
+                log('❌ Error: ' + error.message, 'error');
+                console.error(error);
+            }
+        }
+
+        async function checkOrders() {
+            log('🔍 Checking orders in database...', 'info');
+
+            if (!localStorage.getItem('authToken')) {
+                log('❌ Not logged in!', 'error');
+                return;
+            }
+
+            try {
+                const response = await window.orderManager.getOrders();
+                
+                if (response) {
+                    log(`✅ Found ${response.length} orders`, 'success');
+                    
+                    response.forEach((order, i) => {
+                        log(`${i + 1}. ${order.orderNumber} - ${order.serviceType} - ₹${order.totalAmount}`, 'info');
+                    });
+
+                    if (response.length === 0) {
+                        log('📭 No orders found. Create one!', 'info');
+                    }
+                } else {
+                    log('❌ Failed to fetch orders', 'error');
+                }
+            } catch (error) {
+                log('❌ Error: ' + error.message, 'error');
+            }
+        }
+
+        // Auto-check on load
+        window.onload = () => {
+            log('🚀 Page loaded', 'info');
+            setTimeout(checkSetup, 500);
+        };
+    </script>
+</body>
+</html>

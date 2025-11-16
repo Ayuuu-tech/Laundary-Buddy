@@ -7,109 +7,82 @@
     constructor() {
       this.storageKey = 'laundryBuddy_users';
       this.currentUserKey = 'laundryBuddy_currentUser';
+      this.tokenKey = 'authToken';
     }
 
     // Register a new user
     async signup(userData) {
       try {
-        const users = this.getAllUsers();
-        
-        // Check if user already exists
-        const existingUser = users.find(u => u.studentId === userData.studentId);
-        if (existingUser) {
-          return { success: false, message: 'Student ID already registered!' };
-        }
-
-        // Check if email already exists
-        const existingEmail = users.find(u => u.email === userData.email);
-        if (existingEmail) {
-          return { success: false, message: 'Email already registered!' };
-        }
-
-        // Hash the password using CryptoUtils
-        const hashedPassword = await window.CryptoUtils.hashPassword(userData.password);
-
-        // Add new user
-        const newUser = {
-          id: this.generateUserId(),
+        const response = await apiClient.post('/auth/register', {
           name: userData.name,
-          studentId: userData.studentId,
-          hostelRoom: userData.hostelRoom,
           email: userData.email || `${userData.studentId}@bmu.edu.in`,
-          password: hashedPassword, // Store hashed password
+          password: userData.password,
           phone: userData.phone || '',
-          laundryPreferences: userData.preferences || 'Standard detergent',
-          profilePhoto: userData.profilePhoto || null, // Profile photo data
-          registeredDate: new Date().toISOString(),
-          orders: []
-        };
+          address: `${userData.hostelRoom || ''}, Student ID: ${userData.studentId}`
+        });
 
-        users.push(newUser);
-        localStorage.setItem(this.storageKey, JSON.stringify(users));
-
-        // Auto login after signup
-        await this.login(newUser.studentId, userData.password); // Use original password for login
-
-        return { success: true, message: 'Account created successfully!', user: newUser };
+        if (response.success) {
+          // Store token and user data
+          apiClient.setToken(response.token);
+          const sessionData = {
+            ...response.user,
+            studentId: userData.studentId,
+            hostelRoom: userData.hostelRoom,
+            laundryPreferences: userData.preferences || 'Standard detergent',
+            profilePhoto: userData.profilePhoto || null,
+            loginTime: new Date().toISOString()
+          };
+          localStorage.setItem(this.currentUserKey, JSON.stringify(sessionData));
+          return { success: true, message: 'Account created successfully!', user: sessionData };
+        }
+        return response;
       } catch (error) {
         console.error('Signup error:', error);
-        return { success: false, message: 'Error creating account. Please try again.' };
+        return { success: false, message: error.message || 'Error creating account. Please try again.' };
       }
     }
 
     // Login user
     async login(studentIdOrEmail, password) {
       try {
-        const users = this.getAllUsers();
-        
-        // Find user by student ID or email
-        const user = users.find(u => 
-          u.studentId === studentIdOrEmail || u.email === studentIdOrEmail
-        );
+        const response = await apiClient.post('/auth/login', {
+          email: studentIdOrEmail,
+          password: password
+        });
 
-        if (!user) {
-          return { success: false, message: 'Invalid Student ID/Email or Password!' };
+        if (response.success) {
+          // Store token and user data
+          apiClient.setToken(response.token);
+          const sessionData = {
+            ...response.user,
+            studentId: response.user.address?.split('Student ID: ')[1] || studentIdOrEmail,
+            hostelRoom: response.user.address?.split(',')[0] || '',
+            laundryPreferences: 'Standard detergent',
+            profilePhoto: null,
+            loginTime: new Date().toISOString()
+          };
+          localStorage.setItem(this.currentUserKey, JSON.stringify(sessionData));
+          return { success: true, message: 'Login successful!', user: sessionData };
         }
-
-        // Verify password using CryptoUtils
-        const isPasswordValid = await window.CryptoUtils.verifyPassword(password, user.password);
-        
-        if (!isPasswordValid) {
-          return { success: false, message: 'Invalid Student ID/Email or Password!' };
-        }
-
-        // Store current user session
-        const sessionData = {
-          id: user.id,
-          name: user.name,
-          studentId: user.studentId,
-          email: user.email,
-          hostelRoom: user.hostelRoom,
-          phone: user.phone,
-          laundryPreferences: user.laundryPreferences,
-          profilePhoto: user.profilePhoto || null,
-          loginTime: new Date().toISOString()
-        };
-
-        localStorage.setItem(this.currentUserKey, JSON.stringify(sessionData));
-
-        return { success: true, message: 'Login successful!', user: sessionData };
+        return response;
       } catch (error) {
         console.error('Login error:', error);
-        return { success: false, message: 'Error logging in. Please try again.' };
+        return { success: false, message: error.message || 'Error logging in. Please try again.' };
       }
     }
 
     // Logout user
     logout() {
       localStorage.removeItem(this.currentUserKey);
+      apiClient.setToken(null);
       window.location.href = 'index.html';
     }
 
     // Check if user is logged in
     isLoggedIn() {
       const currentUser = localStorage.getItem(this.currentUserKey);
-      return currentUser !== null;
+      const token = localStorage.getItem(this.tokenKey);
+      return currentUser !== null && token !== null;
     }
 
     // Get current logged-in user
@@ -118,39 +91,39 @@
       return userData ? JSON.parse(userData) : null;
     }
 
-    // Get all registered users
+    // Get all registered users (kept for backward compatibility)
     getAllUsers() {
       const usersData = localStorage.getItem(this.storageKey);
       return usersData ? JSON.parse(usersData) : [];
     }
 
     // Update current user profile
-    updateProfile(updatedData) {
+    async updateProfile(updatedData) {
       try {
         const currentUser = this.getCurrentUser();
         if (!currentUser) {
           return { success: false, message: 'No user logged in!' };
         }
 
-        const users = this.getAllUsers();
-        const userIndex = users.findIndex(u => u.id === currentUser.id);
+        const response = await apiClient.put('/auth/profile', {
+          name: updatedData.name,
+          phone: updatedData.phone,
+          address: updatedData.address || `${updatedData.hostelRoom || ''}, Student ID: ${updatedData.studentId || currentUser.studentId}`
+        });
 
-        if (userIndex === -1) {
-          return { success: false, message: 'User not found!' };
+        if (response.success) {
+          const updatedSession = {
+            ...currentUser,
+            ...response.user,
+            ...updatedData
+          };
+          localStorage.setItem(this.currentUserKey, JSON.stringify(updatedSession));
+          return { success: true, message: 'Profile updated successfully!', user: updatedSession };
         }
-
-        // Update user data
-        users[userIndex] = { ...users[userIndex], ...updatedData };
-        localStorage.setItem(this.storageKey, JSON.stringify(users));
-
-        // Update current session
-        const updatedSession = { ...currentUser, ...updatedData };
-        localStorage.setItem(this.currentUserKey, JSON.stringify(updatedSession));
-
-        return { success: true, message: 'Profile updated successfully!', user: updatedSession };
+        return response;
       } catch (error) {
         console.error('Update error:', error);
-        return { success: false, message: 'Error updating profile.' };
+        return { success: false, message: error.message || 'Error updating profile.' };
       }
     }
 
@@ -169,62 +142,18 @@
       return true;
     }
 
-    // Initialize with demo users (for testing)
-    // Initialize demo users for testing
+    // Initialize with demo users (for testing) - Now handled by backend
     async initializeDemoUsers() {
-      const users = this.getAllUsers();
-      if (users.length === 0) {
-        // Hash the demo password
-        const hashedPassword = await window.CryptoUtils.hashPassword('123456');
-        
-        const demoUsers = [
-          {
-            id: 'USER_DEMO_1',
-            name: 'Demo User',
-            studentId: 'STU123456',
-            hostelRoom: 'BH-3, A-404',
-            email: 'demo@bmu.edu.in',
-            password: hashedPassword, // Store hashed password
-            phone: '9876543210',
-            laundryPreferences: 'Hypoallergenic detergent',
-            registeredDate: new Date().toISOString(),
-            orders: []
-          }
-        ];
-        localStorage.setItem(this.storageKey, JSON.stringify(demoUsers));
-        console.log('Demo user initialized. Login with: STU123456 or demo@bmu.edu.in / Password: 123456');
-      }
+      console.log('Demo users are now handled by backend API');
+      console.log('You can register new users through the signup form');
     }
   }
 
   // Create global instance
   window.authManager = new AuthManager();
 
-  // Initialize demo users on first load (async)
-  // Wait for CryptoUtils to be available
-  async function initializeDemoUsersWhenReady() {
-    // Wait for CryptoUtils to be available
-    let attempts = 0;
-    while (!window.CryptoUtils && attempts < 50) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      attempts++;
-    }
-    
-    if (window.CryptoUtils) {
-      const existingUsers = localStorage.getItem('laundryBuddy_users');
-      if (!existingUsers || existingUsers === '[]' || JSON.parse(existingUsers).length === 0) {
-        await window.authManager.initializeDemoUsers();
-        console.log('✅ Demo user created successfully!');
-      } else {
-        console.log('✅ Users already exist in database');
-      }
-    } else {
-      console.error('❌ CryptoUtils not loaded. Demo users not initialized.');
-    }
-  }
-  
-  // Call initialization
-  initializeDemoUsersWhenReady();
+  // Initialize - Just log message about backend
+  console.log('Auth system initialized with backend API integration');
 
   // Function to load user's profile photo on all pages
   function loadProfilePhoto() {

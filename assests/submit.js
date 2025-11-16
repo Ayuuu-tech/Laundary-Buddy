@@ -49,22 +49,12 @@
         // Generate unique token
         const tokenNumber = generateUniqueToken();
 
-        // Create laundry submission object
-        const submission = {
-          tokenNumber: tokenNumber,
-          studentId: currentUser.studentId,
-          studentName: currentUser.name,
-          hostelRoom: currentUser.hostelRoom,
-          submittedDate: new Date().toISOString(),
-          estimatedCompletion: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
-          currentStatus: 'received',
-          statusHistory: [
-            {
-              status: 'received',
-              timestamp: new Date().toISOString(),
-              description: 'Laundry received and queued'
-            }
-          ],
+        // Create order object for backend API
+        const orderData = {
+          serviceType: clothesType,
+          pickupDate: new Date().toISOString().split('T')[0],
+          pickupTime: new Date().toLocaleTimeString('en-US', { hour12: false }),
+          deliveryDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           items: [
             {
               type: clothesType,
@@ -72,21 +62,14 @@
               color: 'mixed'
             }
           ],
-          specialInstructions: specialNotes || 'None',
-          progress: 10,
-          qrCode: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+          totalAmount: parseInt(clothesCount) * 10, // ₹10 per item
+          address: currentUser.hostelRoom || 'N/A',
+          phone: currentUser.phone || 'N/A',
+          specialInstructions: specialNotes || 'None'
         };
 
-        // Save to localStorage
-        saveSubmission(submission);
-
-        console.log('Laundry submitted:', submission);
-        
-        // Reset form after submission
-        submitForm.reset();
-        
-        // Show QR code modal with plain token (simple, fast scanning)
-        showQrCodeModal(submission);
+        // Save order to backend
+        submitOrderToBackend(orderData, tokenNumber);
       });
     }    // Function to generate unique token
     function generateUniqueToken() {
@@ -98,21 +81,83 @@
       return `LB-${year}${month}${day}-${random}`;
     }
 
-    // Function to save submission to localStorage
-    function saveSubmission(submission) {
+    // Function to submit order to backend
+    async function submitOrderToBackend(orderData, tokenNumber) {
       try {
-        // Get existing submissions
-        const submissions = JSON.parse(localStorage.getItem('laundryBuddy_submissions') || '[]');
+        console.log('🚀 Starting order submission...');
+        console.log('Order data:', orderData);
         
-        // Add new submission
-        submissions.push(submission);
+        // Show loading state
+        const submitButton = submitForm.querySelector('button[type="submit"]');
+        const originalText = submitButton.textContent;
+        submitButton.disabled = true;
+        submitButton.textContent = 'Submitting...';
+
+        // Check if orderManager exists
+        if (!window.orderManager) {
+          console.error('❌ Order manager not initialized!');
+          throw new Error('Order system not ready. Please refresh the page.');
+        }
+
+        console.log('✅ Order manager found, calling API...');
         
-        // Save back to localStorage
-        localStorage.setItem('laundryBuddy_submissions', JSON.stringify(submissions));
+        // Call backend API
+        const response = await window.orderManager.createOrder(orderData);
+        console.log('📦 Backend response:', response);
         
-        console.log('Submission saved to localStorage');
+        if (response.success) {
+          console.log('✅ Order saved to MongoDB:', response.order);
+          alert('🎉 Order submitted successfully!\n\nOrder #: ' + response.order.orderNumber);
+          
+          // Create submission object for QR display
+          const submission = {
+            tokenNumber: response.order.orderNumber || tokenNumber,
+            studentId: authManager.getCurrentUser().studentId,
+            studentName: authManager.getCurrentUser().name,
+            hostelRoom: orderData.address,
+            submittedDate: new Date().toISOString(),
+            estimatedCompletion: orderData.deliveryDate,
+            currentStatus: response.order.status || 'pending',
+            items: orderData.items,
+            specialInstructions: orderData.specialInstructions
+          };
+
+          // Also save to localStorage as backup
+          saveToLocalStorage(submission);
+          
+          // Reset form
+          submitForm.reset();
+          
+          // Show success and QR code
+          showQrCodeModal(submission);
+        } else {
+          console.error('❌ Order creation failed:', response.message);
+          throw new Error(response.message || 'Failed to create order');
+        }
+        
+        // Restore button
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
       } catch (error) {
-        console.error('Error saving submission:', error);
+        console.error('Error submitting order:', error);
+        alert('Error submitting order: ' + error.message + '\nPlease try again or contact support.');
+        
+        // Restore button
+        const submitButton = submitForm.querySelector('button[type="submit"]');
+        submitButton.disabled = false;
+        submitButton.textContent = 'Submit Laundry';
+      }
+    }
+
+    // Function to save to localStorage as backup
+    function saveToLocalStorage(submission) {
+      try {
+        const submissions = JSON.parse(localStorage.getItem('laundryBuddy_submissions') || '[]');
+        submissions.push(submission);
+        localStorage.setItem('laundryBuddy_submissions', JSON.stringify(submissions));
+        console.log('Backup saved to localStorage');
+      } catch (error) {
+        console.error('Error saving to localStorage:', error);
       }
     }
 

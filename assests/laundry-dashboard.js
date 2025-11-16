@@ -371,6 +371,9 @@
     }
 
     upsertSubmission(item);
+    // Also sync to backend tracking by orderNumber (token)
+    syncBackendStatus(token, newStatus, newStatus === 'ready-for-pickup' || newStatus === 'completed' ? item.estimatedCompletion : undefined)
+      .catch(err => console.warn('Backend sync failed:', err));
     if (!isBulk) {
       showToast(`Status updated to "${label(newStatus)}" for ${token}`, 'success');
       render();
@@ -476,6 +479,8 @@
     const newPriority = currentPriority === 'urgent' ? 'normal' : 'urgent';
     item.priority = newPriority;
     upsertSubmission(item);
+    // Log priority change in backend timeline for visibility
+    syncBackendStatus(token, item.currentStatus, undefined, `Priority set to ${item.priority || 'normal'}`).catch(()=>{});
     showToast(`Priority: ${newPriority}`, 'info');
     render();
   }
@@ -483,6 +488,34 @@
   function closeDetailModal() {
     const modal = document.getElementById('detail-modal');
     if (modal) modal.style.display = 'none';
+  }
+
+  // Sync status to backend Tracking by orderNumber
+  async function syncBackendStatus(orderNumber, status, estimatedDelivery, note) {
+    try {
+      if (typeof fetch !== 'function') return;
+      const cleanToken = String(orderNumber || '').trim();
+      const url = `${API_CONFIG.BASE_URL}/tracking/order/${encodeURIComponent(cleanToken)}`;
+      console.log('[Dashboard] Syncing status →', cleanToken, status, estimatedDelivery || '');
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+          // In production, you can add: 'X-Laundry-Key': '<your-key>'
+        },
+        body: JSON.stringify({ status, estimatedDelivery, note })
+      });
+      const data = await res.json().catch(()=>({ success:false, message:'Invalid JSON'}));
+      console.log('[Dashboard] Sync response', res.status, data);
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || `HTTP ${res.status}`);
+      }
+      return data;
+    } catch (e) {
+      console.warn('[Dashboard] syncBackendStatus error:', e.message || e);
+      // Non-blocking: dashboard still updates UI/local
+      return null;
+    }
   }
 
   // QR SCANNER (reuse html5-qrcode like track page)

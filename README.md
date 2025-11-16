@@ -31,11 +31,19 @@ Laundry Buddy is a web-based laundry management system designed specifically for
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: HTML5, CSS3, JavaScript
+### Frontend
+- **HTML5, CSS3, JavaScript**: Core web technologies
 - **Styling**: Custom CSS with Poppins font family
 - **Icons**: Boxicons icon library
 - **Design**: Responsive web design
-- **Authentication**: Form-based login system
+- **PWA**: Progressive Web App with service worker
+
+### Backend (NEW!)
+- **Node.js**: Runtime environment
+- **Express.js**: Web framework
+- **JWT**: Authentication & authorization
+- **bcryptjs**: Password hashing
+- **JSON Storage**: File-based data storage (easily upgradable to MongoDB/PostgreSQL)
 
 ## 📁 Project Structure
 
@@ -87,13 +95,19 @@ This application is specifically designed for:
 
 ### Prerequisites
 
+#### For Frontend Only:
 - Modern web browser (Chrome, Firefox, Safari, Edge)
-- Basic understanding of web technologies (optional for users)
+
+#### For Full Stack (Frontend + Backend):
+- Node.js (v14 or higher)
+- npm or yarn
+- Modern web browser
 
 ### Installation & Setup
 
-1. **Clone the repository**
+#### Option 1: Frontend Only (Simple Setup)
 
+1. **Clone the repository**
    ```bash
    git clone https://github.com/your-username/laundry-buddy.git
    cd laundry-buddy
@@ -102,7 +116,6 @@ This application is specifically designed for:
 2. **Open the project**
    - Simply open `index.html` in your web browser
    - Or use a local development server:
-
    ```bash
    # Using Python
    python -m http.server 8000
@@ -116,6 +129,45 @@ This application is specifically designed for:
 3. **Access the application**
    - Navigate to `http://localhost:8000` (if using a server)
    - Or directly open `index.html` in your browser
+
+#### Option 2: Full Stack (Frontend + Backend) ⭐ RECOMMENDED
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/laundry-buddy.git
+   cd laundry-buddy
+   ```
+
+2. **Setup Backend**
+   ```bash
+   cd backend
+   npm install
+   npm start
+   ```
+   Backend will run on `http://localhost:3000`
+
+3. **Setup Frontend**
+   - Open a new terminal
+   - Go back to project root
+   - Open `index.html` in browser or use a server:
+   ```bash
+   python -m http.server 8080
+   ```
+   Frontend will run on `http://localhost:8080`
+
+4. **Test Integration**
+   - Open `backend-integration-test.html` in browser
+   - Click "Check Backend Connection" to verify setup
+   - Try the test buttons to ensure everything works
+
+5. **Update HTML Files (Important!)**
+   Add these scripts to ALL HTML files before other scripts:
+   ```html
+   <script src="assests/api-config.js"></script>
+   <script src="assests/order-api.js"></script>
+   ```
+
+For detailed backend documentation, see [backend/README.md](backend/README.md)
 
 ## 💻 Usage
 
