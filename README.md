@@ -1,238 +1,632 @@
+<div align="center">
+
 # 🧺 Laundry Buddy
 
-**Smart laundry for students – No slips, no stress.**
+### *Smart Laundry Management for the Modern Student*
 
-Laundry Buddy is a web-based laundry management system designed specifically for college students. It eliminates the hassle of traditional laundry slips and provides a seamless digital experience for managing laundry services.
+**No slips. No stress. Just clean clothes.**
 
-## 🌟 Features
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+[![Made with Love](https://img.shields.io/badge/Made%20with-❤️-red.svg)](https://github.com/Ayuuu-tech/Laundary-Buddy)
+[![Node.js](https://img.shields.io/badge/Node.js-v14+-green.svg)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express.js-4.x-blue.svg)](https://expressjs.com/)
 
-- **📅 Schedule Your Laundry**: Book your preferred laundry time slot in advance
-- **🔔 Real-Time Notifications**: Receive instant updates on your laundry status  
-- **✅ Guaranteed Availability**: Never worry about machine availability again
-- **📱 User-Friendly Interface**: Clean, modern design optimized for students
-- **📈 Laundry History**: Track your past laundry orders and patterns
-- **👤 Profile Management**: Manage your account and preferences
-- **🎯 Order Tracking**: Real-time tracking of your laundry progress
-- **💬 Support System**: Get help when you need it
+[🚀 Demo](#-demo) • [✨ Features](#-features) • [📦 Installation](#-installation) • [🎯 Usage](#-usage) • [🤝 Contributing](#-contributing)
 
-## 🚀 Pages Overview
+---
 
-| Page | Description |
-|------|-------------|
-| **Landing Page** (`index.html`) | Welcome page with feature overview and authentication options |
-| **Home** (`home.html`) | Main dashboard after login |
-| **Submit Laundry** (`submit.html`) | Place new laundry orders |
-| **Track Laundry** (`track.html`) | Monitor current laundry status |
-| **History** (`history.html`) | View past laundry records |
-| **Profile** (`profile.html`) | Manage user account settings |
-| **Login/Signup** | User authentication system |
-| **Support** (`support.html`) | Help and customer service |
-| **Contact** (`contact.html`) | Contact information and feedback |
+</div>
+
+## 📖 About The Project
+
+Laundry Buddy revolutionizes the college laundry experience by eliminating paper slips and long queues. This full-stack Progressive Web Application (PWA) provides students with a seamless digital solution to schedule, track, and manage their laundry services – all from their smartphone or computer.
+
+### 🎯 Built For Students, By Students
+
+Say goodbye to:
+- ❌ Lost laundry slips
+- ❌ Uncertain machine availability  
+- ❌ Waiting in long queues
+- ❌ Missed pickup notifications
+
+Say hello to:
+- ✅ Digital booking system
+- ✅ Real-time order tracking
+- ✅ Instant notifications
+- ✅ Complete order history
+
+## ✨ Features
+
+<table>
+<tr>
+<td width="50%">
+
+### 🎯 Core Features
+- 📅 **Smart Scheduling** - Book time slots in advance
+- 🔔 **Real-Time Notifications** - Instant status updates
+- ✅ **Guaranteed Availability** - No more waiting
+- 📱 **Responsive Design** - Works on all devices
+- 🔒 **Secure Authentication** - JWT-based security
+
+</td>
+<td width="50%">
+
+### 💎 Premium Experience
+- 📈 **Order History** - Track all past orders
+- 👤 **Profile Management** - Customize your account
+- 🎯 **Live Tracking** - Real-time order progress
+- 💬 **24/7 Support** - Help when you need it
+- 🌐 **PWA Ready** - Install as mobile app
+
+</td>
+</tr>
+</table>
+
+---
+
+## 🚀 Demo
+
+> **Note:** Replace these with actual screenshots of your application
+
+<div align="center">
+
+### 📱 Application Showcase
+
+| Landing Page | Dashboard | Order Tracking |
+|:---:|:---:|:---:|
+| ![Landing](https://via.placeholder.com/250x450/4A90E2/ffffff?text=Landing+Page) | ![Dashboard](https://via.placeholder.com/250x450/50C878/ffffff?text=Dashboard) | ![Track](https://via.placeholder.com/250x450/FF6B6B/ffffff?text=Order+Tracking) |
+
+</div>
+
+---
+
+## 📱 Application Pages
+
+<details>
+<summary><b>🔍 Click to explore all pages</b></summary>
+
+<br>
+
+| Page | Route | Description |
+|:----:|:-----:|-------------|
+| 🏠 | `index.html` | Landing page with feature overview & authentication |
+| 📊 | `home.html` | Main dashboard with quick actions |
+| 🧺 | `submit.html` | Submit new laundry orders |
+| 📍 | `track.html` | Real-time order tracking |
+| 📜 | `history.html` | Complete order history |
+| 👤 | `profile.html` | User profile & settings |
+| 🔐 | `login.html` | User authentication |
+| ✍️ | `signup.html` | New user registration |
+| 💬 | `support.html` | Customer support & FAQs |
+| 📞 | `contact.html` | Contact information & feedback |
+
+</details>
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- **HTML5, CSS3, JavaScript**: Core web technologies
-- **Styling**: Custom CSS with Poppins font family
-- **Icons**: Boxicons icon library
-- **Design**: Responsive web design
-- **PWA**: Progressive Web App with service worker
+<div align="center">
 
-### Backend (NEW!)
-- **Node.js**: Runtime environment
-- **Express.js**: Web framework
-- **JWT**: Authentication & authorization
-- **bcryptjs**: Password hashing
-- **JSON Storage**: File-based data storage (easily upgradable to MongoDB/PostgreSQL)
+### Frontend
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![PWA](https://img.shields.io/badge/PWA-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)
+
+### Backend
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
+
+### Tools & Libraries
+![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
+![Boxicons](https://img.shields.io/badge/Boxicons-1B5E20?style=for-the-badge)
+![Google Fonts](https://img.shields.io/badge/Google_Fonts-4285F4?style=for-the-badge&logo=google&logoColor=white)
+
+</div>
+
+<details>
+<summary><b>📦 Detailed Technology Breakdown</b></summary>
+
+#### Frontend Technologies
+- **HTML5, CSS3, JavaScript** - Core web technologies
+- **Poppins Font Family** - Modern, clean typography
+- **Boxicons** - Beautiful icon library
+- **Responsive Design** - Mobile-first approach
+- **Service Worker** - Offline functionality & caching
+
+#### Backend Technologies
+- **Node.js** - JavaScript runtime
+- **Express.js** - Fast, minimalist web framework
+- **JWT** - Secure authentication & authorization
+- **bcryptjs** - Password encryption
+- **JSON File Storage** - Lightweight data persistence (upgradeable to MongoDB/PostgreSQL)
+
+#### Development Tools
+- **Git & GitHub** - Version control
+- **VS Code** - Recommended IDE
+- **npm** - Package management
+
+</details>
+
+---
+
+## 📊 Project Stats
+
+<div align="center">
+
+![Lines of Code](https://img.shields.io/badge/Total_Lines-10K+-blue?style=flat-square)
+![Files](https://img.shields.io/badge/Files-50+-green?style=flat-square)
+![Pages](https://img.shields.io/badge/Pages-10-orange?style=flat-square)
+![Status](https://img.shields.io/badge/Status-Active-success?style=flat-square)
+
+</div>
+
+---
 
 ## 📁 Project Structure
 
-```text
-laundry-buddy/
-├── index.html              # Landing page
-├── home.html              # Main dashboard
-├── login.html             # User login
-├── signup.html            # User registration
-├── submit.html            # Submit laundry orders
-├── track.html             # Track laundry status
-├── history.html           # Laundry history
-├── profile.html           # User profile
-├── support.html           # Support page
-├── contact.html           # Contact page
-├── style.css              # Main stylesheet
-├── home.css               # Home page styles
-├── login.css              # Login page styles
-├── signup.css             # Signup page styles
-├── submit.css             # Submit page styles
-├── track.css              # Track page styles
-├── history.css            # History page styles
-├── profile.css            # Profile page styles
-├── support.css            # Support page styles
-├── contact.css            # Contact page styles
-├── past.css               # Additional styles
-└── assets/                # Images and media files
-    ├── laundary_buddy.png
-    ├── home.png
-    ├── login.png
-    ├── profile.png
-    ├── submit.png
-    ├── track.png
-    ├── tshirt.png
-    ├── headphones.png
-    └── scratch.png
+<details>
+<summary><b>🗂️ Click to view complete file structure</b></summary>
+
+```
+Laundary-Buddy/
+│
+├── 📄 Frontend Pages
+│   ├── index.html              # 🏠 Landing page
+│   ├── home.html               # 📊 Main dashboard
+│   ├── login.html              # 🔐 User login
+│   ├── signup.html             # ✍️ User registration
+│   ├── submit.html             # 🧺 Submit orders
+│   ├── track.html              # 📍 Track status
+│   ├── history.html            # 📜 Order history
+│   ├── profile.html            # 👤 User profile
+│   ├── support.html            # 💬 Support
+│   └── contact.html            # 📞 Contact
+│
+├── 🎨 Stylesheets
+│   ├── style.css               # Global styles
+│   ├── dark-mode.css           # Dark theme
+│   ├── responsive.css          # Media queries
+│   └── [page-specific].css     # Individual page styles
+│
+├── 📦 Assets
+│   ├── api-config.js           # API configuration
+│   ├── auth.js                 # Authentication logic
+│   ├── order-api.js            # Order API calls
+│   ├── form-validator.js       # Form validation
+│   ├── toast-manager.js        # Notification system
+│   └── data/                   # JSON data files
+│
+├── 🔧 Backend
+│   ├── server.js               # Express server
+│   ├── package.json            # Dependencies
+│   ├── config/                 # Configuration files
+│   ├── controllers/            # Business logic
+│   │   ├── authController.js
+│   │   ├── orderController.js
+│   │   └── trackingController.js
+│   ├── models/                 # Data models
+│   ├── routes/                 # API routes
+│   └── middleware/             # Express middleware
+│
+├── 🌐 PWA
+│   ├── service-worker.js       # Offline support
+│   ├── manifest.json           # App manifest
+│   └── offline.html            # Offline page
+│
+└── 📚 Documentation
+    ├── README.md               # This file
+    └── backend/README.md       # Backend docs
 ```
 
-## 🎯 Target Audience
+</details>
 
-This application is specifically designed for:
+---
 
-- **College Students** living in dormitories
-- **University Campuses** with shared laundry facilities
-- **Student Housing** complexes
-- Anyone looking for a **digital laundry management solution**
+## 🎯 Who Is This For?
 
-## 🚀 Getting Started
+<div align="center">
+
+| 🎓 Students | 🏫 Campuses | 🏢 Housing | 💼 Enterprises |
+|:---:|:---:|:---:|:---:|
+| Dorm residents | University facilities | Student housing | Corporate dorms |
+| Easy booking | Centralized management | Multi-building support | Employee services |
+
+</div>
+
+---
+
+## 🎬 Getting Started
+
+### ⚡ Quick Links
+
+<div align="center">
+
+| 📖 Documentation | 🚀 Deploy | 💻 Develop | 🐛 Issues |
+|:---:|:---:|:---:|:---:|
+| [Read Docs](backend/README.md) | [Deploy Guide](#-installation) | [Contribute](#-contributing) | [Report Bug](https://github.com/Ayuuu-tech/Laundary-Buddy/issues) |
+
+</div>
+
+---
+
+## 📦 Installation
 
 ### Prerequisites
 
-#### For Frontend Only:
+**Option 1: Frontend Only** (Quick Start)
 - Modern web browser (Chrome, Firefox, Safari, Edge)
 
-#### For Full Stack (Frontend + Backend):
-- Node.js (v14 or higher)
+**Option 2: Full Stack** (Recommended)
+- Node.js v14+ ([Download](https://nodejs.org/))
 - npm or yarn
 - Modern web browser
 
-### Installation & Setup
+### 🚀 Quick Start Guide
 
-#### Option 1: Frontend Only (Simple Setup)
+<details open>
+<summary><b>🎯 Option 1: Frontend Only (Simple Setup)</b></summary>
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-username/laundry-buddy.git
-   cd laundry-buddy
-   ```
+<br>
 
-2. **Open the project**
-   - Simply open `index.html` in your web browser
-   - Or use a local development server:
-   ```bash
-   # Using Python
-   python -m http.server 8000
-   
-   # Using Node.js (http-server)
-   npx http-server
-   
-   # Using Live Server extension in VS Code
-   ```
+**Step 1:** Clone the repository
 
-3. **Access the application**
-   - Navigate to `http://localhost:8000` (if using a server)
-   - Or directly open `index.html` in your browser
+```bash
+git clone https://github.com/Ayuuu-tech/Laundary-Buddy.git
+cd Laundary-Buddy
+```
 
-#### Option 2: Full Stack (Frontend + Backend) ⭐ RECOMMENDED
+**Step 2:** Choose your preferred server method
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-username/laundry-buddy.git
-   cd laundry-buddy
-   ```
+```bash
+# Option A: Python
+python -m http.server 8000
 
-2. **Setup Backend**
-   ```bash
-   cd backend
-   npm install
-   npm start
-   ```
-   Backend will run on `http://localhost:3000`
+# Option B: Node.js
+npx http-server
 
-3. **Setup Frontend**
-   - Open a new terminal
-   - Go back to project root
-   - Open `index.html` in browser or use a server:
-   ```bash
-   python -m http.server 8080
-   ```
-   Frontend will run on `http://localhost:8080`
+# Option C: VS Code Live Server (recommended)
+# Install "Live Server" extension and click "Go Live"
+```
 
-4. **Test Integration**
-   - Open `backend-integration-test.html` in browser
-   - Click "Check Backend Connection" to verify setup
-   - Try the test buttons to ensure everything works
+**Step 3:** Open in browser
 
-5. **Update HTML Files (Important!)**
-   Add these scripts to ALL HTML files before other scripts:
-   ```html
-   <script src="assests/api-config.js"></script>
-   <script src="assests/order-api.js"></script>
-   ```
+Navigate to `http://localhost:8000` or open `index.html` directly
 
-For detailed backend documentation, see [backend/README.md](backend/README.md)
+</details>
 
-## 💻 Usage
+<details open>
+<summary><b>⭐ Option 2: Full Stack (Recommended)</b></summary>
 
-1. **Getting Started**: Visit the landing page (`index.html`)
-2. **Sign Up**: Create a new account with your student ID
-3. **Login**: Access your dashboard
-4. **Submit Laundry**: Place new laundry orders
-5. **Track Progress**: Monitor your laundry in real-time
-6. **View History**: Check past orders and patterns
+<br>
 
-## 🎨 Design Features
+**Step 1:** Clone the repository
 
-- **Responsive Design**: Works on desktop, tablet, and mobile devices
-- **Modern UI**: Clean and intuitive interface
-- **Consistent Branding**: Cohesive color scheme and typography
-- **Accessibility**: User-friendly navigation and clear visual hierarchy
-- **Icon Integration**: Boxicons for consistent iconography
+```bash
+git clone https://github.com/Ayuuu-tech/Laundary-Buddy.git
+cd Laundary-Buddy
+```
 
-## 🔮 Future Enhancements
+**Step 2:** Setup Backend
 
-- [ ] Backend integration with database
-- [ ] Real-time WebSocket notifications
-- [ ] Mobile app development
-- [ ] Payment gateway integration
-- [ ] SMS/Email notifications
+```bash
+cd backend
+npm install
+npm start
+```
+
+Backend runs on `http://localhost:3000` ✅
+
+**Step 3:** Setup Frontend
+
+Open a new terminal:
+
+```bash
+# Return to project root
+cd ..
+
+# Start frontend server
+python -m http.server 8080
+```
+
+Frontend runs on `http://localhost:8080` ✅
+
+**Step 4:** Verify Integration
+
+1. Open `backend-integration-test.html` in browser
+2. Click "Check Backend Connection"
+3. Test all endpoints to ensure everything works
+
+**Step 5:** Configure Frontend (Important!)
+
+Add these scripts to HTML files before other scripts:
+
+```html
+<script src="assests/api-config.js"></script>
+<script src="assests/order-api.js"></script>
+```
+
+📚 **[View Complete Backend Documentation →](backend/README.md)**
+
+</details>
+
+---
+
+## 🎯 Usage
+
+### Getting Started in 5 Easy Steps
+
+```mermaid
+graph LR
+    A[🏠 Visit Landing Page] --> B[✍️ Sign Up]
+    B --> C[🔐 Login]
+    C --> D[🧺 Submit Order]
+    D --> E[📍 Track & Collect]
+```
+
+1. **🏠 Visit** `index.html` - Explore features and benefits
+2. **✍️ Sign Up** - Create account with student ID
+3. **🔐 Login** - Access your personal dashboard
+4. **🧺 Submit Order** - Choose service type and schedule pickup
+5. **📍 Track** - Monitor real-time status and get notified when ready
+
+---
+
+## 🎨 Architecture & Design
+
+### System Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Frontend (PWA)                        │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐             │
+│  │  HTML5   │  │   CSS3   │  │JavaScript│             │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘             │
+└───────┼─────────────┼─────────────┼───────────────────┘
+        │             │             │
+        └─────────────┴─────────────┘
+                      │
+              ┌───────▼────────┐
+              │   REST API     │
+              │  (Express.js)  │
+              └───────┬────────┘
+                      │
+        ┌─────────────┼─────────────┐
+        │             │             │
+   ┌────▼────┐   ┌───▼────┐   ┌───▼────┐
+   │  Auth   │   │ Orders │   │ Track  │
+   │Controller│  │Controller│ │Controller│
+   └────┬────┘   └───┬────┘   └───┬────┘
+        │            │            │
+        └────────────┴────────────┘
+                     │
+              ┌──────▼───────┐
+              │ JSON Storage │
+              │  (users.json │
+              │  orders.json)│
+              └──────────────┘
+```
+
+### Design Principles
+
+- 🎨 **Responsive First** - Seamless experience across all devices
+- 🚀 **Performance** - Optimized loading & caching strategies
+- 🔒 **Security** - JWT authentication & encrypted passwords
+- ♿ **Accessibility** - WCAG compliant navigation
+- 🎯 **User-Centric** - Intuitive interface designed for students
+
+---
+
+## 🔮 Roadmap & Future Enhancements
+
+<table>
+<tr>
+<td width="50%">
+
+### 🎯 Phase 1 (Current)
+- [x] Frontend PWA implementation
+- [x] Backend REST API
+- [x] JWT Authentication
+- [x] Order management system
+- [x] Real-time tracking
+
+</td>
+<td width="50%">
+
+### 🚀 Phase 2 (Coming Soon)
+- [ ] Database integration (MongoDB/PostgreSQL)
+- [ ] WebSocket real-time notifications
+- [ ] Payment gateway (Stripe/Razorpay)
+- [ ] Email/SMS notifications
 - [ ] Advanced analytics dashboard
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 💎 Phase 3 (Future)
+- [ ] Native mobile apps (iOS/Android)
+- [ ] AI-based demand prediction
 - [ ] Multi-language support
 - [ ] Dark/Light theme toggle
+- [ ] QR code scanning
+
+</td>
+<td width="50%">
+
+### 🌟 Phase 4 (Vision)
+- [ ] IoT machine integration
+- [ ] Blockchain transaction logs
+- [ ] Voice assistant integration
+- [ ] Carbon footprint tracking
+- [ ] Loyalty rewards program
+
+</td>
+</tr>
+</table>
+
+---
 
 ## 🤝 Contributing
 
-We welcome contributions! Here's how you can help:
+We love contributions! 🎉 Whether you're fixing bugs, adding features, or improving documentation - all contributions are welcome!
 
-1. **Fork the repository**
-2. **Create a feature branch** (`git checkout -b feature/AmazingFeature`)
-3. **Commit your changes** (`git commit -m 'Add some AmazingFeature'`)
-4. **Push to the branch** (`git push origin feature/AmazingFeature`)
-5. **Open a Pull Request**
+### How to Contribute
+
+```bash
+# 1. Fork the repository
+# Click the "Fork" button on GitHub
+
+# 2. Clone your fork
+git clone https://github.com/YOUR_USERNAME/Laundary-Buddy.git
+cd Laundary-Buddy
+
+# 3. Create a feature branch
+git checkout -b feature/amazing-feature
+
+# 4. Make your changes and commit
+git add .
+git commit -m "✨ Add amazing feature"
+
+# 5. Push to your fork
+git push origin feature/amazing-feature
+
+# 6. Open a Pull Request
+# Go to GitHub and click "New Pull Request"
+```
 
 ### Contribution Guidelines
 
-- Follow consistent coding style
-- Add comments for complex functionality
-- Test your changes across different browsers
-- Update documentation as needed
+<details>
+<summary><b>📋 Code Standards</b></summary>
 
-## 📝 License
+- ✅ Follow existing code style and conventions
+- ✅ Write clear, descriptive commit messages
+- ✅ Add comments for complex logic
+- ✅ Test on multiple browsers (Chrome, Firefox, Safari)
+- ✅ Ensure responsive design on mobile devices
+- ✅ Update documentation for new features
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+</details>
 
-## 👥 Authors
+<details>
+<summary><b>🐛 Bug Reports</b></summary>
 
+<<<<<<< HEAD
 - Ayushmaan Yadav
+=======
+Found a bug? Please include:
+- Clear description of the issue
+- Steps to reproduce
+- Expected vs actual behavior
+- Screenshots (if applicable)
+- Browser and OS information
+>>>>>>> 33d78d1 (✨ Update README with modern, professional design and comprehensive documentation)
 
-## 🙏 Acknowledgments
+</details>
 
-- **Boxicons** for the beautiful icon library
-- **Google Fonts** for the Poppins font family
-- **College Community** for inspiration and feedback
-- **Open Source Contributors** who make projects like this possible
+<details>
+<summary><b>💡 Feature Requests</b></summary>
 
+<<<<<<< HEAD
+=======
+Have an idea? We'd love to hear it!
+- Describe the feature clearly
+- Explain the use case
+- Suggest implementation approach (optional)
+
+</details>
+>>>>>>> 33d78d1 (✨ Update README with modern, professional design and comprehensive documentation)
 
 ---
 
+## 📄 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+```
+MIT License - Free to use, modify, and distribute
+```
+
 ---
 
+<<<<<<< HEAD
 ## Made with ❤️ for students, by student
 
+=======
+## 👥 Team & Contributors
+
+<div align="center">
+
+### 🌟 Project Maintainer
+
+**Ayush** - [@Ayuuu-tech](https://github.com/Ayuuu-tech)
+
+### 💝 Special Thanks
+
+<table>
+<tr>
+<td align="center">
+<strong>🎨 Design Inspiration</strong><br>
+Boxicons & Google Fonts
+</td>
+<td align="center">
+<strong>🎓 Feedback & Testing</strong><br>
+College Community
+</td>
+<td align="center">
+<strong>🌐 Open Source</strong><br>
+All Contributors
+</td>
+</tr>
+</table>
+
+</div>
+
+---
+
+## 📞 Support & Contact
+
+<div align="center">
+
+### Need Help? We're Here! 💁‍♂️
+
+[![GitHub Issues](https://img.shields.io/badge/Report_Issue-GitHub-red?style=for-the-badge&logo=github)](https://github.com/Ayuuu-tech/Laundary-Buddy/issues)
+[![Email](https://img.shields.io/badge/Email-Support-blue?style=for-the-badge&logo=gmail)](mailto:support@laundrybuddy.com)
+[![Discussions](https://img.shields.io/badge/Discussions-Q&A-green?style=for-the-badge&logo=github)](https://github.com/Ayuuu-tech/Laundary-Buddy/discussions)
+
+</div>
+
+<details>
+<summary><b>📚 Additional Resources</b></summary>
+
+- 📖 [Full Documentation](backend/README.md)
+- 🐛 [Bug Reports](https://github.com/Ayuuu-tech/Laundary-Buddy/issues/new?template=bug_report.md)
+- 💡 [Feature Requests](https://github.com/Ayuuu-tech/Laundary-Buddy/issues/new?template=feature_request.md)
+- 💬 [Discussions Forum](https://github.com/Ayuuu-tech/Laundary-Buddy/discussions)
+
+</details>
+
+---
+
+<div align="center">
+
+## ⭐ Show Your Support
+
+**If you find this project helpful, please consider giving it a star!** ⭐
+
+[![GitHub stars](https://img.shields.io/github/stars/Ayuuu-tech/Laundary-Buddy?style=social)](https://github.com/Ayuuu-tech/Laundary-Buddy/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/Ayuuu-tech/Laundary-Buddy?style=social)](https://github.com/Ayuuu-tech/Laundary-Buddy/network/members)
+
+### Made with ❤️ for students, by students
+
+**[⬆ Back to Top](#-laundry-buddy)**
+
+---
+
+**© 2025 Laundry Buddy. All rights reserved.**
+
+</div>
+>>>>>>> 33d78d1 (✨ Update README with modern, professional design and comprehensive documentation)
