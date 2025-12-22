@@ -1,0 +1,58 @@
+# Cloudflare Pages ignore file
+# Build output directory is set to "frontend" in Pages settings
+
+# Backend (deployed separately as Worker)
+backend/
+
+# Root level files (not in frontend folder)
+*.md
+*.yml
+*.yaml
+*.toml
+*.json
+Dockerfile
+.dockerignore
+
+# Node modules
+node_modules/
+
+# Git
+.git/
+.gitignore
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.development
+.env.example
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.history/
+
+# Test/Debug files (inside frontend)
+frontend/backend-integration-test.html
+frontend/CLEAR-CACHE.html
+frontend/debug-orders.html
+frontend/test-order-quick.html
+
+# Backend start scripts
+start-backend.bat
+start-backend.sh
+
+# Build artifacts
+dist/
+build/
+coverage/
+.cache/
+.parcel-cache/
+temp/
+tmp/

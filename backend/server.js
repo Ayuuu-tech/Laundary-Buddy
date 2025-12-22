@@ -2,26 +2,110 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const compression = require('compression');
+const mongoSanitize = require('express-mongo-sanitize');
+const session = require('express-session');
+const MongoStore = require('connect-mongo').default || require('connect-mongo');
+const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
+const { apiLimiter, helmetConfig } = require('./middleware/security');
+const { logger, httpLogger } = require('./middleware/logger');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// Trust proxy (important for rate limiting behind reverse proxies)
+app.set('trust proxy', 1);
 
-// Request logging middleware
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-  next();
-});
+// Security middleware
+app.use(helmetConfig);
+
+// Compression middleware
+app.use(compression());
+
+// Cookie parser
+app.use(cookieParser());
+
+// CORS configuration
+const isProduction = process.env.NODE_ENV === 'production';
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',') 
+  : ['http://localhost:5500', 'http://127.0.0.1:5500', 'http://127.0.0.1:5501', 'http://localhost:5501'];
+
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    // In production, check allowed origins strictly
+    if (isProduction) {
+      // Allow Cloudflare Pages and configured origins
+      if (origin.includes('.pages.dev') || origin.includes('cloudflare') || 
+          allowedOrigins.some(allowed => origin.includes(allowed.replace(/https?:\/\//, '')))) {
+        return callback(null, true);
+      }
+      // Check exact match
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        return callback(null, true);
+      }
+      console.log(`⚠️ CORS blocked: ${origin}`);
+      return callback(null, true); // Allow for now, change to false for strict mode
+    }
+    
+    // In development, allow localhost
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      return callback(null, true);
+    }
+    
+    callback(null, true);
+  },
+  credentials: true,
+  exposedHeaders: ['set-cookie'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With']
+}));
+
+// Session configuration with MongoDB store
+app.use(session({
+  name: 'connect.sid',
+  secret: process.env.SESSION_SECRET || 'laundry-buddy-secret-key-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/laundry_buddy',
+    ttl: 24 * 60 * 60,
+    touchAfter: 24 * 3600,
+    autoRemove: 'native'
+  }),
+  cookie: {
+    secure: isProduction, // true in production (HTTPS)
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000,
+    sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-site in production
+    path: '/'
+  }
+}));
+
+// Body parser middleware
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+
+// Sanitize data to prevent MongoDB injection
+app.use(mongoSanitize());
+
+// HTTP request logging
+app.use(httpLogger);
+
+// Apply rate limiting to all API routes
+app.use('/api/', apiLimiter);
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/auth', require('./routes/googleAuth'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/tracking', require('./routes/tracking'));
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api/support', require('./routes/support'));
+app.use('/api/contact', require('./routes/contact'));
 
 // Health check route
 app.get('/api/health', (req, res) => {
@@ -57,47 +141,56 @@ app.use((req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(err.status || 500).json({ 
-    success: false, 
-    message: err.message || 'Internal server error',
-    error: process.env.NODE_ENV === 'development' ? err : {}
-  });
+  logger.error(`Error: ${err.message}`, { stack: err.stack });
+  
+  // Don't leak error details in production
+  const errorResponse = {
+    success: false,
+    message: process.env.NODE_ENV === 'production' 
+      ? 'An error occurred' 
+      : err.message
+  };
+  
+  if (process.env.NODE_ENV === 'development') {
+    errorResponse.error = err.stack;
+  }
+  
+  res.status(err.status || 500).json(errorResponse);
 });
 
 let server;
 
+// Start server function
 async function start() {
   try {
     // Connect to MongoDB
     await connectDB();
+    const mongoose = require('mongoose');
+    app.locals.db = mongoose.connection.db;
     
-    // Start server
+    // Start Express server
     server = app.listen(PORT, () => {
-      console.log('');
-      console.log('========================================');
-      console.log('🚀 Laundry Buddy Backend Started!');
-      console.log('========================================');
-      console.log(`📍 Server URL: http://localhost:${PORT}`);
-      console.log(`📊 Health Check: http://localhost:${PORT}/api/health`);
-      console.log(`🔍 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`💾 Database: ${process.env.MONGODB_URI}`);
-      console.log('========================================');
-      console.log('Press Ctrl+C to stop the server');
-      console.log('');
+      logger.info('========================================');
+      logger.info('🚀 Laundry Buddy Backend Started!');
+      logger.info('========================================');
+      logger.info(`📍 Server URL: http://localhost:${PORT}`);
+      logger.info(`📊 Health Check: http://localhost:${PORT}/api/health`);
+      logger.info(`🔍 Environment: ${process.env.NODE_ENV || 'development'}`);
+      logger.info(`💾 Database: ${process.env.MONGODB_URI ? 'Connected' : 'Not configured'}`);
+      logger.info('========================================');
     });
   } catch (err) {
-    console.error('❌ Failed to start server:', err.message);
+    logger.error('❌ Failed to start server:', err.message);
     process.exit(1);
   }
 }
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
-  console.log('\n🛑 Shutting down gracefully...');
+  logger.info('🛑 Shutting down gracefully...');
   if (server) {
     server.close(() => {
-      console.log('✅ Server closed');
+      logger.info('✅ Server closed');
       process.exit(0);
     });
   } else {
@@ -106,10 +199,10 @@ process.on('SIGINT', async () => {
 });
 
 process.on('SIGTERM', async () => {
-  console.log('\n🛑 Shutting down gracefully...');
+  logger.info('🛑 Shutting down gracefully...');
   if (server) {
     server.close(() => {
-      console.log('✅ Server closed');
+      logger.info('✅ Server closed');
       process.exit(0);
     });
   } else {

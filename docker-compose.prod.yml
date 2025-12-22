@@ -1,0 +1,59 @@
+# Docker Compose for Production (with environment variables)
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: laundry-buddy-db-prod
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: laundry-buddy
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - laundry-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: laundry-buddy-backend-prod
+    restart: always
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      MONGODB_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/laundry-buddy?authSource=admin
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRE: ${JWT_EXPIRE:-7d}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+    depends_on:
+      - mongodb
+    networks:
+      - laundry-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: laundry-buddy-frontend-prod
+    restart: always
+    ports:
+      - "${FRONTEND_PORT:-8080}:3000"
+    depends_on:
+      - backend
+    networks:
+      - laundry-network
+    environment:
+      VITE_API_URL: ${API_URL}
+
+networks:
+  laundry-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local

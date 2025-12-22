@@ -1,0 +1,13 @@
+{
+  "name": "laundry-buddy",
+  "version": "1.0.0",
+  "description": "Laundry management app for college students",
+  "scripts": {
+    "dev": "cd backend && npm run dev",
+    "start": "cd backend && npm start",
+    "install:backend": "cd backend && npm install"
+  },
+  "keywords": ["laundry", "college", "pwa"],
+  "author": "",
+  "license": "ISC"
+}

@@ -7,6 +7,7 @@ const authMiddleware = require('../middleware/auth');
 router.use(authMiddleware);
 
 router.get('/', orderController.getOrders);
+router.get('/my-orders', orderController.getOrders); // Alias for getting current user's orders
 router.get('/history', orderController.getOrderHistory);
 router.get('/:id', orderController.getOrder);
 router.post('/', orderController.createOrder);

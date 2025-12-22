@@ -1,0 +1,32 @@
+services:
+  # Backend API Service
+  - type: web
+    name: laundry-buddy-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRE
+        value: 7d
+      - key: ALLOWED_ORIGINS
+        sync: false
+    healthCheckPath: /api/health
+
+databases:
+  # MongoDB Database
+  - name: laundry-buddy-db
+    databaseName: laundry-buddy
+    user: laundry_user
+    plan: free
+
+# Note: After deploying backend, update frontend API URL in api-config.js

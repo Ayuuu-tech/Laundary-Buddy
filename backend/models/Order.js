@@ -22,6 +22,11 @@ const orderSchema = new mongoose.Schema({
   specialInstructions: String,
   status: { type: String, default: 'pending' },
   paymentStatus: { type: String, default: 'pending' },
+  feedback: {
+    rating: { type: Number, min: 1, max: 5 },
+    comment: String,
+    submittedAt: Date
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Order', orderSchema);

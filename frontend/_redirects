@@ -1,0 +1,7 @@
+# Cloudflare Pages Redirects and Proxy Rules
+
+# API proxy to Cloudflare Workers backend
+/api/*  https://laundry-buddy-backend.your-subdomain.workers.dev/:splat  200
+
+# SPA fallback - serve index.html for all routes
+/*  /index.html  200

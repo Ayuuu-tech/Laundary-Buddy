@@ -1,0 +1,57 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "frontend/*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "frontend/assests/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "frontend/*.css",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/service-worker.js",
+      "dest": "/frontend/service-worker.js",
+      "headers": {
+        "cache-control": "public, max-age=0, must-revalidate",
+        "Service-Worker-Allowed": "/"
+      }
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "/frontend/manifest.json",
+      "headers": {
+        "content-type": "application/manifest+json"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/$1"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ]
+}

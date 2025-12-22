@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Laundry Buddy</title>
+    <link rel="stylesheet" href="profile.css?v=2.0">
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="dark-mode.css?v=2.0">
+    <link rel="stylesheet" href="responsive.css?v=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+
+    <header>
+        <div class="container navbar">
+            <a href="home.html" class="logo">
+                <i class='bx bxs-washer'></i>
+                <span>Laundry Buddy</span>
+            </a>
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+                <i class='bx bx-sun'></i>
+                <span class="theme-toggle-slider"></span>
+                <i class='bx bx-moon'></i>
+            </button>
+            <div class="header-actions">
+                <i class='bx bx-bell'></i>
+                <img src="assests/profile.png" alt="User Profile">
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="profile-container">
+            <div class="profile-header">
+                <div class="avatar-wrapper">
+                    <img src="assests/profile.png" alt="User Avatar" class="avatar" id="profile-avatar">
+                    <div class="avatar-overlay">
+                        <i class='bx bx-camera'></i>
+                        <span>Change Photo</span>
+                    </div>
+                    <input type="file" id="avatar-upload" accept="image/*" aria-label="Upload profile photo">
+                </div>
+                <h2>laundary</h2>
+                <p>laundary@bmu.edu.in</p>
+            </div>
+
+            <div class="profile-section account-details">
+                <h3>Account</h3>
+                <form action="#">
+                    <div class="input-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" value="9876543210" disabled>
+                    </div>
+                    <div class="input-group">
+                        <label for="room">Hostel/Room Number</label>
+                        <input type="text" id="room" value="BH-3, A-404" disabled>
+                    </div>
+                    <div class="input-group">
+                        <label for="prefs">Laundry Preferences</label>
+                        <input type="text" id="prefs" value="Hypoallergenic detergent" disabled>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-secondary">Edit Profile</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                    <button type="button" class="btn btn-logout">Logout</button>
+                </form>
+            </div>
+
+            <div class="profile-section quick-links">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li>
+                        <a href="history.html">
+                            <i class='bx bx-history'></i>
+                            <span>My Laundry History</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="support.html">
+                            <i class='bx bx-help-circle'></i>
+                            <span>Support</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <script src="assests/api-config.js"></script>
+    <script src="assests/crypto-utils.js"></script>
+    <script src="assests/auth.js"></script>
+    <script src="assests/dark-mode.js"></script>
+    <script src="assests/mobile-menu.js"></script>
+    <script src="assests/keyboard-shortcuts.js"></script>
+    <script src="assests/profile.js"></script>
+
+</body>
+</html>

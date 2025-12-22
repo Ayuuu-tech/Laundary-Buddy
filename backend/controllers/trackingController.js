@@ -135,11 +135,15 @@ exports.upsertByOrderNumberForLaundry = async (req, res) => {
 
     const { orderNumber } = req.params;
     const { status, estimatedDelivery, note } = req.body || {};
+    console.log('📋 Upsert tracking request:', { orderNumber, status, estimatedDelivery, note });
+    
     if (!orderNumber) return res.status(400).json({ success: false, message: 'orderNumber is required' });
     if (!status) return res.status(400).json({ success: false, message: 'status is required' });
 
     // Try to link to an existing order to resolve user
     const order = await Order.findOne({ orderNumber });
+    console.log('🔍 Found order:', order ? order._id : 'NOT FOUND');
+    
     if (!order) {
       console.warn('⚠️  Upsert failed: order not found for', orderNumber);
       return res.status(404).json({ success: false, message: 'Order not found for this token/orderNumber' });
@@ -171,6 +175,7 @@ exports.upsertByOrderNumberForLaundry = async (req, res) => {
 
     // Keep the Order document in sync with latest status
     try {
+      console.log(`📦 Updating order ${order._id} status from "${order.status}" to "${status}"`);
       order.status = status;
       if (status === 'ready-for-pickup' || status === 'completed') {
         // If estimated delivery provided, prefer it; else set to now
@@ -178,9 +183,13 @@ exports.upsertByOrderNumberForLaundry = async (req, res) => {
         // Store ISO date string (yyyy-mm-dd) to match existing format field
         const isoDate = new Date(d).toISOString().split('T')[0];
         order.deliveryDate = isoDate;
+        console.log(`📅 Set deliveryDate to ${isoDate}`);
       }
       await order.save();
-    } catch (_) { /* non-blocking */ }
+      console.log(`✅ Order ${order._id} status updated to "${status}" successfully`);
+    } catch (err) {
+      console.error('❌ Failed to update order status:', err);
+    }
 
     console.log('✅ Tracking upserted', { orderNumber, status, trackingId: tracking._id.toString() });
     return res.json({ success: true, message: 'Tracking upserted', tracking });

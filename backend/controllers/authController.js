@@ -1,20 +1,19 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-
-// Generate JWT Token
-const generateToken = (userId, email) => {
-  return jwt.sign(
-    { id: userId, email },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRE }
-  );
-};
 
 // Register User
 exports.register = async (req, res) => {
   try {
     const { name, email, password, phone, address } = req.body;
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email.toLowerCase())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a valid email address'
+      });
+    }
 
     // Check if user exists
     const existingUser = await User.findOne({ email: email.toLowerCase() });
@@ -37,19 +36,33 @@ exports.register = async (req, res) => {
       address,
     });
 
-    const token = generateToken(created._id.toString(), created.email);
+    // Create session
+    req.session.userId = created._id.toString();
+    req.session.user = {
+      id: created._id,
+      name: created.name,
+      email: created.email,
+      phone: created.phone,
+      address: created.address,
+      isAdmin: created.isAdmin || false
+    };
 
-    res.status(201).json({
-      success: true,
-      message: 'User registered successfully',
-      token,
-      user: {
-        id: created._id,
-        name: created.name,
-        email: created.email,
-        phone: created.phone,
-        address: created.address
+    // Save session explicitly
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Error saving session' 
+        });
       }
+
+      console.log('✅ Signup session saved:', req.session.userId);
+      res.status(201).json({
+        success: true,
+        message: 'User registered successfully',
+        user: req.session.user
+      });
     });
   } catch (error) {
     res.status(500).json({ 
@@ -62,6 +75,7 @@ exports.register = async (req, res) => {
 
 // Login User
 exports.login = async (req, res) => {
+  console.log('🔑 Login attempt:', req.body.email);
   try {
     const { email, password } = req.body;
 
@@ -83,19 +97,36 @@ exports.login = async (req, res) => {
       });
     }
 
-    const token = generateToken(user._id.toString(), user.email);
+    // Create session
+    req.session.userId = user._id.toString();
+    req.session.user = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      address: user.address,
+      profilePhoto: user.profilePhoto,
+      isAdmin: user.isAdmin || false
+    };
 
-    res.json({
-      success: true,
-      message: 'Login successful',
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        address: user.address
+    // Save session explicitly
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Error saving session' 
+        });
       }
+
+      console.log('✅ Session saved successfully:', req.session.userId);
+      console.log('✅ Session ID:', req.sessionID);
+      
+      res.json({
+        success: true,
+        message: 'Login successful',
+        user: req.session.user
+      });
     });
   } catch (error) {
     res.status(500).json({ 
@@ -106,10 +137,42 @@ exports.login = async (req, res) => {
   }
 };
 
+// Logout User
+exports.logout = async (req, res) => {
+  try {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({
+          success: false,
+          message: 'Error logging out'
+        });
+      }
+      res.clearCookie('connect.sid');
+      res.json({
+        success: true,
+        message: 'Logged out successfully'
+      });
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error logging out',
+      error: error.message
+    });
+  }
+};
+
 // Get Current User
 exports.getCurrentUser = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    if (!req.session.userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authenticated'
+      });
+    }
+
+    const user = await User.findById(req.session.userId).select('-password');
     if (!user) {
       return res.status(404).json({ 
         success: false, 

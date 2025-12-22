@@ -14,6 +14,7 @@ async function connectDB() {
   });
 
   console.log(`✅ Connected to MongoDB: ${mongoose.connection.name}`);
+  return mongoose;
 }
 
 module.exports = connectDB;

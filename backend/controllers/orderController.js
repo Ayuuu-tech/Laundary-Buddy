@@ -38,6 +38,9 @@ exports.getOrder = async (req, res) => {
 
 // Create new order
 exports.createOrder = async (req, res) => {
+  console.log('📦 Create order request received');
+  console.log('📦 Request body:', req.body);
+  console.log('📦 User:', req.user);
   try {
     if (!req.user?.id) {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
@@ -71,6 +74,7 @@ exports.createOrder = async (req, res) => {
         }))
       : [];
 
+    console.log('📦 Creating order in MongoDB...');
     const order = await Order.create({
       user: req.user.id,
       orderNumber: 'ORD' + Date.now(),
@@ -83,10 +87,11 @@ exports.createOrder = async (req, res) => {
       address,
       phone,
       specialInstructions,
-      status: 'pending',
+      status: 'submitted',
       paymentStatus: 'pending',
     });
 
+    console.log('✅ Order created successfully:', order._id);
     res.status(201).json({ success: true, message: 'Order created successfully', order });
   } catch (error) {
     console.error('❌ Error creating order:', error);
