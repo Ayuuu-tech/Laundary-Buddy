@@ -6,7 +6,7 @@ const bcrypt = require('bcryptjs');
 // Google OAuth - Verify token and login/register user
 router.post('/google', async (req, res) => {
   try {
-    const { credential, clientId } = req.body;
+    const { credential } = req.body;
 
     if (!credential) {
       return res.status(400).json({
@@ -15,11 +15,24 @@ router.post('/google', async (req, res) => {
       });
     }
 
-    // Decode the JWT credential from Google (it's a JWT token)
-    // For production, you should verify this with Google's public keys
-    // For simplicity, we'll decode and trust it (Google Sign-In client already verified it)
-    const base64Payload = credential.split('.')[1];
-    const payload = JSON.parse(Buffer.from(base64Payload, 'base64').toString('utf8'));
+    // Verify ID token with Google's tokeninfo endpoint
+    const tokenInfoUrl = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`;
+    const tokenResp = await fetch(tokenInfoUrl);
+
+    if (!tokenResp.ok) {
+      const text = await tokenResp.text().catch(() => '');
+      console.error('Failed to validate token with Google:', tokenResp.status, text);
+      return res.status(401).json({ success: false, message: 'Invalid Google token' });
+    }
+
+    const payload = await tokenResp.json();
+
+    // Validate audience
+    const expectedClientId = process.env.GOOGLE_CLIENT_ID || payload.aud;
+    if (payload.aud !== expectedClientId) {
+      console.error('Google token audience mismatch', { expected: expectedClientId, got: payload.aud });
+      return res.status(401).json({ success: false, message: 'Token audience mismatch' });
+    }
 
     const { email, name, picture, sub: googleId } = payload;
 
@@ -45,7 +58,6 @@ router.post('/google', async (req, res) => {
         profilePhoto: picture || user.profilePhoto
       };
 
-      // Save session explicitly
       return req.session.save((err) => {
         if (err) {
           console.error('Session save error:', err);
@@ -59,46 +71,44 @@ router.post('/google', async (req, res) => {
           user: req.session.user
         });
       });
-    } else {
-      // New user - register
-      // Generate a random password for Google users (they won't use it)
-      const randomPassword = await bcrypt.hash(googleId + Date.now(), 10);
-
-      const newUser = await User.create({
-        name: name,
-        email: email.toLowerCase(),
-        password: randomPassword,
-        phone: '',
-        address: '',
-        googleId: googleId,
-        profilePhoto: picture
-      });
-
-      req.session.userId = newUser._id.toString();
-      req.session.user = {
-        id: newUser._id,
-        name: newUser.name,
-        email: newUser.email,
-        phone: newUser.phone,
-        address: newUser.address,
-        profilePhoto: picture
-      };
-
-      // Save session explicitly
-      return req.session.save((err) => {
-        if (err) {
-          console.error('Session save error:', err);
-          return res.status(500).json({ success: false, message: 'Error saving session' });
-        }
-        console.log('✅ Google signup session saved:', req.session.userId);
-        return res.status(201).json({
-          success: true,
-          message: 'Account created successfully!',
-          isNewUser: true,
-          user: req.session.user
-        });
-      });
     }
+
+    // New user - register
+    const randomPassword = await bcrypt.hash(googleId + Date.now(), 10);
+
+    const newUser = await User.create({
+      name: name,
+      email: email.toLowerCase(),
+      password: randomPassword,
+      phone: '',
+      address: '',
+      googleId: googleId,
+      profilePhoto: picture
+    });
+
+    req.session.userId = newUser._id.toString();
+    req.session.user = {
+      id: newUser._id,
+      name: newUser.name,
+      email: newUser.email,
+      phone: newUser.phone,
+      address: newUser.address,
+      profilePhoto: picture
+    };
+
+    return req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ success: false, message: 'Error saving session' });
+      }
+      console.log('✅ Google signup session saved:', req.session.userId);
+      return res.status(201).json({
+        success: true,
+        message: 'Account created successfully!',
+        isNewUser: true,
+        user: req.session.user
+      });
+    });
   } catch (error) {
     console.error('Google auth error:', error);
     res.status(500).json({
