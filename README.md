@@ -245,8 +245,40 @@ npm start        # Production
 npm run dev      # Development with auto-reload
 ```
 
-Backend runs at: `http://localhost:3000`
+## 🌐 Deploying with Render + Google Sign-In
 
+Follow these steps to ensure Google Sign-In works for the deployed site `https://laundrybuddy.ayushmaanyadav.me` and the API `https://laundry-buddy-api.onrender.com`.
+
+- Google Cloud Console (OAuth Client)
+   - In your OAuth Client settings (Credentials → OAuth 2.0 Client IDs), add **Authorized JavaScript origins**:
+      - `https://laundrybuddy.ayushmaanyadav.me`
+   - Do NOT add origins that include paths (e.g. `https://api.example.com/api`) — origins must be scheme + host [+ optional port].
+   - If you use an OAuth redirect flow, add the full redirect URI(s) under **Authorized redirect URIs** (these can include paths).
+
+- Render Environment Variables (Backend Service)
+   - In your Render service settings, set these environment variables:
+      - `NODE_ENV=production`
+      - `GOOGLE_CLIENT_ID=<your-google-client-id>`
+      - `ALLOWED_ORIGINS=https://laundrybuddy.ayushmaanyadav.me` (comma-separated list if multiple)
+      - `SESSION_SECRET=<strong-session-secret>`
+      - `MONGODB_URI=<your-mongo-connection-string>`
+   - After changing env vars, redeploy the service.
+
+- Frontend
+   - Ensure the frontend uses the same `GOOGLE_CLIENT_ID` value. The project reads a production client ID from `frontend/assests/environment.js` (property `production.googleClientId`).
+   - If you host frontend separately, update that file or redeploy with the correct client id.
+
+- CORS & Cookies
+   - Backend must allow the frontend origin. `ALLOWED_ORIGINS` should include `https://laundrybuddy.ayushmaanyadav.me`.
+   - For cross-site cookies to work, backend session cookie is configured with `sameSite: 'none'` and `secure: true` in production — ensure `NODE_ENV=production` and HTTPS is used.
+
+- Verification Steps
+   1. Fix Authorized JavaScript origins in Google Console and Save.
+   2. Set `GOOGLE_CLIENT_ID` and `ALLOWED_ORIGINS` in Render and redeploy backend.
+   3. Open a private browser window and visit: `https://laundrybuddy.ayushmaanyadav.me/login.html`
+   4. Click 'Sign in with Google' and watch network requests to `https://laundry-buddy-api.onrender.com/api/auth/google` — response should be `200` and Set-Cookie header should appear.
+
+Backend runs at: `http://localhost:3000`
 ### Step 4: Start Frontend
 
 ```bash

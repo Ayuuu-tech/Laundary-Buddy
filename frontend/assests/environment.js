@@ -36,9 +36,11 @@ class EnvironmentConfig {
         enableServiceWorker: true
       },
       production: {
-        apiUrl: 'https://your-backend.onrender.com/api',
+        apiUrl: 'https://laundry-buddy-api.onrender.com/api',
         enableDebug: false,
-        enableServiceWorker: true
+        enableServiceWorker: true,
+        // Google OAuth Client ID for production (update this in render environment if you rotate keys)
+        googleClientId: '708319771344-gd8frork6c2r8o45rbkfctpk9nl8shdb.apps.googleusercontent.com'
       }
     };
 

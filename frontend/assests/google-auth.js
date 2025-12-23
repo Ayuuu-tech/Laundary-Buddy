@@ -2,8 +2,9 @@
 (function() {
   'use strict';
 
-  // Google Client ID from Google Cloud Console
-  const GOOGLE_CLIENT_ID = '708319771344-gd8frork6c2r8o45rbkfctpk9nl8shdb.apps.googleusercontent.com';
+  // Google Client ID from Google Cloud Console (read from central env config when available)
+  const GOOGLE_CLIENT_ID = (window.ENV_CONFIG && window.ENV_CONFIG.config && window.ENV_CONFIG.config.googleClientId)
+    || '708319771344-gd8frork6c2r8o45rbkfctpk9nl8shdb.apps.googleusercontent.com';
 
   class GoogleAuth {
     constructor() {
@@ -130,8 +131,8 @@
     }
 
     async authenticateWithBackend(credential) {
-      const apiUrl = window.apiClient?.baseURL || 'http://localhost:3000/api';
-      
+      const apiUrl = (window.ENV_CONFIG && window.ENV_CONFIG.apiUrl) || window.apiClient?.baseURL || 'http://localhost:3000/api';
+
       const response = await fetch(`${apiUrl}/auth/google`, {
         method: 'POST',
         credentials: 'include',
