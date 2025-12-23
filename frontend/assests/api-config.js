@@ -6,7 +6,7 @@ const getApiBaseUrl = () => {
   // Production deployments
   if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
     // Custom domain for backend API
-    return 'https://api.ayushmaanyadav.me/api';
+    return 'https://api.ayushmaanyadav.me';
   }
   
   // Development (localhost)
