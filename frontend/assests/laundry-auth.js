@@ -58,7 +58,7 @@
         // Login via backend API instead of localStorage
         console.log('[Laundry Auth] Attempting backend login for:', emailOrId);
         
-        const response = await fetch(`${API_CONFIG.BASE_URL}/auth/login`, {
+        const response = await fetch(`${API_CONFIG.BASE_URL}/api/auth/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -96,7 +96,7 @@
     async logout() {
       // Call backend logout to clear session
       try {
-        await fetch(`${API_CONFIG.BASE_URL}/auth/logout`, {
+        await fetch(`${API_CONFIG.BASE_URL}/api/auth/logout`, {
           method: 'POST',
           credentials: 'include'
         });
