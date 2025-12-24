@@ -202,11 +202,16 @@ exports.getCurrentUser = async (req, res) => {
 // Update Profile
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, phone, address } = req.body;
-    
+    const { name, phone, address, profilePhoto } = req.body;
+    const updateFields = {};
+    if (name !== undefined) updateFields.name = name;
+    if (phone !== undefined) updateFields.phone = phone;
+    if (address !== undefined) updateFields.address = address;
+    if (profilePhoto !== undefined) updateFields.profilePhoto = profilePhoto;
+
     const updatedUser = await User.findByIdAndUpdate(
       req.user.id,
-      { name, phone, address },
+      updateFields,
       { new: true }
     );
 
@@ -225,7 +230,8 @@ exports.updateProfile = async (req, res) => {
         name: updatedUser.name,
         email: updatedUser.email,
         phone: updatedUser.phone,
-        address: updatedUser.address
+        address: updatedUser.address,
+        profilePhoto: updatedUser.profilePhoto
       }
     });
   } catch (error) {
