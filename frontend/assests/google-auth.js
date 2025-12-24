@@ -1,152 +1,116 @@
-// google-auth.js - Google OAuth integration
-(function() {
-  'use strict';
+// API Configuration
+// Automatically detects environment and uses appropriate API URL
+const getApiBaseUrl = () => {
+  const hostname = window.location.hostname;
+  
+  // Production deployments
+  if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+    // Custom domain for backend API
+    return 'https://api.ayushmaanyadav.me';
+  }
+  
+  // Development (localhost)
+  return 'http://localhost:3000/api';
+};
 
-  // Google Client ID from Google Cloud Console
-  const GOOGLE_CLIENT_ID = '708319771344-gd8frork6c2r8o45rbkfctpk9nl8shdb.apps.googleusercontent.com';
+const API_CONFIG = {
+  BASE_URL: getApiBaseUrl(),
+  ENDPOINTS: {
+    // Auth endpoints
+    REGISTER: '/api/auth/register',
+    LOGIN: '/api/auth/login',
+    GET_USER: '/api/auth/me',
+    UPDATE_PROFILE: '/api/auth/profile',
+    CHANGE_PASSWORD: '/api/auth/change-password',
+    
+    // Order endpoints
+    ORDERS: '/api/orders',
+    ORDER_HISTORY: '/api/orders/history',
+    
+    // Tracking endpoints
+    TRACKING: '/api/tracking',
+    TRACK_BY_ORDER: '/api/tracking/order'
+  }
+};
 
-  class GoogleAuth {
-    constructor() {
-      this.initialized = false;
-      this.init();
-    }
+// Log the current API URL for debugging
+console.log('🔗 API Base URL:', API_CONFIG.BASE_URL);
 
-    init() {
-      // Wait for Google API to load
-      if (typeof google !== 'undefined' && google.accounts) {
-        this.initializeGoogleSignIn();
-      } else {
-        // Retry after a short delay
-        setTimeout(() => this.init(), 100);
-      }
-    }
+// HTTP Request Helper - Session-based (no tokens)
+class APIClient {
+  constructor() {
+    this.baseURL = API_CONFIG.BASE_URL;
+  }
 
-    initializeGoogleSignIn() {
-      try {
-        google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          callback: this.handleCredentialResponse.bind(this),
-          auto_select: false,
-          cancel_on_tap_outside: true
-        });
+  getHeaders() {
+    return {
+      'Content-Type': 'application/json'
+    };
+  }
 
-        this.initialized = true;
-        this.attachClickHandlers();
-      } catch (error) {
-        console.error('Error initializing Google Sign-In:', error);
-      }
-    }
+  async request(endpoint, options = {}) {
+    const url = `${this.baseURL}${endpoint}`;
+    const config = {
+      ...options,
+      credentials: 'include', // Important: Send cookies with requests
+      headers: this.getHeaders()
+    };
 
-    attachClickHandlers() {
-      const googleBtns = document.querySelectorAll('#google-signin-btn, .google-btn');
-      googleBtns.forEach(btn => {
-        btn.addEventListener('click', () => this.triggerGoogleSignIn());
-      });
-    }
+    try {
+      const response = await fetch(url, config);
+      const data = await response.json();
 
-    triggerGoogleSignIn() {
-      if (!this.initialized) {
-        if (window.toastManager) {
-          window.toastManager.error('Google Sign-In not ready. Please try again.', 'Error');
-        }
-        return;
-      }
-
-      // Show Google One Tap prompt
-      google.accounts.id.prompt((notification) => {
-        if (notification.isNotDisplayed()) {
-          // One Tap not displayed, show popup instead
-          this.showGooglePopup();
-        } else if (notification.isSkippedMoment()) {
-          // User skipped, show popup
-          this.showGooglePopup();
-        }
-      });
-    }
-
-    showGooglePopup() {
-      // Render a button and click it programmatically
-      const tempDiv = document.createElement('div');
-      tempDiv.id = 'google-temp-btn';
-      tempDiv.style.position = 'fixed';
-      tempDiv.style.top = '-9999px';
-      document.body.appendChild(tempDiv);
-
-      google.accounts.id.renderButton(tempDiv, {
-        type: 'standard',
-        size: 'large',
-        theme: 'outline',
-        click_listener: () => {}
-      });
-
-      // Click the button
-      const btn = tempDiv.querySelector('div[role="button"]');
-      if (btn) btn.click();
-
-      // Remove temp div after a delay
-      setTimeout(() => tempDiv.remove(), 1000);
-    }
-
-    async handleCredentialResponse(response) {
-      if (window.loadingManager) {
-        window.loadingManager.show('Signing in with Google...');
-      }
-
-      try {
-        const result = await this.authenticateWithBackend(response.credential);
-        
-        if (result.success) {
-          // Session is now stored server-side automatically
-          if (window.authManager) {
-            window.authManager.currentUser = result.user;
-          }
-
-          if (window.toastManager) {
-            const message = result.isNewUser 
-              ? `Welcome to Laundry Buddy, ${result.user.name}!`
-              : `Welcome back, ${result.user.name}!`;
-            window.toastManager.success(message, result.isNewUser ? 'Account Created!' : 'Login Successful');
-          }
-
-          // Redirect to home page
-          setTimeout(() => {
-            window.location.href = 'home.html';
-          }, 1500);
-        } else {
-          if (window.toastManager) {
-            window.toastManager.error(result.message || 'Google sign-in failed', 'Error');
+      if (!response.ok) {
+        // Handle auth failures - but don't redirect from public pages
+        if (response.status === 401 && 
+          !endpoint.includes('/api/auth/login') && 
+          !endpoint.includes('/api/auth/register') && 
+          !endpoint.includes('/api/auth/me')) {
+          console.warn('Session expired/invalid. Redirecting to login...');
+          if (typeof window !== 'undefined' && 
+              !location.href.includes('login.html') && 
+              !location.href.includes('signup.html') && 
+              !location.href.includes('index.html')) {
+            window.location.href = 'login.html';
           }
         }
-      } catch (error) {
-        console.error('Google auth error:', error);
-        if (window.toastManager) {
-          window.toastManager.error('Failed to sign in with Google. Please try again.', 'Error');
-        }
-      } finally {
-        if (window.loadingManager) {
-          window.loadingManager.hide();
-        }
+        throw new Error(data.message || 'Request failed');
       }
-    }
 
-    async authenticateWithBackend(credential) {
-      const apiUrl = window.apiClient?.baseURL || 'http://localhost:3000/api';
-      
-      const response = await fetch(`${apiUrl}/auth/google`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ credential })
-      });
-
-      return await response.json();
+      return data;
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
     }
   }
 
-  // Initialize when DOM is ready
-  document.addEventListener('DOMContentLoaded', () => {
-    window.googleAuth = new GoogleAuth();
-  });
-})();
+  async get(endpoint) {
+    return this.request(endpoint, { method: 'GET' });
+  }
+
+  async post(endpoint, body) {
+    return this.request(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+  }
+
+  async put(endpoint, body) {
+    return this.request(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(body)
+    });
+  }
+
+  async delete(endpoint) {
+    return this.request(endpoint, { method: 'DELETE' });
+  }
+}
+
+// Create global API client instance
+const apiClient = new APIClient();
+
+// Export for use in other files
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { API_CONFIG, APIClient, apiClient };
+}
