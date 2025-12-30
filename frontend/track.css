@@ -220,6 +220,14 @@ body.dark-theme .track-container {
     background-color: #181818;
     border: 1px solid var(--border-color);
 }
+body.dark-theme .track-container .submissions-card,
+body.dark-theme .track-container .my-submissions,
+body.dark-theme .track-container .status-list,
+body.dark-theme .track-container .status-card {
+    background-color: #232323 !important;
+    border-color: #232323 !important;
+    color: #fff;
+}
 body.dark-theme .image-pane {
     background-color: #181818;
 }

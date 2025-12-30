@@ -358,35 +358,22 @@ body.dark-theme header {
 }
 
 body.dark-theme .summary-card {
-    background-color: #181818;
+    background-color: var(--white-color);
     border: 1px solid var(--border-color);
 }
 
 body.dark-theme .table-container {
-    background-color: #181818;
+    background-color: var(--white-color);
     border: 1px solid var(--border-color);
 }
 
 body.dark-theme .orders-table th {
-    background-color: #232323;
+    background-color: #2d2d2d;
     color: var(--text-color);
 }
 
 body.dark-theme .orders-table tbody tr:hover {
-    background-color: #232323;
-}
-body.dark-theme .my-reports-section,
-body.dark-theme .my-submissions-section {
-    background-color: #181818 !important;
-    border: 1px solid var(--border-color) !important;
-}
-body.dark-theme .submission-card,
-body.dark-theme .submission-box,
-body.dark-theme .order-card,
-body.dark-theme .order-box {
-    background-color: #232323 !important;
-    color: #fff !important;
-    border: 1px solid #232323 !important;
+    background-color: #2d2d2d;
 }
 
 /* =========== FEEDBACK MODAL =========== */
