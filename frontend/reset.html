@@ -55,97 +55,71 @@
         </div>
     </div>
 
+    <script src="assests/dark-mode.js"></script>
     <script>
-        function showStatus(message, type) {
-            const statusDiv = document.getElementById('status');
-            statusDiv.textContent = message;
-            statusDiv.className = 'status ' + type;
-        }
         function showOtpStatus(message, type) {
             const statusDiv = document.getElementById('otp-status');
             statusDiv.textContent = message;
             statusDiv.className = 'status ' + type;
         }
 
-        function checkData() {
-            const users = localStorage.getItem('laundryBuddy_users');
-            const currentUser = localStorage.getItem('laundryBuddy_currentUser');
-            const dataPreview = document.getElementById('data-preview');
-            const currentDataDiv = document.getElementById('current-data');
-            if (users) {
-                const usersData = JSON.parse(users);
-                dataPreview.textContent = JSON.stringify({
-                    users: usersData,
-                    currentUser: currentUser ? JSON.parse(currentUser) : null
-                }, null, 2);
-                currentDataDiv.style.display = 'block';
-                showStatus(`Found ${usersData.length} user(s) in storage`, 'success');
-        </body>
-        </html>
-        <script src="assests/dark-mode.js"></script>
-        <script>
-            function showOtpStatus(message, type) {
-                const statusDiv = document.getElementById('otp-status');
-                statusDiv.textContent = message;
-                statusDiv.className = 'status ' + type;
-            }
-
-            // OTP Password Reset Logic
-            document.addEventListener('DOMContentLoaded', function() {
-                const requestOtpForm = document.getElementById('request-otp-form');
-                const verifyOtpForm = document.getElementById('verify-otp-form');
-                requestOtpForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    const email = document.getElementById('reset-email').value;
-                    showOtpStatus('Requesting OTP...', '');
-                    try {
-                        const res = await fetch('/api/auth/request-reset-otp', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email })
-                        });
-                        const data = await res.json();
-                        if (data.success) {
-                            showOtpStatus('OTP sent to your email.', 'success');
-                        } else {
-                            showOtpStatus(data.message || 'Failed to send OTP', 'error');
-                        }
-                    } catch (err) {
-                        showOtpStatus('Error: ' + err.message, 'error');
-                    }
-                });
-                verifyOtpForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    const email = document.getElementById('verify-email').value;
-                    const otp = document.getElementById('otp').value;
-                    const newPassword = document.getElementById('new-password').value;
-                    showOtpStatus('Verifying OTP and resetting password...', '');
-                    try {
-                        const res = await fetch('/api/auth/verify-reset-otp', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email, otp, newPassword })
-                        });
-                        const data = await res.json();
-                        if (data.success) {
-                            showOtpStatus('Password reset successful! Redirecting to login...', 'success');
-                            setTimeout(() => { window.location.href = 'login.html'; }, 2000);
-                        } else {
-                            showOtpStatus(data.message || 'Failed to reset password', 'error');
-                        }
-                    } catch (err) {
-                        showOtpStatus('Error: ' + err.message, 'error');
-                    }
-                });
-            });
-
-            // Initialize dark mode manager if present
-            if (window.ThemeManager) {
-                const themeManager = new ThemeManager();
-                themeManager.init();
-            } else if (typeof ThemeManager !== 'undefined') {
-                const themeManager = new ThemeManager();
-                themeManager.init();
-            }
-        </script>
+        // OTP Password Reset Logic
+        document.addEventListener('DOMContentLoaded', function() {
+            const requestOtpForm = document.getElementById('request-otp-form');
+            const verifyOtpForm = document.getElementById('verify-otp-form');
+            requestOtpForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const email = document.getElementById('reset-email').value;
+                showOtpStatus('Requesting OTP...', '');
+                try {
+                    const res = await fetch('/api/auth/request-reset-otp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        showOtpStatus('OTP sent to your email.', 'success');
                     } else {
+                        showOtpStatus(data.message || 'Failed to send OTP', 'error');
+                    }
+                } catch (err) {
+                    showOtpStatus('Error: ' + err.message, 'error');
+                }
+            });
+            verifyOtpForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const email = document.getElementById('verify-email').value;
+                const otp = document.getElementById('otp').value;
+                const newPassword = document.getElementById('new-password').value;
+                showOtpStatus('Verifying OTP and resetting password...', '');
+                try {
+                    const res = await fetch('/api/auth/verify-reset-otp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, otp, newPassword })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        showOtpStatus('Password reset successful! Redirecting to login...', 'success');
+                        setTimeout(() => { window.location.href = 'login.html'; }, 2000);
+                    } else {
+                        showOtpStatus(data.message || 'Failed to reset password', 'error');
+                    }
+                } catch (err) {
+                    showOtpStatus('Error: ' + err.message, 'error');
+                }
+            });
+        });
+
+        // Initialize dark mode manager if present
+        if (window.ThemeManager) {
+            const themeManager = new ThemeManager();
+            themeManager.init();
+        } else if (typeof ThemeManager !== 'undefined') {
+            const themeManager = new ThemeManager();
+            themeManager.init();
+        }
+    </script>
+</body>
+</html>
