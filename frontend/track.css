@@ -1,7 +1,3 @@
-body.dark-theme .submission-card,
-body.dark-theme .submission-card * {
-    color: #111 !important;
-}
 /* =========== GENERAL STYLES & VARIABLES =========== */
 :root {
     --primary-color: #F97316;
@@ -240,7 +236,7 @@ body.dark-theme .tracking-info > div:not(.input-group):not(.track-actions):not(.
     border: 1px solid #232323;
     color: #fff;
 }
-
+}
 body.dark-theme .image-pane {
     background-color: #181818;
 }
