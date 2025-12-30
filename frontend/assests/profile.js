@@ -80,19 +80,20 @@
           }).then(result => {
             if (result.success) {
               alert(result.message);
-            
-            // Disable inputs again
-            phoneInput.disabled = true;
-            roomInput.disabled = true;
-            prefsInput.disabled = true;
-            
-            phoneInput.style.backgroundColor = '#f5f5f5';
-            roomInput.style.backgroundColor = '#f5f5f5';
-            prefsInput.style.backgroundColor = '#f5f5f5';
-            
+              // Disable inputs again
+              phoneInput.disabled = true;
+              roomInput.disabled = true;
+              prefsInput.disabled = true;
+              phoneInput.style.backgroundColor = '#f5f5f5';
+              roomInput.style.backgroundColor = '#f5f5f5';
+              prefsInput.style.backgroundColor = '#f5f5f5';
               console.log('Profile updated:', result.user);
             } else {
-              alert(result.message);
+              if (result.message && result.message.includes('Route not found')) {
+                alert('Profile update route not found. Please contact support.');
+              } else {
+                alert(result.message);
+              }
             }
           }).catch(error => {
             alert('Error updating profile: ' + error.message);
@@ -181,7 +182,11 @@
           if (result.success) {
             alert('✅ Profile photo updated successfully!');
           } else {
-            alert('Error saving profile photo: ' + (result.message || 'Unknown error'));
+            if (result.message && result.message.includes('Route not found')) {
+              alert('Profile photo update route not found. Please contact support.');
+            } else {
+              alert('Error saving profile photo: ' + (result.message || 'Unknown error'));
+            }
           }
         } catch (err) {
           alert('Error saving profile photo: ' + err.message);
