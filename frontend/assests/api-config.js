@@ -17,19 +17,19 @@ const API_CONFIG = {
   BASE_URL: getApiBaseUrl(),
   ENDPOINTS: {
     // Auth endpoints
-    REGISTER: '/auth/register',
-    LOGIN: '/auth/login',
-    GET_USER: '/auth/me',
-    UPDATE_PROFILE: '/auth/profile',
-    CHANGE_PASSWORD: '/auth/change-password',
+    REGISTER: '/api/auth/register',
+    LOGIN: '/api/auth/login',
+    GET_USER: '/api/auth/me',
+    UPDATE_PROFILE: '/api/auth/profile',
+    CHANGE_PASSWORD: '/api/auth/change-password',
     
     // Order endpoints
-    ORDERS: '/orders',
-    ORDER_HISTORY: '/orders/history',
+    ORDERS: '/api/orders',
+    ORDER_HISTORY: '/api/orders/history',
     
     // Tracking endpoints
-    TRACKING: '/tracking',
-    TRACK_BY_ORDER: '/tracking/order'
+    TRACKING: '/api/tracking',
+    TRACK_BY_ORDER: '/api/tracking/order'
   }
 };
 
@@ -63,9 +63,9 @@ class APIClient {
       if (!response.ok) {
         // Handle auth failures - but don't redirect from public pages
         if (response.status === 401 && 
-            !endpoint.includes('/auth/login') && 
-            !endpoint.includes('/auth/register') && 
-            !endpoint.includes('/auth/me')) {
+          !endpoint.includes('/api/auth/login') && 
+          !endpoint.includes('/api/auth/register') && 
+          !endpoint.includes('/api/auth/me')) {
           console.warn('Session expired/invalid. Redirecting to login...');
           if (typeof window !== 'undefined' && 
               !location.href.includes('login.html') && 

@@ -81,7 +81,8 @@ app.use(session({
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000,
     sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-site in production
-    path: '/'
+    path: '/',
+    domain: isProduction ? '.ayushmaanyadav.me' : undefined // Enable cross-subdomain cookies in production
   }
 }));
 

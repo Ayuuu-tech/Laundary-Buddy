@@ -12,7 +12,7 @@
     // Register a new user
     async signup(userData) {
       try {
-        const response = await apiClient.post('/auth/register', {
+        const response = await apiClient.post('/api/auth/register', {
           name: userData.name,
           email: userData.email,
           password: userData.password,
@@ -34,7 +34,7 @@
     // Login user
     async login(email, password) {
       try {
-        const response = await apiClient.post('/auth/login', {
+        const response = await apiClient.post('/api/auth/login', {
           email: email,
           password: password
         });
@@ -53,7 +53,7 @@
     // Logout user
     async logout() {
       try {
-        await apiClient.post('/auth/logout');
+        await apiClient.post('/api/auth/logout');
         this.currentUser = null;
         window.location.href = 'index.html';
       } catch (error) {
@@ -86,7 +86,7 @@
           return this.currentUser;
         }
 
-        const response = await apiClient.get('/auth/me');
+        const response = await apiClient.get('/api/auth/me');
         if (response.success) {
           this.currentUser = response.user;
           return response.user;
@@ -101,8 +101,9 @@
     // Update current user profile
     async updateProfile(updatedData) {
       try {
-        const response = await apiClient.put('/auth/profile', updatedData);
-        
+        // Merge with current user data to allow partial updates (e.g., just photo)
+        const dataToSend = { ...this.currentUser, ...updatedData };
+        const response = await apiClient.put('/api/auth/profile', dataToSend);
         if (response.success) {
           this.currentUser = response.user;
           return { success: true, message: 'Profile updated successfully!', user: response.user };
@@ -117,7 +118,7 @@
     // Change password
     async changePassword(oldPassword, newPassword) {
       try {
-        const response = await apiClient.put('/auth/change-password', {
+        const response = await apiClient.put('/api/auth/change-password', {
           oldPassword: oldPassword,
           newPassword: newPassword
         });
@@ -132,7 +133,7 @@
     // Google Sign-In
     async googleSignIn(credential) {
       try {
-        const response = await apiClient.post('/auth/google', { credential });
+        const response = await apiClient.post('/api/auth/google', { credential });
         
         if (response.success) {
           this.currentUser = response.user;

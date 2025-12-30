@@ -150,9 +150,8 @@
     });
 
     // Handle file upload
-    avatarUpload.addEventListener('change', function(e) {
+    avatarUpload.addEventListener('change', async function(e) {
       const file = e.target.files[0];
-      
       if (!file) return;
 
       // Validate file type
@@ -170,29 +169,27 @@
 
       // Read and preview the image
       const reader = new FileReader();
-      
-      reader.onload = function(event) {
+      reader.onload = async function(event) {
         const imageData = event.target.result;
-        
         // Update avatar preview
         avatarImg.src = imageData;
-        
-        // Update header profile photo
         updateHeaderProfilePhoto(imageData);
-        
-        // Save to localStorage
-        saveProfilePhoto(imageData);
-        
-        // Show success message
-        alert('✅ Profile photo updated successfully!');
-        
-        console.log('Profile photo updated');
-      };
 
+        // Send to backend
+        try {
+          const result = await window.authManager.updateProfile({ profilePhoto: imageData });
+          if (result.success) {
+            alert('✅ Profile photo updated successfully!');
+          } else {
+            alert('Error saving profile photo: ' + (result.message || 'Unknown error'));
+          }
+        } catch (err) {
+          alert('Error saving profile photo: ' + err.message);
+        }
+      };
       reader.onerror = function() {
         alert('Error reading file. Please try again.');
       };
-
       reader.readAsDataURL(file);
     });
 
@@ -209,21 +206,7 @@
     }
   }
 
-  // Function to save profile photo (for now just update local state, backend can be added later)
-  function saveProfilePhoto(imageData) {
-    try {
-      if (!window.authManager) return;
-
-      // For now, just log it - full backend upload can be implemented later
-      console.log('Profile photo updated (local only for now)');
-      
-      // TODO: Implement backend upload
-      // await apiClient.put('/auth/profile-photo', { photo: imageData });
-    } catch (error) {
-      console.error('Error saving profile photo:', error);
-      alert('Error saving photo. Please try again.');
-    }
-  }
+  // No longer needed: saveProfilePhoto (now handled by backend)
 
   // Function to display user information in the profile
   function displayUserInfo(user) {

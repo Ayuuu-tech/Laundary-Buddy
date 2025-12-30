@@ -133,7 +133,7 @@
     async authenticateWithBackend(credential) {
       const apiUrl = (window.ENV_CONFIG && window.ENV_CONFIG.apiUrl) || window.apiClient?.baseURL || 'http://localhost:3000/api';
 
-      const response = await fetch(`${apiUrl}/auth/google`, {
+      const response = await fetch(`${apiUrl}/api/auth/google`, {
         method: 'POST',
         credentials: 'include',
         headers: {
