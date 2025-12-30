@@ -148,6 +148,11 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Only cache GET requests
+  if (request.method !== 'GET') {
+    return;
+  }
+
   // Skip cross-origin requests (unless it's fonts or icons)
   if (url.origin !== location.origin && !url.href.includes('fonts.googleapis.com') && !url.href.includes('boxicons')) {
     return;
