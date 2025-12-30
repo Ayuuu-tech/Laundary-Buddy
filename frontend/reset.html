@@ -72,7 +72,7 @@
                 const email = document.getElementById('reset-email').value;
                 showOtpStatus('Requesting OTP...', '');
                 try {
-                    const res = await fetch('https://laundrybuddy-backend.ayushmaanyadav.me/api/auth/request-reset-otp', {
+                    const res = await fetch('https://api.ayushmaanyadav.me/api/auth/request-reset-otp', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email })
@@ -94,7 +94,7 @@
                 const newPassword = document.getElementById('new-password').value;
                 showOtpStatus('Verifying OTP and resetting password...', '');
                 try {
-                    const res = await fetch('https://laundrybuddy-backend.ayushmaanyadav.me/api/auth/verify-reset-otp', {
+                    const res = await fetch('https://api.ayushmaanyadav.me/api/auth/verify-reset-otp', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email, otp, newPassword })
