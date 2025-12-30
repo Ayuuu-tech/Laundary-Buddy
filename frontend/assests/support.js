@@ -15,7 +15,7 @@
   // Load user orders
   async function loadUserOrders() {
     try {
-      const response = await fetch(`${API_CONFIG.BASE_URL}/orders/my-orders`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/orders/my-orders`, {
         credentials: 'include'
       });
       
@@ -43,7 +43,7 @@
     reportsGrid.innerHTML = '<p style="text-align:center;color:#666;">Loading your reports...</p>';
 
     try {
-      const response = await fetch(`${API_CONFIG.BASE_URL}/support/my-tickets`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/support/my-tickets`, {
         credentials: 'include'
       });
 
@@ -495,7 +495,7 @@
         if (window.showLoading) window.showLoading();
         
         // Fetch orders from backend API
-        const response = await fetch(API_CONFIG.BASE_URL + '/orders/my-orders', {
+        const response = await fetch(API_CONFIG.BASE_URL + '/api/orders/my-orders', {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include'
