@@ -249,7 +249,11 @@ nav a:hover, nav a.active {
 }
 .access-card p {
     font-size: 14px;
-    color: var(--text-light);
+    color: #FF9800;
+}
+body.dark-theme .access-card p {
+    color: #FFB300 !important;
+}
 }
 
 .feature-card {

@@ -1,3 +1,7 @@
+body.dark-theme .submission-card,
+body.dark-theme .submission-card * {
+    color: #111 !important;
+}
 /* =========== GENERAL STYLES & VARIABLES =========== */
 :root {
     --primary-color: #F97316;
