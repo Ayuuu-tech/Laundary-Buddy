@@ -131,7 +131,8 @@
     }
 
     async authenticateWithBackend(credential) {
-      const apiUrl = (window.ENV_CONFIG && window.ENV_CONFIG.apiUrl) || window.apiClient?.baseURL || 'http://localhost:3000/api';
+      // Always use production API base URL for Google auth
+      const apiUrl = (window.API_CONFIG && window.API_CONFIG.BASE_URL) ? window.API_CONFIG.BASE_URL : ((window.ENV_CONFIG && window.ENV_CONFIG.apiUrl) || window.apiClient?.baseURL || 'http://localhost:3000/api');
 
       const response = await fetch(`${apiUrl}/api/auth/google`, {
         method: 'POST',
