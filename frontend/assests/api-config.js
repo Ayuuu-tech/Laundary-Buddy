@@ -2,15 +2,15 @@
 // Automatically detects environment and uses appropriate API URL
 const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
-  
-  // Production deployments
-  if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
-    // Custom domain for backend API
-    return 'https://api.ayushmaanyadav.me';
+
+  // Always use production API URL unless running on localhost
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    // Development (localhost)
+    return 'http://localhost:3000/api';
   }
-  
-  // Development (localhost)
-  return 'http://localhost:3000/api';
+
+  // Production (any deployed domain)
+  return 'https://api.ayushmaanyadav.me';
 };
 
 const API_CONFIG = {
