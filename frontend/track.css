@@ -217,8 +217,11 @@ body.dark-theme header {
 }
 
 body.dark-theme .track-container {
-    background-color: var(--white-color);
+    background-color: #181818;
     border: 1px solid var(--border-color);
+}
+body.dark-theme .image-pane {
+    background-color: #181818;
 }
 
 body.dark-theme .input-group input {

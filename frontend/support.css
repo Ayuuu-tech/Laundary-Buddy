@@ -1,3 +1,13 @@
+body.dark-theme .btn-tertiary {
+    background-color: #181818;
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+body.dark-theme .btn-tertiary:hover {
+    background-color: #232323;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
 /* =========== GENERAL STYLES & VARIABLES =========== */
 :root {
     --primary-color: #F97316;
@@ -1163,12 +1173,18 @@ body.dark-theme .hero-section {
 }
 
 body.dark-theme .support-option {
-    background-color: var(--white-color);
-    border: 1px solid var(--border-color);
+    background-color: #181818;
+    border: 1px solid #232323;
 }
 
 body.dark-theme .support-option:hover {
-    box-shadow: 0 8px 20px rgba(251, 146, 60, 0.2);
+    box-shadow: 0 8px 24px rgba(251, 146, 60, 0.10);
+    background-color: #232323;
+}
+body.dark-theme .input-group input[type="text"][readonly] {
+    background: #232323 !important;
+    color: #fff !important;
+    border-color: var(--border-color) !important;
 }
 
 body.dark-theme footer {
@@ -1281,9 +1297,9 @@ body.dark-theme .report-stats {
 }
 
 body.dark-theme .date-input {
-    background: var(--white-color);
+    background: #232323;
     border-color: var(--border-color);
-    color: var(--text-color);
+    color: #fff;
 }
 
 body.dark-theme .date-input:focus {
