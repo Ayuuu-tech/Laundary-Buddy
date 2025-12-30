@@ -10,7 +10,7 @@
     // Get all orders for current user
     async getOrders() {
       try {
-        const response = await apiClient.get('/orders');
+        const response = await apiClient.get('/api/orders');
         return response.orders || [];
       } catch (error) {
         console.error('Error fetching orders:', error);
@@ -22,7 +22,7 @@
     // Get single order by ID
     async getOrder(orderId) {
       try {
-        const response = await apiClient.get(`/orders/${orderId}`);
+        const response = await apiClient.get(`/api/orders/${orderId}`);
         return response.order;
       } catch (error) {
         console.error('Error fetching order:', error);
@@ -33,7 +33,7 @@
     // Create new order
     async createOrder(orderData) {
       try {
-        const response = await apiClient.post('/orders', orderData);
+        const response = await apiClient.post('/api/orders', orderData);
         if (response.success) {
           return { success: true, order: response.order, message: 'Order created successfully!' };
         }
@@ -47,7 +47,7 @@
     // Update order
     async updateOrder(orderId, updates) {
       try {
-        const response = await apiClient.put(`/orders/${orderId}`, updates);
+        const response = await apiClient.put(`/api/orders/${orderId}`, updates);
         if (response.success) {
           return { success: true, order: response.order, message: 'Order updated successfully!' };
         }
@@ -61,7 +61,7 @@
     // Delete order
     async deleteOrder(orderId) {
       try {
-        const response = await apiClient.delete(`/orders/${orderId}`);
+        const response = await apiClient.delete(`/api/orders/${orderId}`);
         return response;
       } catch (error) {
         console.error('Error deleting order:', error);
@@ -72,7 +72,7 @@
     // Get order history
     async getOrderHistory() {
       try {
-        const response = await apiClient.get('/orders/history');
+        const response = await apiClient.get('/api/orders/history');
         return response.orders || [];
       } catch (error) {
         console.error('Error fetching order history:', error);
