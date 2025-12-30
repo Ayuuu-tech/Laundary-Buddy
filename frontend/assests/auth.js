@@ -169,7 +169,7 @@
     // Update profile and reload photo everywhere after update
     async updateProfile(data) {
       try {
-        const response = await apiClient.put('/api/auth/update', data);
+        const response = await apiClient.put('/api/auth/profile', data);
         if (response.success) {
           this.currentUser = response.user;
           await this.loadProfilePhoto();
