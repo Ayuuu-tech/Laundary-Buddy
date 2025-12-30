@@ -1,3 +1,79 @@
+// Verify OTP and Reset Password
+exports.verifyOTPAndResetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Email, OTP, and new password are required' });
+    }
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user || !user.resetOTP || !user.resetOTPExpiry) {
+      return res.status(400).json({ success: false, message: 'OTP not requested or user not found' });
+    }
+    if (user.resetOTP !== otp) {
+      return res.status(400).json({ success: false, message: 'Invalid OTP' });
+    }
+    if (user.resetOTPExpiry < new Date()) {
+      return res.status(400).json({ success: false, message: 'OTP has expired' });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    user.resetOTP = null;
+    user.resetOTPExpiry = null;
+    await user.save();
+
+    res.json({ success: true, message: 'Password reset successful' });
+  } catch (error) {
+    console.error('OTP verification error:', error);
+    res.status(500).json({ success: false, message: 'Error resetting password', error: error.message });
+  }
+};
+const nodemailer = require('nodemailer');
+// Request Password Reset OTP
+exports.requestPasswordResetOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found with this email' });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+
+    user.resetOTP = otp;
+    user.resetOTPExpiry = expiry;
+    await user.save();
+
+    // Configure nodemailer transporter (Gmail)
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS
+      }
+    });
+
+    const mailOptions = {
+      from: process.env.GMAIL_USER,
+      to: user.email,
+      subject: 'Laundry Buddy Password Reset OTP',
+      text: `Your OTP for password reset is: ${otp}. It is valid for 10 minutes.`
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.json({ success: true, message: 'OTP sent to your registered email address' });
+  } catch (error) {
+    console.error('OTP request error:', error);
+    res.status(500).json({ success: false, message: 'Error sending OTP', error: error.message });
+  }
+};
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 

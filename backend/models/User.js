@@ -8,7 +8,9 @@ const userSchema = new mongoose.Schema({
   address: { type: String, default: '' },
   googleId: { type: String, default: null },
   profilePhoto: { type: String, default: null },
-  isAdmin: { type: Boolean, default: false }
+  isAdmin: { type: Boolean, default: false },
+  resetOTP: { type: String, default: null }, // OTP for password reset
+  resetOTPExpiry: { type: Date, default: null } // OTP expiry time
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);
