@@ -1,3 +1,23 @@
+body.dark-theme .status-details,
+body.dark-theme .status-details *,
+body.dark-theme .status-details p,
+body.dark-theme .status-details span,
+body.dark-theme .status-details strong,
+body.dark-theme .status-details b {
+    color: #111 !important;
+}
+body.dark-theme .submission-card,
+body.dark-theme .submission-card *,
+body.dark-theme .submission-card p,
+body.dark-theme .submission-card span,
+body.dark-theme .submission-card strong,
+body.dark-theme .submission-card b {
+    color: #111 !important;
+}
+body.dark-theme #my-submissions > h3,
+body.dark-theme #my-submissions h3 {
+    color: #fff !important;
+}
 /* My Submissions heading white in dark mode */
 body.dark-theme .tracking-info .my-submissions-title,
 body.dark-theme .tracking-info h2,
