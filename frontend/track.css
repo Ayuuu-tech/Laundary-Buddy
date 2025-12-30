@@ -1,3 +1,26 @@
+/* My Submissions heading white in dark mode */
+body.dark-theme .tracking-info .my-submissions-title,
+body.dark-theme .tracking-info h2,
+body.dark-theme .tracking-info h1 {
+    color: #fff !important;
+}
+
+/* All order IDs in My Submissions black in dark mode */
+body.dark-theme .reports-grid [class*="order-id"],
+body.dark-theme .reports-grid [class*="order-id"] *,
+body.dark-theme .reports-grid .order-id,
+body.dark-theme .reports-grid .order-id * {
+    color: #111 !important;
+}
+
+/* Status card text black in dark mode */
+body.dark-theme .tracking-info .status-card,
+body.dark-theme .tracking-info .status-card *,
+body.dark-theme .tracking-info .status-card strong,
+body.dark-theme .tracking-info .status-card b,
+body.dark-theme .tracking-info .status-card label {
+    color: #111 !important;
+}
 body.dark-theme .reports-grid .order-id,
 body.dark-theme .reports-grid .order-id *,
 body.dark-theme .reports-grid [class*="order-id"],
