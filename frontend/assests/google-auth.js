@@ -131,8 +131,14 @@
     }
 
     async authenticateWithBackend(credential) {
-      // Always use production API base URL for Google auth
-      const apiUrl = (window.API_CONFIG && window.API_CONFIG.BASE_URL) ? window.API_CONFIG.BASE_URL : ((window.ENV_CONFIG && window.ENV_CONFIG.apiUrl) || window.apiClient?.baseURL || 'http://localhost:3000/api');
+      // Use the same logic as api-config.js to always use production API URL unless on localhost
+      const hostname = window.location.hostname;
+      let apiUrl;
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        apiUrl = 'http://localhost:3000/api';
+      } else {
+        apiUrl = 'https://api.ayushmaanyadav.me';
+      }
 
       const response = await fetch(`${apiUrl}/api/auth/google`, {
         method: 'POST',
