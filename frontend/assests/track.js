@@ -118,15 +118,15 @@
 
       if (userSubmissions.length === 0) {
         mySubmissionsDiv.innerHTML = `
-          <h3 style="color: #333; margin-bottom: 10px;">📦 My Submissions</h3>
-          <p style="color: #666;">You haven't submitted any laundry yet. Go to Submit page to create your first order!</p>
+          <h3 class="my-submissions-title">📦 My Submissions</h3>
+          <p class="my-submissions-empty">You haven't submitted any laundry yet. Go to Submit page to create your first order!</p>
         `;
         return;
       }
 
       let submissionsHTML = `
-        <h3 style="color: #333; margin-bottom: 15px;">📦 My Submissions (${userSubmissions.length})</h3>
-        <div style="display: grid; gap: 15px;">
+        <h3 class="my-submissions-title">📦 My Submissions (${userSubmissions.length})</h3>
+        <div class="reports-grid">
       `;
 
       userSubmissions.forEach(item => {
@@ -134,18 +134,18 @@
         const statusLabel = item.getStatusLabel(this.tracker.statusDefinitions);
         
         submissionsHTML += `
-          <div class="submission-card" style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid ${statusColor}; cursor: pointer;" 
+          <div class="submission-card" style="border-left: 4px solid ${statusColor}; cursor: pointer;" 
                onclick="document.getElementById('token-number').value='${item.tokenNumber}'; window.laundryTrackingApp.controller.trackLaundry();">
-            <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div class="submission-card-content">
               <div>
-                <p style="margin: 0 0 5px 0; font-weight: 600; font-size: 16px;">${item.tokenNumber}</p>
-                <p style="margin: 0 0 5px 0; color: #666; font-size: 14px;">${item.getItemsDescription()}</p>
-                <p style="margin: 0; color: ${statusColor}; font-weight: 600; font-size: 14px;">
+                <p class="order-id" style="font-weight: 600; font-size: 16px;">${item.tokenNumber}</p>
+                <p class="submission-items">${item.getItemsDescription()}</p>
+                <p class="submission-status" style="color: ${statusColor}; font-weight: 600; font-size: 14px;">
                   ${statusLabel} (${item.progress}%)
                 </p>
               </div>
-              <div style="text-align: right;">
-                <p style="margin: 0; font-size: 12px; color: #999;">${new Date(item.submittedDate).toLocaleDateString()}</p>
+              <div class="submission-date">
+                <p>${new Date(item.submittedDate).toLocaleDateString()}</p>
               </div>
             </div>
           </div>
@@ -172,13 +172,13 @@
         <p class="status-text" style="color: ${statusColor}; font-weight: 600;">
           ${statusLabel} - Estimated Completion: ${completionTime}
         </p>
-        <div class="status-details" style="margin-top: 15px; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+        <div class="status-details">
           <p><strong>Token:</strong> ${laundryItem.tokenNumber}</p>
           <p><strong>Items:</strong> ${laundryItem.getItemsDescription()}</p>
           <p><strong>Latest Update:</strong> ${laundryItem.getLatestStatusUpdate()}</p>
           ${laundryItem.specialInstructions ? `<p><strong>Special Instructions:</strong> ${laundryItem.specialInstructions}</p>` : ''}
         </div>
-        <div class="progress-bar" style="margin-top: 20px;">
+        <div class="progress-bar">
           <div class="progress-bar-fill"></div>
         </div>
       `;
