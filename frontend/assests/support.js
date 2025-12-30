@@ -381,7 +381,7 @@
           }
           
           // Save missing clothes report to database
-          const response = await fetch(`${API_CONFIG.BASE_URL}/support/report`, {
+          const response = await fetch(`${API_CONFIG.BASE_URL}/api/support/report`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -436,7 +436,7 @@
           }
           
           // Save damage report to database
-          const response = await fetch(`${API_CONFIG.BASE_URL}/support/report`, {
+          const response = await fetch(`${API_CONFIG.BASE_URL}/api/support/report`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
