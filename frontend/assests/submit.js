@@ -26,6 +26,9 @@
         return;
       }
 
+      // Update profile photo everywhere after login check
+      window.authManager.loadProfilePhoto();
+
       console.log('✅ User authenticated, loading submit form...');
     } catch (error) {
       console.error('❌ Auth check error:', error);

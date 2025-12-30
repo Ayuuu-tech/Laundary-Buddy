@@ -159,6 +159,10 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
+    // Update profile photo everywhere after login check
+    if (window.authManager) {
+      window.authManager.loadProfilePhoto();
+    }
     // Load orders first
     loadUserOrders();
     setupOrderChangeHandlers();

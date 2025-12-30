@@ -537,6 +537,10 @@
 
   // Initialize when DOM is ready
   document.addEventListener('DOMContentLoaded', function () {
+    // Update profile photo everywhere after login check
+    if (window.authManager) {
+      window.authManager.loadProfilePhoto();
+    }
     const app = new OrderHistoryApp();
     app.init();
 

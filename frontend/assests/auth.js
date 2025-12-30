@@ -79,18 +79,15 @@
       }
     }
 
-    // Get current logged-in user from server
+    // Get current logged-in user from server (always fetch fresh)
     async getCurrentUser() {
       try {
-        if (this.currentUser) {
-          return this.currentUser;
-        }
-
         const response = await apiClient.get('/api/auth/me');
         if (response.success) {
           this.currentUser = response.user;
           return response.user;
         }
+        this.currentUser = null;
         return null;
       } catch (error) {
         this.currentUser = null;
@@ -167,6 +164,21 @@
       headerProfileImgs.forEach(img => {
         img.src = currentUser.profilePhoto;
       });
+    }
+
+    // Update profile and reload photo everywhere after update
+    async updateProfile(data) {
+      try {
+        const response = await apiClient.put('/api/auth/update', data);
+        if (response.success) {
+          this.currentUser = response.user;
+          await this.loadProfilePhoto();
+          return response;
+        }
+        return response;
+      } catch (error) {
+        return { success: false, message: error.message || 'Error updating profile.' };
+      }
     }
   }
 

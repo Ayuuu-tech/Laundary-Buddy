@@ -995,6 +995,8 @@
           window.location.href = 'login.html';
           return;
         }
+        // Update profile photo everywhere after login check
+        window.authManager.loadProfilePhoto();
       } catch (error) {
         console.error('Auth check failed:', error);
         window.location.href = 'login.html';

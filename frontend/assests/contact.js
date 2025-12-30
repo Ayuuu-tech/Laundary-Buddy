@@ -3,6 +3,10 @@
   'use strict';
 
   document.addEventListener('DOMContentLoaded', async function () {
+    // Update profile photo everywhere after login check
+    if (window.authManager) {
+      window.authManager.loadProfilePhoto();
+    }
     const contactForm = document.querySelector('form');
 
     if (contactForm) {
