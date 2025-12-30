@@ -228,6 +228,15 @@ body.dark-theme .track-container .status-card {
     border-color: #232323 !important;
     color: #fff;
 }
+
+/* Fix for My Submissions card in dark mode */
+body.dark-theme .tracking-info > div:not(.input-group):not(.track-actions):not(.status-section):not(.image-pane):not(.status-list):not(.status-card) {
+    background: #232323 !important;
+    border-radius: 16px;
+    border: 1px solid #232323;
+    color: #fff;
+}
+}
 body.dark-theme .image-pane {
     background-color: #181818;
 }

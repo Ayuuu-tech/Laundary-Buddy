@@ -74,12 +74,12 @@
             </div>
 
             <!-- My Reports Section -->
-            <div class="my-reports-section" id="my-reports-section" style="margin-top: 40px;">
+            <div class="my-reports-section" id="my-reports-section">
                 <h2>My Reports</h2>
                 <p>Track the status of your submitted reports</p>
                 
                 <div class="reports-grid" id="reports-grid">
-                    <p style="text-align: center; color: #666;">Loading your reports...</p>
+                    <p class="reports-loading">Loading your reports...</p>
                 </div>
             </div>
 
@@ -104,7 +104,7 @@
                         </div>
                         <div class="input-group">
                             <label for="missing-date">Laundry Date</label>
-                            <input type="text" id="missing-date" readonly style="background: #f5f5f5;">
+                            <input type="text" id="missing-date" readonly class="readonly-input">
                         </div>
                     </div>
                     <div class="input-group">
@@ -145,7 +145,7 @@
                         </div>
                         <div class="input-group">
                             <label for="damage-date">Laundry Date</label>
-                            <input type="text" id="damage-date" readonly style="background: #f5f5f5;">
+                            <input type="text" id="damage-date" readonly class="readonly-input" title="Laundry date" placeholder="Laundry date">
                         </div>
                     </div>
                     <div class="input-group">

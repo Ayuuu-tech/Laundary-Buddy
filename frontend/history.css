@@ -1,3 +1,7 @@
+/* Utility for hidden elements (for modal, etc.) */
+.hidden {
+    display: none !important;
+}
 /* =========== GENERAL STYLES & VARIABLES =========== */
 :root {
     --primary-color: #F97316; /* Corrected to the orange from your branding */

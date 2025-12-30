@@ -1,3 +1,22 @@
+/* Style for loading message in reports grid */
+.reports-loading {
+    text-align: center;
+    color: #666;
+}
+/* Utility for readonly input background */
+.readonly-input {
+    background: #f5f5f5;
+}
+
+/* Ensure .my-reports-section has margin-top for legacy support */
+.my-reports-section {
+    margin-top: 40px;
+}
+
+/* Utility for hidden elements (for modal, etc.) */
+.hidden {
+    display: none !important;
+}
 body.dark-theme .btn-tertiary {
     background-color: #181818;
     border-color: var(--border-color);
