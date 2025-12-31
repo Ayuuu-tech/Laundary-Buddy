@@ -23,6 +23,9 @@
     box-sizing: border-box;
 }
 
+body.dark-theme {
+    background: #000 !important;
+}
 body {
     font-family: 'Poppins', sans-serif;
     background-color: var(--white-color);

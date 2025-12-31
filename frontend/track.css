@@ -1,3 +1,6 @@
+body.dark-theme {
+    background: #000 !important;
+}
 body.dark-theme .status-details,
 body.dark-theme .status-details *,
 body.dark-theme .status-details p,

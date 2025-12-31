@@ -5,6 +5,9 @@ body.dark-theme .reports-grid .report-card b,
 body.dark-theme .reports-grid .report-card label {
     color: #111 !important;
 }
+body.dark-theme {
+    background: #000 !important;
+}
 body.dark-theme .reports-grid .report-card {
     background: #fff !important;
     color: #111 !important;
