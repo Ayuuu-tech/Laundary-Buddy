@@ -1086,7 +1086,7 @@
     const status = document.getElementById('ticket-status-update').value;
     const response = document.getElementById('ticket-response-text').value.trim();
     try {
-      const res = await fetch(API_CONFIG.BASE_URL + '/support/update-ticket/' + selectedTicketId, {
+      const res = await fetch(API_CONFIG.BASE_URL + '/api/support/update-ticket/' + selectedTicketId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
