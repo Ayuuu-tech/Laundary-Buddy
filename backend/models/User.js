@@ -1,7 +1,4 @@
-    signupOTP: { type: String },
-    signupOTPExpiry: { type: Date },
-  loginOTP: { type: String },
-  loginOTPExpiry: { type: Date },
+
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
@@ -14,7 +11,11 @@ const userSchema = new mongoose.Schema({
   profilePhoto: { type: String, default: null },
   isAdmin: { type: Boolean, default: false },
   resetOTP: { type: String, default: null }, // OTP for password reset
-  resetOTPExpiry: { type: Date, default: null } // OTP expiry time
+  resetOTPExpiry: { type: Date, default: null }, // OTP expiry time
+  signupOTP: { type: String, default: null },
+  signupOTPExpiry: { type: Date, default: null },
+  loginOTP: { type: String, default: null },
+  loginOTPExpiry: { type: Date, default: null }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);
