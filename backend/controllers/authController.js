@@ -127,8 +127,19 @@ exports.requestLoginOTP = async (req, res) => {
       await resend.emails.send({
         from: process.env.RESEND_FROM,
         to: user.email,
-        subject: 'Laundry Buddy Login OTP',
-        text: `Your OTP for login is: ${otp}. It is valid for 10 minutes.`
+        subject: '🧺 Laundry Buddy Login – Your Secure OTP Inside!',
+        text: `Hello from Laundry Buddy!\n\n🔐 Login time!\n\nHere is your one-time password (OTP):\n\n🔑  ${otp}  🔑\n\nThis code is valid for 10 minutes.\n\nIf you didn’t request this, please ignore this email.\n\nStay fresh,\nThe Laundry Buddy Team 🧺`,
+        html: `<div style=\"font-family: 'Segoe UI', Arial, sans-serif; background: #f7f7fa; padding: 24px; border-radius: 12px; color: #222; max-width: 420px; margin: auto;\">
+          <h2 style=\"color: #4e54c8;\">🧺 Laundry Buddy Login</h2>
+          <p style=\"font-size: 1.1em;\">Use the OTP below to securely log in to your account.</p>
+          <div style=\"margin: 24px 0; padding: 18px; background: #e0e7ff; border-radius: 8px; text-align: center;\">
+            <span style=\"font-size: 1.3em; letter-spacing: 2px; color: #222;\">Your OTP:</span><br>
+            <span style=\"font-size: 2.2em; font-weight: bold; color: #4e54c8;\">${otp}</span>
+            <div style=\"margin-top: 8px; color: #666; font-size: 0.95em;\">(Valid for 10 minutes)</div>
+          </div>
+          <p>If you didn’t request this, you can safely ignore this email.</p>
+          <p style=\"margin-top: 32px; color: #4e54c8; font-weight: 500;\">Stay fresh,<br>The Laundry Buddy Team</p>
+        </div>`
       });
       res.json({ success: true, message: 'OTP sent to your email' });
     } catch (err) {
@@ -244,8 +255,19 @@ exports.requestPasswordResetOTP = async (req, res) => {
       const data = await resend.emails.send({
         from: process.env.RESEND_FROM,
         to: user.email,
-        subject: 'Laundry Buddy Password Reset OTP',
-        text: `Your OTP for password reset is: ${otp}. It is valid for 10 minutes.`
+        subject: '🧺 Laundry Buddy Password Reset – OTP Inside!',
+        text: `Hello from Laundry Buddy!\n\n🔄 Password reset requested!\n\nHere is your one-time password (OTP):\n\n🔑  ${otp}  🔑\n\nThis code is valid for 10 minutes.\n\nIf you didn’t request this, please ignore this email.\n\nStay fresh,\nThe Laundry Buddy Team 🧺`,
+        html: `<div style=\"font-family: 'Segoe UI', Arial, sans-serif; background: #f7f7fa; padding: 24px; border-radius: 12px; color: #222; max-width: 420px; margin: auto;\">
+          <h2 style=\"color: #4e54c8;\">🧺 Password Reset Request</h2>
+          <p style=\"font-size: 1.1em;\">Use the OTP below to reset your Laundry Buddy password.</p>
+          <div style=\"margin: 24px 0; padding: 18px; background: #e0e7ff; border-radius: 8px; text-align: center;\">
+            <span style=\"font-size: 1.3em; letter-spacing: 2px; color: #222;\">Your OTP:</span><br>
+            <span style=\"font-size: 2.2em; font-weight: bold; color: #4e54c8;\">${otp}</span>
+            <div style=\"margin-top: 8px; color: #666; font-size: 0.95em;\">(Valid for 10 minutes)</div>
+          </div>
+          <p>If you didn’t request this, you can safely ignore this email.</p>
+          <p style=\"margin-top: 32px; color: #4e54c8; font-weight: 500;\">Stay fresh,<br>The Laundry Buddy Team</p>
+        </div>`
       });
       console.log('Resend response:', data);
       res.json({ success: true, message: 'OTP sent to your registered email address' });
