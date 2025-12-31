@@ -535,7 +535,7 @@
     try {
       if (typeof fetch !== 'function') return;
       const cleanToken = String(orderNumber || '').trim();
-      const url = `${API_CONFIG.BASE_URL}/tracking/order/${encodeURIComponent(cleanToken)}`;
+      const url = `${API_CONFIG.BASE_URL}/api/tracking/order/${encodeURIComponent(cleanToken)}`;
       console.log('[Dashboard] Syncing status →', cleanToken, status, estimatedDelivery || '');
       const res = await fetch(url, {
         method: 'PUT',
