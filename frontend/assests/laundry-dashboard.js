@@ -550,6 +550,8 @@
       if (!res.ok || !data.success) {
         throw new Error(data.message || `HTTP ${res.status}`);
       }
+      // Auto-refresh dashboard after successful update
+      setTimeout(() => { window.location.reload(); }, 300);
       return data;
     } catch (e) {
       console.warn('[Dashboard] syncBackendStatus error:', e.message || e);
