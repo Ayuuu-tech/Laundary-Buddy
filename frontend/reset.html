@@ -69,6 +69,7 @@
             const verifyOtpForm = document.getElementById('verify-otp-form');
             requestOtpForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                console.log('Request OTP button clicked');
                 const email = document.getElementById('reset-email').value;
                 showOtpStatus('Requesting OTP...', '');
                 try {

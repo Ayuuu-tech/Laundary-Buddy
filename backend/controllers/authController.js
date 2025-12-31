@@ -34,11 +34,14 @@ const nodemailer = require('nodemailer');
 exports.requestPasswordResetOTP = async (req, res) => {
   try {
     const { email } = req.body;
+    console.log('OTP request received for email:', email);
     if (!email) {
+      console.log('No email provided');
       return res.status(400).json({ success: false, message: 'Email is required' });
     }
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
+      console.log('User not found for email:', email);
       return res.status(404).json({ success: false, message: 'User not found with this email' });
     }
 
@@ -49,6 +52,7 @@ exports.requestPasswordResetOTP = async (req, res) => {
     user.resetOTP = otp;
     user.resetOTPExpiry = expiry;
     await user.save();
+    console.log('OTP generated and saved for user:', user.email, 'OTP:', otp);
 
     // Configure nodemailer transporter (Gmail)
     const transporter = nodemailer.createTransport({
@@ -66,7 +70,8 @@ exports.requestPasswordResetOTP = async (req, res) => {
       text: `Your OTP for password reset is: ${otp}. It is valid for 10 minutes.`
     };
 
-    await transporter.sendMail(mailOptions);
+    const mailResult = await transporter.sendMail(mailOptions);
+    console.log('OTP email sent:', mailResult);
 
     res.json({ success: true, message: 'OTP sent to your registered email address' });
   } catch (error) {
