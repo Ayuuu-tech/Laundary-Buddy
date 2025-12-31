@@ -54,26 +54,22 @@ exports.requestPasswordResetOTP = async (req, res) => {
     await user.save();
     console.log('OTP generated and saved for user:', user.email, 'OTP:', otp);
 
-    // Configure nodemailer transporter (Gmail)
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS
-      }
-    });
-
-    const mailOptions = {
-      from: process.env.GMAIL_USER,
-      to: user.email,
-      subject: 'Laundry Buddy Password Reset OTP',
-      text: `Your OTP for password reset is: ${otp}. It is valid for 10 minutes.`
-    };
-
-    const mailResult = await transporter.sendMail(mailOptions);
-    console.log('OTP email sent:', mailResult);
-
-    res.json({ success: true, message: 'OTP sent to your registered email address' });
+    // Send OTP using Resend API
+    const { Resend } = require('resend');
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    try {
+      const data = await resend.emails.send({
+        from: process.env.RESEND_FROM,
+        to: user.email,
+        subject: 'Laundry Buddy Password Reset OTP',
+        text: `Your OTP for password reset is: ${otp}. It is valid for 10 minutes.`
+      });
+      console.log('Resend response:', data);
+      res.json({ success: true, message: 'OTP sent to your registered email address' });
+    } catch (error) {
+      console.error('Resend error:', error);
+      res.status(500).json({ success: false, message: 'Error sending OTP', error: error.message });
+    }
   } catch (error) {
     console.error('OTP request error:', error);
     res.status(500).json({ success: false, message: 'Error sending OTP', error: error.message });
