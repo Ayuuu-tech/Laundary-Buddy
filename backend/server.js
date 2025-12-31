@@ -61,7 +61,7 @@ app.use(cors({
   },
   credentials: true,
   exposedHeaders: ['set-cookie'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With', 'x-laundry-key']
 }));
 
 // Session configuration with MongoDB store
