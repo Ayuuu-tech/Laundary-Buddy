@@ -93,7 +93,7 @@
     let items = [];
     try {
       console.log('[Dashboard] Fetching all orders from admin endpoint...');
-      const response = await fetch(`${API_CONFIG.BASE_URL}/admin/orders`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/admin/orders`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
