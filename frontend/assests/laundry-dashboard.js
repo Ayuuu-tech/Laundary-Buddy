@@ -226,8 +226,7 @@
       document.getElementById('stat-inprocess').textContent = inproc;
       document.getElementById('stat-ready').textContent = ready;
       document.getElementById('stat-completed').textContent = completedToday;
-      document.getElementById('stat-urgent').textContent = urgentCount;
-      document.getElementById('stat-avgtime').textContent = avgTime;
+      // Removed stat-urgent and stat-avgtime updates (elements deleted from HTML)
 
       // Sort: urgent first, then by date
       const sortedItems = [...items].sort((a, b) => {
