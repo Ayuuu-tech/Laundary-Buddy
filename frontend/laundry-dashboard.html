@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="home.css?v=2.0">
   <link rel="stylesheet" href="history.css?v=2.0">
   <link rel="stylesheet" href="modal.css?v=2.0">
-  <link rel="stylesheet" href="dark-mode.css?v=2.0">
+  <!-- <link rel="stylesheet" href="dark-mode.css?v=2.0"> -->
   <link rel="stylesheet" href="responsive.css?v=1.0">
   <link rel="stylesheet" href="support-tickets.css?v=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -32,11 +32,7 @@
           <li><a href="support.html">Support</a></li>
         </ul>
       </nav>
-      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
-        <i class='bx bx-sun'></i>
-        <span class="theme-toggle-slider"></span>
-        <i class='bx bx-moon'></i>
-      </button>
+      <!-- Dark mode toggle removed -->
       <div class="header-actions">
         <button class="btn btn-secondary" id="laundry-logout">Logout</button>
       </div>
@@ -74,12 +70,6 @@
             <option value="yesterday">Yesterday</option>
             <option value="week">This Week</option>
             <option value="month">This Month</option>
-          </select>
-          <select id="priority-filter" class="filter-select" aria-label="Filter by priority" title="Filter by priority">
-            <option value="all">All Priority</option>
-            <option value="urgent">Urgent Only</option>
-            <option value="express">Express Only</option>
-            <option value="normal">Normal Only</option>
           </select>
         </div>
         <button class="btn btn-secondary" id="scan-qr-btn"><i class='bx bx-qr-scan'></i> Scan QR</button>
@@ -131,18 +121,11 @@
           <div class="stat-card stat-danger">
             <div class="stat-icon"><i class='bx bx-error'></i></div>
             <div class="stat-info">
-              <h3>Urgent</h3>
-              <p id="stat-urgent" class="stat-number">0</p>
-              <span class="stat-label">Priority orders</span>
+              <!-- Urgent stat removed -->
             </div>
           </div>
           <div class="stat-card stat-secondary">
-            <div class="stat-icon"><i class='bx bx-timer'></i></div>
-            <div class="stat-info">
-              <h3>Avg Time</h3>
-              <p id="stat-avgtime" class="stat-number">--</p>
-              <span class="stat-label">Completion time</span>
-            </div>
+            <!-- Avg Time stat removed -->
           </div>
         </div>
       </div>
@@ -366,7 +349,7 @@
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <script src="assests/crypto-utils.js"></script>
   <script src="assests/laundry-auth.js"></script>
-  <script src="assests/dark-mode.js"></script>
+  <!-- <script src="assests/dark-mode.js"></script> -->
   <script src="assests/keyboard-shortcuts.js"></script>
   <script src="assests/data-exporter.js"></script>
   <script src="assests/performance-enhancements.js"></script>
