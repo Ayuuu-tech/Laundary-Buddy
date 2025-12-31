@@ -23,6 +23,7 @@
     const loginForm = document.querySelector('form');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
+    const otpInput = document.getElementById('otp');
 
     if (loginForm && emailInput && passwordInput) {
       // Initialize form validator
@@ -48,7 +49,6 @@
       let otpStep = false;
       let lastEmail = '';
       let lastPassword = '';
-      let otpInput = null;
 
       loginForm.addEventListener('submit', async function (e) {
         e.preventDefault();
@@ -74,17 +74,7 @@
               otpStep = true;
               lastEmail = email;
               lastPassword = password;
-              // Show OTP input
-              if (!otpInput) {
-                otpInput = document.createElement('input');
-                otpInput.type = 'text';
-                otpInput.id = 'otp';
-                otpInput.placeholder = 'Enter OTP';
-                otpInput.className = 'form-control';
-                otpInput.style.marginTop = '10px';
-                otpInput.maxLength = 6;
-                loginForm.insertBefore(otpInput, submitButton);
-              }
+              // Show OTP input (already present in HTML)
               otpInput.style.display = 'block';
               otpInput.value = '';
               submitButton.textContent = 'Verify OTP';
@@ -93,6 +83,7 @@
               }
               passwordInput.disabled = true;
               emailInput.disabled = true;
+              otpInput.focus();
             } else {
               if (window.toastManager) {
                 window.toastManager.error(result.message, 'Login Failed');
