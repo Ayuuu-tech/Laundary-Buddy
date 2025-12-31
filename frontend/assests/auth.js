@@ -9,41 +9,60 @@
       this.checkingAuth = false;
     }
 
-    // Register a new user
-    async signup(userData) {
+    // Register a new user with OTP flow
+    async signup(userData, otp = null) {
       try {
-        const response = await apiClient.post('/api/auth/register', {
-          name: userData.name,
-          email: userData.email,
-          password: userData.password,
-          phone: userData.phone || '',
-          address: userData.address || ''
-        });
-
-        if (response.success) {
-          this.currentUser = response.user;
-          return { success: true, message: 'Account created successfully!', user: response.user };
+        if (!otp) {
+          // Step 1: Request OTP
+          const response = await apiClient.post('/api/auth/request-signup-otp', {
+            name: userData.name,
+            email: userData.email,
+            password: userData.password,
+            phone: userData.phone || '',
+            address: userData.address || ''
+          });
+          return response;
+        } else {
+          // Step 2: Verify OTP
+          const response = await apiClient.post('/api/auth/verify-signup-otp', {
+            email: userData.email,
+            otp: otp
+          });
+          if (response.success) {
+            this.currentUser = response.user;
+            return { success: true, message: 'Account created successfully!', user: response.user };
+          }
+          return response;
         }
-        return response;
       } catch (error) {
         console.error('Signup error:', error);
         return { success: false, message: error.message || 'Error creating account. Please try again.' };
       }
     }
 
-    // Login user
-    async login(email, password) {
-      try {
-        const response = await apiClient.post('/api/auth/login', {
-          email: email,
-          password: password
-        });
 
-        if (response.success) {
-          this.currentUser = response.user;
-          return { success: true, message: 'Login successful!', user: response.user };
+    // Login user with OTP flow
+    async login(email, password, otp = null) {
+      try {
+        if (!otp) {
+          // Step 1: Request OTP
+          const response = await apiClient.post('/api/auth/request-login-otp', {
+            email: email,
+            password: password
+          });
+          return response;
+        } else {
+          // Step 2: Verify OTP
+          const response = await apiClient.post('/api/auth/verify-login-otp', {
+            email: email,
+            otp: otp
+          });
+          if (response.success) {
+            this.currentUser = response.user;
+            return { success: true, message: 'Login successful!', user: response.user };
+          }
+          return response;
         }
-        return response;
       } catch (error) {
         console.error('Login error:', error);
         return { success: false, message: error.message || 'Error logging in. Please try again.' };
@@ -127,11 +146,11 @@
       }
     }
 
-    // Google Sign-In
+    // Google Sign-In (no OTP)
     async googleSignIn(credential) {
+      // This method intentionally skips OTP and directly calls backend
       try {
         const response = await apiClient.post('/api/auth/google', { credential });
-        
         if (response.success) {
           this.currentUser = response.user;
           return response;

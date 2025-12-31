@@ -1,3 +1,7 @@
+    signupOTP: { type: String },
+    signupOTPExpiry: { type: Date },
+  loginOTP: { type: String },
+  loginOTPExpiry: { type: Date },
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({

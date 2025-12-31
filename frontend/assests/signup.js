@@ -68,6 +68,11 @@
         PasswordStrength.showIndicator(passwordInput, '#signup-form');
       }
 
+      // OTP signup flow
+      let otpStep = false;
+      let lastSignupData = null;
+      let otpInput = null;
+
       signupForm.addEventListener('submit', async function (e) {
         e.preventDefault();
 
@@ -79,63 +84,95 @@
         const name = nameInput.value.trim();
         const email = studentIdInput.value.trim();
         const password = passwordInput.value.trim();
-
-        // Show loading state
         const submitButton = signupForm.querySelector('button[type="submit"]');
-        if (window.loadingManager) {
-          window.loadingManager.buttonLoading(submitButton);
-          window.loadingManager.show('Creating your account');
-        }
 
-        try {
-          // Register user using auth system
-          if (window.authManager) {
+        if (!otpStep) {
+          // Step 1: Request OTP
+          if (window.loadingManager) {
+            window.loadingManager.buttonLoading(submitButton);
+            window.loadingManager.show('Requesting OTP');
+          }
+          try {
             const result = await window.authManager.signup({
               name: name,
               email: email,
               password: password
             });
-
             if (result.success) {
-              // Use toast notification instead of alert
-              if (window.toastManager) {
-                window.toastManager.success(result.message, 'Account Created!');
-              } else {
-                alert(result.message + ' Redirecting to home page...');
+              otpStep = true;
+              lastSignupData = { name, email, password };
+              // Show OTP input
+              if (!otpInput) {
+                otpInput = document.createElement('input');
+                otpInput.type = 'text';
+                otpInput.id = 'otp';
+                otpInput.placeholder = 'Enter OTP';
+                otpInput.className = 'form-control';
+                otpInput.style.marginTop = '10px';
+                otpInput.maxLength = 6;
+                signupForm.insertBefore(otpInput, submitButton);
               }
-              console.log('User registered:', result.user);
-              
-              // Redirect to home page
-              setTimeout(() => {
-                window.location.href = 'home.html';
-              }, 1500);
+              otpInput.style.display = 'block';
+              otpInput.value = '';
+              submitButton.textContent = 'Verify OTP';
+              if (window.toastManager) {
+                window.toastManager.info('OTP sent to your email. Please enter it to continue.', 'OTP Sent');
+              }
+              nameInput.disabled = true;
+              studentIdInput.disabled = true;
+              passwordInput.disabled = true;
+              confirmPasswordInput.disabled = true;
             } else {
-              // Use toast for error
               if (window.toastManager) {
                 window.toastManager.error(result.message, 'Registration Failed');
               } else {
                 alert(result.message);
               }
             }
-          } else {
-            if (window.toastManager) {
-              window.toastManager.error('Please refresh the page and try again.', 'System Error');
-            } else {
-              alert('Authentication system not loaded. Please refresh the page.');
+          } finally {
+            if (window.loadingManager) {
+              window.loadingManager.hide();
+              window.loadingManager.buttonLoaded(submitButton);
             }
           }
-        } catch (error) {
-          console.error('Signup error:', error);
-          if (window.toastManager) {
-            window.toastManager.error('An unexpected error occurred. Please try again.', 'Error');
-          } else {
-            alert('An error occurred during signup. Please try again.');
+        } else {
+          // Step 2: Verify OTP
+          const otp = otpInput.value.trim();
+          if (!otp || otp.length !== 6) {
+            if (window.toastManager) {
+              window.toastManager.error('Please enter the 6-digit OTP sent to your email.', 'OTP Required');
+            }
+            return;
           }
-        } finally {
-          // Hide loading state
           if (window.loadingManager) {
-            window.loadingManager.hide();
-            window.loadingManager.buttonLoaded(submitButton);
+            window.loadingManager.buttonLoading(submitButton);
+            window.loadingManager.show('Verifying OTP');
+          }
+          try {
+            const result = await window.authManager.signup(lastSignupData, otp);
+            if (result.success) {
+              if (window.toastManager) {
+                window.toastManager.success(result.message, 'Account Created!');
+              } else {
+                alert(result.message + ' Redirecting to home page...');
+              }
+              setTimeout(() => {
+                window.location.href = 'home.html';
+              }, 1500);
+            } else {
+              if (window.toastManager) {
+                window.toastManager.error(result.message, 'OTP Failed');
+              } else {
+                alert(result.message);
+              }
+              otpInput.value = '';
+              otpInput.focus();
+            }
+          } finally {
+            if (window.loadingManager) {
+              window.loadingManager.hide();
+              window.loadingManager.buttonLoaded(submitButton);
+            }
           }
         }
       });

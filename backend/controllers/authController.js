@@ -1,3 +1,175 @@
+// Request OTP for Signup
+exports.requestSignupOTP = async (req, res) => {
+  try {
+    const { name, email, password, phone, address } = req.body;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email.toLowerCase())) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid email address' });
+    }
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'User already exists with this email' });
+    }
+    // Store signup data temporarily in user model (not ideal for prod, but simple for now)
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = new Date(Date.now() + 10 * 60 * 1000);
+    // Save OTP and signup data in a temp user (or you can use a separate collection for production)
+    let tempUser = await User.findOne({ email: email.toLowerCase(), signupOTP: { $exists: true } });
+    if (!tempUser) {
+      tempUser = new User({ name, email: email.toLowerCase(), password, phone, address });
+    } else {
+      tempUser.name = name;
+      tempUser.password = password;
+      tempUser.phone = phone;
+      tempUser.address = address;
+    }
+    tempUser.signupOTP = otp;
+    tempUser.signupOTPExpiry = expiry;
+    await tempUser.save();
+    // Send OTP using Resend
+    const { Resend } = require('resend');
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    try {
+      await resend.emails.send({
+        from: process.env.RESEND_FROM,
+        to: tempUser.email,
+        subject: 'Laundry Buddy Signup OTP',
+        text: `Your OTP for signup is: ${otp}. It is valid for 10 minutes.`
+      });
+      res.json({ success: true, message: 'OTP sent to your email' });
+    } catch (err) {
+      res.status(500).json({ success: false, message: 'Error sending OTP', error: err.message });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error processing signup OTP', error: error.message });
+  }
+};
+
+// Verify OTP and complete Signup
+exports.verifySignupOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: 'Email and OTP are required' });
+    }
+    const user = await User.findOne({ email: email.toLowerCase(), signupOTP: { $exists: true } });
+    if (!user || !user.signupOTP || !user.signupOTPExpiry) {
+      return res.status(400).json({ success: false, message: 'OTP not requested or user not found' });
+    }
+    if (user.signupOTP !== otp) {
+      return res.status(400).json({ success: false, message: 'Invalid OTP' });
+    }
+    if (user.signupOTPExpiry < new Date()) {
+      return res.status(400).json({ success: false, message: 'OTP has expired' });
+    }
+    // Hash password and finalize user
+    user.password = await require('bcryptjs').hash(user.password, 10);
+    user.signupOTP = null;
+    user.signupOTPExpiry = null;
+    await user.save();
+    // Create session
+    req.session.userId = user._id.toString();
+    req.session.user = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      address: user.address,
+      isAdmin: user.isAdmin || false
+    };
+    req.session.save((err) => {
+      if (err) {
+        return res.status(500).json({ success: false, message: 'Error saving session' });
+      }
+      res.status(201).json({ success: true, message: 'User registered successfully', user: req.session.user });
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error verifying signup OTP', error: error.message });
+  }
+};
+// Request OTP for Login
+exports.requestLoginOTP = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Email and password are required' });
+    }
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
+    }
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+    user.loginOTP = otp;
+    user.loginOTPExpiry = expiry;
+    await user.save();
+    // Send OTP using Resend
+    const { Resend } = require('resend');
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    try {
+      await resend.emails.send({
+        from: process.env.RESEND_FROM,
+        to: user.email,
+        subject: 'Laundry Buddy Login OTP',
+        text: `Your OTP for login is: ${otp}. It is valid for 10 minutes.`
+      });
+      res.json({ success: true, message: 'OTP sent to your email' });
+    } catch (err) {
+      res.status(500).json({ success: false, message: 'Error sending OTP', error: err.message });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error processing login OTP', error: error.message });
+  }
+};
+
+// Verify OTP and Login
+exports.verifyLoginOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: 'Email and OTP are required' });
+    }
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user || !user.loginOTP || !user.loginOTPExpiry) {
+      return res.status(400).json({ success: false, message: 'OTP not requested or user not found' });
+    }
+    if (user.loginOTP !== otp) {
+      return res.status(400).json({ success: false, message: 'Invalid OTP' });
+    }
+    if (user.loginOTPExpiry < new Date()) {
+      return res.status(400).json({ success: false, message: 'OTP has expired' });
+    }
+    // Clear OTP fields
+    user.loginOTP = null;
+    user.loginOTPExpiry = null;
+    await user.save();
+    // Create session
+    req.session.userId = user._id.toString();
+    req.session.user = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      address: user.address,
+      profilePhoto: user.profilePhoto,
+      isAdmin: user.isAdmin || false
+    };
+    req.session.save((err) => {
+      if (err) {
+        return res.status(500).json({ success: false, message: 'Error saving session' });
+      }
+      res.json({ success: true, message: 'Login successful', user: req.session.user });
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error verifying OTP', error: error.message });
+  }
+};
 // Verify OTP and Reset Password
 exports.verifyOTPAndResetPassword = async (req, res) => {
   try {

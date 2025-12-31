@@ -1,3 +1,9 @@
+// OTP-based signup
+router.post('/request-signup-otp', authController.requestSignupOTP);
+router.post('/verify-signup-otp', authController.verifySignupOTP);
+// OTP-based login
+router.post('/request-login-otp', authController.requestLoginOTP);
+router.post('/verify-login-otp', authController.verifyLoginOTP);
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');

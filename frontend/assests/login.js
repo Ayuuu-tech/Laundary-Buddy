@@ -43,6 +43,13 @@
         { type: 'minLength', value: 6, message: 'Password must be at least 6 characters' }
       ]);
 
+
+      // OTP login flow
+      let otpStep = false;
+      let lastEmail = '';
+      let lastPassword = '';
+      let otpInput = null;
+
       loginForm.addEventListener('submit', async function (e) {
         e.preventDefault();
 
@@ -53,34 +60,40 @@
 
         const email = emailInput.value.trim();
         const password = passwordInput.value.trim();
-
-        // Show loading state
         const submitButton = loginForm.querySelector('button[type="submit"]');
-        if (window.loadingManager) {
-          window.loadingManager.buttonLoading(submitButton);
-          window.loadingManager.show('Logging in');
-        }
 
-        try {
-          // Attempt login using auth system
-          if (window.authManager) {
+        if (!otpStep) {
+          // Step 1: Request OTP
+          if (window.loadingManager) {
+            window.loadingManager.buttonLoading(submitButton);
+            window.loadingManager.show('Requesting OTP');
+          }
+          try {
             const result = await window.authManager.login(email, password);
-
             if (result.success) {
-              // Use toast notification instead of alert
-              if (window.toastManager) {
-                window.toastManager.success(`Welcome back, ${result.user.name}!`, 'Login Successful');
-              } else {
-                alert(result.message + ' Welcome, ' + result.user.name + '!');
+              otpStep = true;
+              lastEmail = email;
+              lastPassword = password;
+              // Show OTP input
+              if (!otpInput) {
+                otpInput = document.createElement('input');
+                otpInput.type = 'text';
+                otpInput.id = 'otp';
+                otpInput.placeholder = 'Enter OTP';
+                otpInput.className = 'form-control';
+                otpInput.style.marginTop = '10px';
+                otpInput.maxLength = 6;
+                loginForm.insertBefore(otpInput, submitButton);
               }
-              console.log('User logged in:', result.user);
-              
-              // Redirect to home page
-              setTimeout(() => {
-                window.location.href = 'home.html';
-              }, 1500);
+              otpInput.style.display = 'block';
+              otpInput.value = '';
+              submitButton.textContent = 'Verify OTP';
+              if (window.toastManager) {
+                window.toastManager.info('OTP sent to your email. Please enter it to continue.', 'OTP Sent');
+              }
+              passwordInput.disabled = true;
+              emailInput.disabled = true;
             } else {
-              // Use toast for error
               if (window.toastManager) {
                 window.toastManager.error(result.message, 'Login Failed');
               } else {
@@ -89,25 +102,50 @@
               passwordInput.value = '';
               passwordInput.focus();
             }
-          } else {
-            if (window.toastManager) {
-              window.toastManager.error('Please refresh the page and try again.', 'System Error');
-            } else {
-              alert('Authentication system not loaded. Please refresh the page.');
+          } finally {
+            if (window.loadingManager) {
+              window.loadingManager.hide();
+              window.loadingManager.buttonLoaded(submitButton);
             }
           }
-        } catch (error) {
-          console.error('Login error:', error);
-          if (window.toastManager) {
-            window.toastManager.error('An unexpected error occurred. Please try again.', 'Error');
-          } else {
-            alert('An error occurred during login. Please try again.');
+        } else {
+          // Step 2: Verify OTP
+          const otp = otpInput.value.trim();
+          if (!otp || otp.length !== 6) {
+            if (window.toastManager) {
+              window.toastManager.error('Please enter the 6-digit OTP sent to your email.', 'OTP Required');
+            }
+            return;
           }
-        } finally {
-          // Hide loading state
           if (window.loadingManager) {
-            window.loadingManager.hide();
-            window.loadingManager.buttonLoaded(submitButton);
+            window.loadingManager.buttonLoading(submitButton);
+            window.loadingManager.show('Verifying OTP');
+          }
+          try {
+            const result = await window.authManager.login(lastEmail, lastPassword, otp);
+            if (result.success) {
+              if (window.toastManager) {
+                window.toastManager.success(`Welcome back, ${result.user.name}!`, 'Login Successful');
+              } else {
+                alert(result.message + ' Welcome, ' + result.user.name + '!');
+              }
+              setTimeout(() => {
+                window.location.href = 'home.html';
+              }, 1500);
+            } else {
+              if (window.toastManager) {
+                window.toastManager.error(result.message, 'OTP Failed');
+              } else {
+                alert(result.message);
+              }
+              otpInput.value = '';
+              otpInput.focus();
+            }
+          } finally {
+            if (window.loadingManager) {
+              window.loadingManager.hide();
+              window.loadingManager.buttonLoaded(submitButton);
+            }
           }
         }
       });
