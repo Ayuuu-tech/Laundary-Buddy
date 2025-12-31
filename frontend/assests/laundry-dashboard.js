@@ -990,7 +990,7 @@
 
   async function loadTickets() {
     try {
-      const response = await fetch(API_CONFIG.BASE_URL + '/support/all-tickets', {
+      const response = await fetch(API_CONFIG.BASE_URL + '/api/support/all-tickets', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
