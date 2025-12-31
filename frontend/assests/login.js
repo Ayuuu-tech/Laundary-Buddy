@@ -74,8 +74,9 @@
               otpStep = true;
               lastEmail = email;
               lastPassword = password;
-              // Show OTP input (already present in HTML)
-              otpInput.style.display = 'block';
+              // Show OTP input group
+              const otpGroup = document.getElementById('otp-group');
+              if (otpGroup) otpGroup.style.display = 'block';
               otpInput.value = '';
               submitButton.textContent = 'Verify OTP';
               if (window.toastManager) {
