@@ -540,8 +540,8 @@
       const res = await fetch(url, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
-          // In production, you can add: 'X-Laundry-Key': '<your-key>'
+          'Content-Type': 'application/json',
+          'x-laundry-key': 'laundrybuddy_secret_2026'
         },
         body: JSON.stringify({ status, estimatedDelivery, note })
       });
