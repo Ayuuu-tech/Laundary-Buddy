@@ -125,10 +125,13 @@ exports.upsertByOrderNumberForLaundry = async (req, res) => {
   try {
     const providedKey = req.headers['x-laundry-key'] || req.query.key;
     const requiredKey = process.env.LAUNDRY_API_KEY;
-    const isDev = (process.env.NODE_ENV || 'development') !== 'production';
+    const nodeEnv = process.env.NODE_ENV;
+    const isDev = (nodeEnv || 'development') !== 'production';
+    console.log('[DEBUG] NODE_ENV:', nodeEnv, '| isDev:', isDev, '| providedKey:', providedKey, '| requiredKey:', requiredKey);
 
     if (!isDev) {
       if (!requiredKey || providedKey !== requiredKey) {
+        console.log('[DEBUG] Unauthorized: Key mismatch or missing');
         return res.status(401).json({ success: false, message: 'Unauthorized' });
       }
     }
