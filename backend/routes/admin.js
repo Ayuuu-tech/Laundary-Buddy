@@ -7,20 +7,20 @@ const authMiddleware = require('../middleware/auth');
 // Middleware to check if user is admin (you can enhance this)
 const isAdmin = async (req, res, next) => {
   try {
-    console.log('🔒 Admin check for user:', req.user.id);
-    const user = await User.findById(req.user.id);
+    console.log('🔒 Admin check for user:', req.user?.id);
+    const user = await User.findById(req.user?.id);
     console.log('🔒 User found:', { email: user?.email, isAdmin: user?.isAdmin });
     // Add admin check logic here (e.g., check email or role)
     if (user && (user.email === 'ayushmaan.ggn@gmail.com' || user.isAdmin)) {
       console.log('✅ Admin access granted');
       next();
     } else {
-      console.log('❌ Admin access denied - not an admin');
-      return res.status(403).json({ success: false, message: 'Access denied' });
+      console.log('❌ Admin access denied - not an admin', { user });
+      return res.status(403).json({ success: false, message: 'Access denied', user });
     }
   } catch (error) {
     console.log('❌ Admin check error:', error.message);
-    return res.status(500).json({ success: false, message: 'Error checking admin status' });
+    return res.status(500).json({ success: false, message: 'Error checking admin status', error: error.message });
   }
 };
 

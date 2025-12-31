@@ -6,15 +6,16 @@ const authMiddleware = async (req, res, next) => {
     
     // Check if user session exists
     if (!req.session || !req.session.userId) {
-      console.log('❌ No session or userId found');
+      console.log('❌ No session or userId found', { session: req.session });
       return res.status(401).json({
         success: false,
-        message: 'Not authenticated. Please login.'
+        message: 'Not authenticated. Please login.',
+        session: req.session
       });
     }
 
-    console.log('✅ User authenticated:', req.session.userId);
-    
+    console.log('✅ User authenticated:', req.session.userId, { session: req.session });
+
     // Attach user info to request
     req.user = {
       id: req.session.userId,
