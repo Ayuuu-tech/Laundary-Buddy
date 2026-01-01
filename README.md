@@ -185,16 +185,29 @@ Laundary-Buddy/
 ### One-Command Setup (Development)
 
 ```bash
-# Clone and start
+# Clone and start (Docker)
 git clone https://github.com/Ayuuu-tech/Laundary-Buddy.git
 cd Laundary-Buddy
-
-# Start with Docker (recommended)
 docker-compose up -d
-
-# OR manually start backend
-cd backend && npm install && npm start
 ```
+
+### Local Development (No Docker)
+
+```bash
+# Backend
+cd backend
+npm install
+cp .env.example .env   # fill required values
+npm run dev             # or npm start
+
+# Frontend (new terminal)
+cd ../frontend
+npx serve -p 8080       # or python -m http.server 8080
+```
+
+- Backend runs on: http://localhost:3000
+- Frontend runs on: http://localhost:8080
+- Update the API base URL in frontend/assests/api-config.js if you change ports.
 
 ---
 
@@ -234,6 +247,12 @@ SESSION_SECRET=your-super-secret-session-key-min-32-chars
 # CORS (for production)
 ALLOWED_ORIGINS=https://yourdomain.com
 ```
+
+**Configuration map (edit these when deploying):**
+- [backend/.env](backend/.env) or [backend/.env.example](backend/.env.example) for server secrets and MongoDB connection.
+- [frontend/assests/api-config.js](frontend/assests/api-config.js) for API base URLs (development vs production).
+- [frontend/assests/environment.js](frontend/assests/environment.js) for Google OAuth client IDs and environment toggles.
+- [docker-compose.prod.yml](docker-compose.prod.yml) and [docker-compose.yml](docker-compose.yml) for port or image overrides.
 
 ### Step 3: Start Backend
 
@@ -474,9 +493,19 @@ curl -X POST http://localhost:3000/api/auth/register \
 
 # Login
 curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@test.com","password":"Test@123"}'
+   -H "Content-Type: application/json" \
+   -d '{"email":"test@test.com","password":"Test@123"}'
 ```
+
+---
+
+## ⚡ Troubleshooting
+
+- Seeing CORS errors? Confirm your frontend origin is listed in ALLOWED_ORIGINS inside [backend/.env](backend/.env).
+- Google Sign-In failing? Authorized JavaScript origin must match your deployed frontend and the production client ID in [frontend/assests/environment.js](frontend/assests/environment.js).
+- Cookies not set in production? Ensure HTTPS, sameSite: "none", secure: true are active by running with NODE_ENV=production.
+- Backend not starting? Recheck MONGODB_URI in [backend/.env](backend/.env) and allow your host IP in MongoDB Atlas.
+- 404s from API when using a different port? Update [frontend/assests/api-config.js](frontend/assests/api-config.js) to point to the correct backend base URL.
 
 ---
 
