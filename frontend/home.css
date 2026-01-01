@@ -391,14 +391,49 @@ body.dark-theme .social-icons a:hover {
 
 /* =========== RESPONSIVE STYLES =========== */
 @media (max-width: 992px) {
-    .navbar nav { display: none; } /* Simple hide for tablet, would need JS for hamburger */
-    .quick-access-grid { grid-template-columns: repeat(3, 1fr); }
-    .features-grid { grid-template-columns: 1fr; }
+    .quick-access-grid { 
+        grid-template-columns: repeat(3, 1fr); 
+    }
+    .features-grid { 
+        grid-template-columns: 1fr; 
+    }
 }
 
 @media (max-width: 768px) {
-    .hero h1 { font-size: 32px; }
-    .hero p { font-size: 16px; }
-    .hero-buttons { display: flex; flex-direction: column; gap: 10px; align-items: center;}
-    .quick-access-grid { grid-template-columns: repeat(2, 1fr); }
+    .hero h1 { 
+        font-size: 32px; 
+    }
+    .hero p { 
+        font-size: 16px; 
+    }
+    .hero-buttons { 
+        display: flex; 
+        flex-direction: column; 
+        gap: 10px; 
+        align-items: center;
+    }
+    .hero-buttons .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    .quick-access-grid { 
+        grid-template-columns: repeat(2, 1fr); 
+    }
+    input,
+    textarea,
+    select {
+        font-size: 16px !important; /* Prevent zoom on iOS */
+    }
+}
+
+@media (max-width: 575px) {
+    .hero h1 { 
+        font-size: 24px; 
+    }
+    .hero p { 
+        font-size: 14px; 
+    }
+    .quick-access-grid { 
+        grid-template-columns: 1fr; 
+    }
 }

@@ -261,8 +261,31 @@ main {
 }
 
 @media (max-width: 768px) {
-    nav {
-        display: none; /* Simple hide for mobile */
+    .tracking-info {
+        padding: 20px 15px;
+    }
+
+    .tracking-info h1 {
+        font-size: 24px;
+    }
+
+    .status-badge {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    input {
+        font-size: 16px !important; /* Prevent zoom on iOS */
+        padding: 12px 14px;
+    }
+
+    .btn {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+
+    .image-pane {
+        height: 250px;
     }
 }
 

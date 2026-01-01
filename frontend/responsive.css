@@ -8,6 +8,13 @@
 
 html {
     font-size: 16px;
+    /* Enable smooth scrolling */
+    scroll-behavior: smooth;
+}
+
+body {
+    /* Prevent pull-to-refresh on Chrome mobile */
+    overscroll-behavior-y: contain;
 }
 
 /* Mobile menu toggle - Hidden on desktop */
@@ -220,8 +227,21 @@ html {
         font-size: 28px;
         color: var(--text-color);
         cursor: pointer;
-        padding: 5px;
+        padding: 8px;
         order: 2;
+        min-width: 44px;
+        min-height: 44px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .mobile-menu-toggle:hover {
+        background: rgba(249, 115, 22, 0.1);
+        color: var(--primary-color);
+    }
+
+    .mobile-menu-toggle:active {
+        transform: scale(0.95);
     }
 
     .header-actions {
@@ -247,11 +267,14 @@ html {
         width: 100%;
         max-height: 0;
         overflow: hidden;
-        transition: max-height 0.3s ease-in-out;
+        opacity: 0;
+        transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        background: var(--white-color);
     }
 
     nav.mobile-menu-open {
         max-height: 500px;
+        opacity: 1;
         margin-top: 15px;
         padding-top: 15px;
         border-top: 1px solid var(--border-color);
@@ -355,12 +378,19 @@ html {
     input,
     textarea,
     select {
-        font-size: 14px;
-        padding: 10px 12px;
+        font-size: 16px !important; /* Prevent zoom on iOS */
+        padding: 12px 14px;
+        width: 100%;
+    }
+
+    /* Password fields with eye button */
+    .password-wrapper input {
+        padding-right: 50px !important;
     }
 
     label {
-        font-size: 13px;
+        font-size: 14px;
+        margin-bottom: 6px;
     }
 
     /* Buttons */
@@ -725,17 +755,33 @@ html {
     a,
     button,
     input[type="radio"],
-    input[type="checkbox"] {
+    input[type="checkbox"],
+    .password-toggle,
+    .mobile-menu-toggle {
         min-height: 44px;
         min-width: 44px;
     }
 
     nav ul li a {
-        padding: 10px 15px;
+        padding: 12px 15px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
     }
 
     .filter-btn {
         padding: 10px 16px;
+        min-height: 44px;
+    }
+
+    /* Improve tap target spacing */
+    .header-actions > * {
+        margin: 0 4px;
+    }
+
+    /* Remove hover effects on touch devices */
+    * {
+        -webkit-tap-highlight-color: rgba(249, 115, 22, 0.2);
     }
 }
 

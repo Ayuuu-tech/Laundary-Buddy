@@ -266,3 +266,73 @@ body.dark-theme .btn-secondary {
 body.dark-theme .btn-secondary:hover {
     background-color: #404040;
 }
+
+/* =========== MOBILE RESPONSIVE =========== */
+@media (max-width: 767px) {
+    main {
+        padding: 20px 15px;
+    }
+
+    .form-card {
+        padding: 20px 15px;
+        width: 100%;
+    }
+
+    .form-card h1 {
+        font-size: 24px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .input-group {
+        margin-bottom: 15px;
+    }
+
+    input,
+    select,
+    textarea {
+        font-size: 16px !important; /* Prevent zoom on iOS */
+        padding: 12px 14px;
+    }
+
+    .btn {
+        width: 100%;
+        justify-content: center;
+        font-size: 14px;
+        padding: 12px 20px;
+    }
+
+    .item-list {
+        gap: 10px;
+    }
+
+    .item-entry {
+        padding: 12px;
+    }
+
+    .remove-item {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 575px) {
+    .form-card h1 {
+        font-size: 20px;
+    }
+
+    input,
+    select,
+    textarea {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+
+    .btn {
+        font-size: 13px;
+        padding: 10px 16px;
+    }
+}

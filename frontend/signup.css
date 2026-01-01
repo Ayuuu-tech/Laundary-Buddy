@@ -119,8 +119,8 @@ form input {
 .password-toggle {
     position: absolute;
     right: 14px;
-    top: 14px;
-    transform: none;
+    top: 50%;
+    transform: translateY(-50%);
     cursor: pointer;
     font-size: 20px;
     color: var(--subtitle-color);
@@ -128,11 +128,22 @@ form input {
     pointer-events: auto;
     z-index: 10;
     background: transparent;
-    padding: 5px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 4px;
 }
 
 .password-toggle:hover {
     color: var(--primary-color);
+    background: rgba(249, 115, 22, 0.1);
+}
+
+.password-toggle:active {
+    transform: translateY(-50%) scale(0.95);
 }
 
 /* Ensure validation errors appear below the input */
@@ -290,6 +301,58 @@ body.dark-theme .google-btn {
 body.dark-theme .google-btn:hover {
     background-color: #262626;
     border-color: #4b5563;
+}
+
+/* =========== MOBILE RESPONSIVE =========== */
+@media (max-width: 768px) {
+    .split-screen-container {
+        grid-template-columns: 1fr;
+    }
+
+    .left-pane {
+        display: none;
+    }
+
+    .form-wrapper {
+        padding: 25px 20px;
+        max-width: 100%;
+    }
+
+    .form-wrapper h2 {
+        font-size: 24px;
+    }
+
+    input {
+        font-size: 16px !important; /* Prevent zoom on iOS */
+        padding: 12px 14px;
+    }
+
+    .password-wrapper input {
+        padding-right: 50px !important;
+    }
+
+    .btn {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 575px) {
+    .form-wrapper {
+        padding: 20px 15px;
+    }
+
+    .form-wrapper h2 {
+        font-size: 20px;
+    }
+
+    .logo {
+        font-size: 20px;
+    }
+
+    .logo i {
+        font-size: 24px;
+    }
 }
 
 body.dark-theme .divider::before,

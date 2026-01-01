@@ -326,22 +326,53 @@ main h1 {
     .orders-toolbar {
         flex-direction: column;
         align-items: stretch;
+        gap: 12px;
     }
     
     .search-bar,
-    .sort-container {
+    .sort-container,
+    .filter-group {
         width: 100%;
         min-width: 100%;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .filter-select {
+        width: 100%;
+    }
+
+    /* Make buttons stack on mobile */
+    .orders-toolbar .btn {
+        width: 100%;
+        justify-content: center;
     }
     
     .filter-tabs {
         overflow-x: auto;
         flex-wrap: nowrap;
         padding-bottom: 5px;
+        -webkit-overflow-scrolling: touch;
     }
     
     .filter-btn {
         white-space: nowrap;
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+
+    /* Bulk actions on mobile */
+    .bulk-actions-bar {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .bulk-actions-bar .btn {
+        width: 100%;
     }
 }
 
