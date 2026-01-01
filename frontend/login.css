@@ -106,7 +106,6 @@ form {
     width: 100%;
     display: flex;
     align-items: center;
-    margin-bottom: 0;
 }
 
 .input-group .password-wrapper input {
@@ -134,21 +133,10 @@ form {
     transition: color 0.3s ease;
     pointer-events: auto;
     z-index: 10;
-    background: transparent;
-    padding: 5px;
 }
 
 .password-toggle:hover {
     color: var(--primary-color);
-}
-
-/* Ensure validation errors appear below the input */
-.input-group .password-wrapper ~ .error-message,
-.input-group .password-wrapper ~ .validation-feedback {
-    margin-top: 6px;
-    width: 100%;
-    clear: both;
-}
     box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
 }
 
