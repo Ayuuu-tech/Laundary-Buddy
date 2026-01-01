@@ -105,6 +105,7 @@ form input {
     width: 100%;
     display: flex;
     align-items: center;
+    margin-bottom: 0;
 }
 
 .password-wrapper input {
@@ -128,10 +129,20 @@ form input {
     transition: color 0.3s ease;
     pointer-events: auto;
     z-index: 10;
+    background: transparent;
+    padding: 5px;
 }
 
 .password-toggle:hover {
     color: var(--primary-color);
+}
+
+/* Ensure validation errors appear below the input */
+.password-wrapper ~ .error-message,
+.password-wrapper ~ .validation-feedback {
+    margin-top: 6px;
+    width: 100%;
+    clear: both;
 }
 
 form input:focus {
