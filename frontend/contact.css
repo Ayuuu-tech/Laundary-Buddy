@@ -37,6 +37,7 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 20px 0;
+    background-color: var(--white-color);
 }
 
 /* CORRECTED LOGO STYLE */
@@ -283,7 +284,9 @@ nav a:hover, nav a.active {
 }
 
 @media (max-width: 992px) {
-    .navbar nav { display: none; } /* Simple hide for tablet, would need JS for hamburger */
+    /* Keep nav visible on contact page; allow wrapping instead of hiding */
+    .navbar nav { display: flex; }
+    .navbar nav ul { flex-wrap: wrap; gap: 16px; }
     .quick-access-grid { grid-template-columns: repeat(3, 1fr); }
     .features-grid { grid-template-columns: 1fr; }
 }
