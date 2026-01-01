@@ -154,9 +154,11 @@ form input {
 /* Ensure validation errors appear below the input */
 .password-wrapper ~ .error-message,
 .password-wrapper ~ .validation-feedback {
+    display: block;
     margin-top: 6px;
     width: 100%;
     clear: both;
+    box-sizing: border-box;
 }
 
 form input:focus {
