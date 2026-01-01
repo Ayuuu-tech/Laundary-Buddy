@@ -236,6 +236,30 @@ footer {
     font-size: 14px;
 }
 
+/* Legal/footer text helpers for static pages */
+.footer-note {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+    text-align: center;
+    color: #999;
+}
+
+.footer-nav {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.footer-nav a {
+    color: #4e54c8;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.footer-nav a:hover {
+    color: var(--primary-color);
+}
+
 /* =========== DARK THEME =========== */
 body.dark-theme {
     --primary-color: #FB923C;

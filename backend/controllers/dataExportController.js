@@ -9,7 +9,7 @@ const Tracking = require('../models/Tracking');
  * Export user data (GDPR compliance)
  * GET /api/user/export-data
  */
-exports.exportUserData = async (req, res) => {
+const exportUserData = async (req, res) => {
   try {
     const userId = req.user.id;
     
@@ -87,7 +87,7 @@ exports.exportUserData = async (req, res) => {
  * Delete user account and all associated data
  * DELETE /api/user/delete-account
  */
-exports.deleteUserAccount = async (req, res) => {
+const deleteUserAccount = async (req, res) => {
   try {
     const userId = req.user.id;
     const { password, confirmDeletion } = req.body;
@@ -163,7 +163,7 @@ exports.deleteUserAccount = async (req, res) => {
  * Request account deletion (for review/compliance)
  * POST /api/user/request-deletion
  */
-exports.requestAccountDeletion = async (req, res) => {
+const requestAccountDeletion = async (req, res) => {
   try {
     const userId = req.user.id;
     const { reason } = req.body;
