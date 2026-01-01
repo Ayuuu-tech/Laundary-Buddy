@@ -289,9 +289,6 @@ exports.requestPasswordResetOTP = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error sending OTP', error: error.message });
   }
 };
-const bcrypt = require('bcryptjs');
-const User = require('../models/User');
-
 // Register User
 exports.register = async (req, res) => {
   try {
