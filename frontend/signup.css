@@ -124,7 +124,7 @@ form input {
     position: absolute;
     right: 0;
     top: 50%;
-    transform: translateY(-50%);
+    margin-top: -10px;
     width: 48px;
     height: 48px;
     cursor: pointer;
