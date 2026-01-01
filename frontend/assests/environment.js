@@ -39,12 +39,22 @@ class EnvironmentConfig {
         apiUrl: 'https://laundry-buddy-api.onrender.com/api',
         enableDebug: false,
         enableServiceWorker: true,
-        // Google OAuth Client ID for production (update this in render environment if you rotate keys)
-        googleClientId: '708319771344-gd8frork6c2r8o45rbkfctpk9nl8shdb.apps.googleusercontent.com'
+        // Google OAuth Client ID loaded from meta tag for security
+        googleClientId: this.getGoogleClientId()
       }
     };
 
     return configs[this.env] || configs.development;
+  }
+
+  getGoogleClientId() {
+    // Get Google Client ID from meta tag instead of hardcoding
+    const metaTag = document.querySelector('meta[name="google-client-id"]');
+    if (metaTag) {
+      return metaTag.getAttribute('content');
+    }
+    // Fallback for development
+    return this.env === 'development' ? '708319771344-gd8frork6c2r8o45rbkfctpk9nl8shdb.apps.googleusercontent.com' : null;
   }
 
   get apiUrl() {

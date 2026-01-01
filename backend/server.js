@@ -1,4 +1,12 @@
 require('dotenv').config();
+
+// Validate environment variables before starting
+const { validateEnv } = require('./config/env-validator');
+validateEnv();
+
+// Initialize monitoring (Sentry, etc.)
+const { initSentry, getSentryMiddleware, setupHealthCheck, setupDatabaseQueryLogging } = require('./config/monitoring');
+
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -10,12 +18,28 @@ const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 const { apiLimiter, helmetConfig } = require('./middleware/security');
 const { logger, httpLogger } = require('./middleware/logger');
+const { httpsSecurityMiddleware } = require('./middleware/https');
+const { 
+  ipBlockingMiddleware, 
+  sanitizeInputMiddleware, 
+  preventSQLInjection 
+} = require('./middleware/advanced-security');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Initialize Sentry first (before any other middleware)
+initSentry(app);
+
+const sentryMiddleware = getSentryMiddleware();
+app.use(sentryMiddleware.requestHandler);
+app.use(sentryMiddleware.tracingHandler);
+
 // Trust proxy (important for rate limiting behind reverse proxies)
 app.set('trust proxy', 1);
+
+// HTTPS enforcement and security headers (must be early in middleware chain)
+app.use(httpsSecurityMiddleware);
 
 // Security middleware
 app.use(helmetConfig);
@@ -90,6 +114,15 @@ app.use(session({
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
+// IP blocking middleware (should be early)
+app.use(ipBlockingMiddleware);
+
+// Advanced input sanitization
+app.use(sanitizeInputMiddleware);
+
+// Prevent SQL injection attempts
+app.use(preventSQLInjection);
+
 // Sanitize data to prevent MongoDB injection
 app.use(mongoSanitize());
 
@@ -107,8 +140,13 @@ app.use('/api/tracking', require('./routes/tracking'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/support', require('./routes/support'));
 app.use('/api/contact', require('./routes/contact'));
+app.use('/api/user', require('./routes/user'));
 
-// Health check route
+// Health check route (before error handlers)
+setupHealthCheck(app);
+
+// Sentry error handler (must be before any other error middleware)
+app.use(sentryMiddleware.errorHandler);
 app.get('/api/health', (req, res) => {
   res.json({ 
     success: true, 
@@ -168,6 +206,9 @@ async function start() {
     await connectDB();
     const mongoose = require('mongoose');
     app.locals.db = mongoose.connection.db;
+    
+    // Setup database query logging
+    setupDatabaseQueryLogging(mongoose);
     
     // Start Express server
     server = app.listen(PORT, () => {

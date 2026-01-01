@@ -1,3 +1,12 @@
+const User = require('../models/User');
+const bcrypt = require('bcryptjs');
+const { 
+  generateAccessToken, 
+  generateRefreshToken, 
+  checkAccountLock,
+  logSecurityEvent 
+} = require('../middleware/auth-security');
+
 // Request OTP for Signup
 exports.requestSignupOTP = async (req, res) => {
   try {
@@ -360,24 +369,73 @@ exports.login = async (req, res) => {
   console.log('🔑 Login attempt:', req.body.email);
   try {
     const { email, password } = req.body;
+    const ipAddress = req.ip || req.connection.remoteAddress;
+    const userAgent = req.get('user-agent');
 
     // Find user
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
+      // Log failed attempt
+      if (global.securityLogger) {
+        await global.securityLogger(null, 'LOGIN_FAILED', { 
+          email, 
+          ipAddress,
+          reason: 'User not found'
+        });
+      }
       return res.status(401).json({ 
         success: false, 
         message: 'Invalid email or password' 
+      });
+    }
+
+    // Check if account is locked
+    const lockCheck = await checkAccountLock(user);
+    if (lockCheck.locked) {
+      await logSecurityEvent(user._id, 'LOGIN_LOCKED', { ipAddress, userAgent });
+      return res.status(423).json({ 
+        success: false, 
+        message: lockCheck.message,
+        code: 'ACCOUNT_LOCKED'
       });
     }
 
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      // Increment failed attempts
+      await user.incrementLoginAttempts();
+      await logSecurityEvent(user._id, 'LOGIN_FAILED', { 
+        ipAddress, 
+        userAgent,
+        failedAttempts: user.failedLoginAttempts 
+      });
+      
       return res.status(401).json({ 
         success: false, 
         message: 'Invalid email or password' 
       });
     }
+
+    // Reset failed login attempts on successful login
+    if (user.failedLoginAttempts > 0) {
+      await user.resetLoginAttempts();
+    }
+
+    // Update last login info
+    user.lastLoginAt = new Date();
+    user.lastLoginIP = ipAddress;
+    await user.save();
+
+    // Generate tokens
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+    
+    // Store refresh token
+    await user.addRefreshToken(refreshToken);
+
+    // Log successful login
+    await logSecurityEvent(user._id, 'LOGIN_SUCCESS', { ipAddress, userAgent });
 
     // Create session
     req.session.userId = user._id.toString();
@@ -390,6 +448,7 @@ exports.login = async (req, res) => {
       profilePhoto: user.profilePhoto,
       isAdmin: user.isAdmin || false
     };
+    req.session.lastActivity = Date.now();
 
     // Save session explicitly
     req.session.save((err) => {
@@ -407,10 +466,13 @@ exports.login = async (req, res) => {
       res.json({
         success: true,
         message: 'Login successful',
-        user: req.session.user
+        user: req.session.user,
+        token: accessToken,
+        refreshToken: refreshToken
       });
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Error logging in', 
