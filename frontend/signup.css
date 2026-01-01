@@ -167,6 +167,16 @@ form input {
     box-sizing: border-box;
 }
 
+/* General validation messages below all inputs */
+form .error-message,
+form .validation-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    clear: both;
+    box-sizing: border-box;
+}
+
 form input:focus {
     outline: 2px solid var(--primary-color);
     outline-offset: 1px;

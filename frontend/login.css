@@ -106,6 +106,16 @@ form > .input-group {
     border-color: var(--primary-color);
 }
 
+/* Place validation messages below inputs */
+.input-group .error-message,
+.input-group .validation-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    clear: both;
+    box-sizing: border-box;
+}
+
 /* Password Toggle Styles */
 .input-group .password-wrapper {
     position: relative;
