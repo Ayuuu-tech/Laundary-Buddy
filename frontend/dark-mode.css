@@ -176,10 +176,12 @@ body.dark-theme nav a.active {
 }
 
 /* Mobile menu active state (keeps text visible on orange background) */
-body.dark-theme nav ul li a.active,
-body.dark-theme nav ul li a:hover {
-  background: var(--primary-color);
-  color: #ffffff;
+@media (max-width: 767px) {
+  body.dark-theme nav.mobile-menu-open ul li a.active,
+  body.dark-theme nav.mobile-menu-open ul li a:hover {
+    background: var(--primary-color);
+    color: #ffffff;
+  }
 }
 
 /* Buttons */
