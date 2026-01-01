@@ -89,6 +89,12 @@ form {
     gap: 16px;
 }
 
+form > div {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
 form input {
     width: 100%;
     padding: 14px 16px;

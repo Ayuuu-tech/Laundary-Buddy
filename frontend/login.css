@@ -78,6 +78,12 @@ form {
     text-align: left;
 }
 
+form > .input-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
 .input-group label {
     display: block;
     font-size: 14px;
