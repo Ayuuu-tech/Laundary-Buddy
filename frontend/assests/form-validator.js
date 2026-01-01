@@ -145,19 +145,19 @@
 
       if (this.options.showInlineErrors) {
         // Remove existing error message
-        const existingError = field.parentElement.querySelector('.error-message');
-        if (existingError) {
-          existingError.remove();
-        }
+        const wrapper = field.closest('.password-wrapper') || field.closest('.input-wrapper') || field.parentElement;
+
+        // Remove existing error message (inside wrapper or immediate sibling)
+        const existingError = wrapper.querySelector('.error-message') || (wrapper.nextElementSibling && wrapper.nextElementSibling.classList && wrapper.nextElementSibling.classList.contains('error-message') ? wrapper.nextElementSibling : null);
+        if (existingError) existingError.remove();
 
         // Create and show error message
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error-message show';
         errorDiv.innerHTML = `<i class='bx bx-error-circle'></i>${message}`;
         
-        // Insert after input or after input wrapper
-        const wrapper = field.closest('.input-wrapper') || field.parentElement;
-        wrapper.appendChild(errorDiv);
+        // Place the message after the wrapper so it sits below the field
+        wrapper.insertAdjacentElement('afterend', errorDiv);
       }
 
       // Show error icon
@@ -173,10 +173,9 @@
       field.classList.add('success');
 
       // Remove error message
-      const errorMessage = field.parentElement.querySelector('.error-message');
-      if (errorMessage) {
-        errorMessage.remove();
-      }
+      const wrapper = field.closest('.password-wrapper') || field.closest('.input-wrapper') || field.parentElement;
+      const errorMessage = wrapper.querySelector('.error-message') || (wrapper.nextElementSibling && wrapper.nextElementSibling.classList && wrapper.nextElementSibling.classList.contains('error-message') ? wrapper.nextElementSibling : null);
+      if (errorMessage) errorMessage.remove();
 
       // Show success icon
       this.updateFieldIcon(field, 'success');
@@ -189,10 +188,9 @@
     clearFieldError(field) {
       field.classList.remove('error', 'success');
       
-      const errorMessage = field.parentElement.querySelector('.error-message');
-      if (errorMessage) {
-        errorMessage.remove();
-      }
+      const wrapper = field.closest('.password-wrapper') || field.closest('.input-wrapper') || field.parentElement;
+      const errorMessage = wrapper.querySelector('.error-message') || (wrapper.nextElementSibling && wrapper.nextElementSibling.classList && wrapper.nextElementSibling.classList.contains('error-message') ? wrapper.nextElementSibling : null);
+      if (errorMessage) errorMessage.remove();
 
       const icon = field.parentElement.querySelector('.input-icon');
       if (icon) {
