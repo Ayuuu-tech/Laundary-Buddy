@@ -75,10 +75,23 @@ function initSentry(app) {
  * Add after all controllers but before error handlers
  */
 function getSentryMiddleware() {
+  // If Sentry isn't configured or Handlers are unavailable, return no-op middleware to avoid crashes
+  const handlers = Sentry?.Handlers;
+  if (!process.env.SENTRY_DSN || !handlers) {
+    console.warn('⚠️  Sentry middleware disabled (missing DSN or Handlers)');
+    const passthrough = (req, res, next) => next();
+    const errorPassthrough = (err, req, res, next) => next(err);
+    return {
+      requestHandler: passthrough,
+      tracingHandler: passthrough,
+      errorHandler: errorPassthrough
+    };
+  }
+
   return {
-    requestHandler: Sentry.Handlers.requestHandler(),
-    tracingHandler: Sentry.Handlers.tracingHandler(),
-    errorHandler: Sentry.Handlers.errorHandler()
+    requestHandler: handlers.requestHandler(),
+    tracingHandler: handlers.tracingHandler(),
+    errorHandler: handlers.errorHandler()
   };
 }
 
