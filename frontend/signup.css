@@ -103,24 +103,29 @@ form input {
 .password-wrapper {
     position: relative;
     width: 100%;
-    display: block;
+    display: flex;
+    align-items: center;
+    height: 48px;
 }
 
 .password-wrapper input {
     width: 100%;
+    height: 48px;
     padding: 14px 45px 14px 16px !important;
     border: none;
     border-radius: 8px;
     background-color: var(--input-bg-color);
     font-family: 'Poppins', sans-serif;
     font-size: 16px;
+    box-sizing: border-box;
 }
 
 .password-toggle {
     position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
+    right: 12px;
+    top: 0;
+    bottom: 0;
+    height: 48px;
     cursor: pointer;
     font-size: 20px;
     color: var(--subtitle-color);
@@ -128,13 +133,12 @@ form input {
     pointer-events: auto;
     z-index: 10;
     background: transparent;
-    padding: 8px;
+    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 0 8px;
     min-width: 44px;
-    min-height: 44px;
-    border-radius: 4px;
 }
 
 .password-toggle:hover {
@@ -194,6 +198,41 @@ form input:focus {
 
 .login-link a:hover {
     text-decoration: underline;
+}
+
+/* =========== MOBILE RESPONSIVE =========== */
+@media (max-width: 768px) {
+    .signup-container {
+        padding: 30px 20px;
+    }
+
+    .signup-container h1 {
+        font-size: 28px;
+    }
+
+    form {
+        gap: 14px;
+    }
+
+    /* Ensure password wrapper is fixed height on mobile */
+    .password-wrapper {
+        height: 48px;
+    }
+
+    .password-wrapper input {
+        height: 48px;
+        padding: 14px 45px 14px 16px !important;
+    }
+
+    .password-toggle {
+        height: 48px;
+        min-width: 44px;
+    }
+
+    .btn {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
 }
 
 /* =========== DARK THEME =========== */

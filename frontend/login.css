@@ -104,16 +104,20 @@ form {
 .input-group .password-wrapper {
     position: relative;
     width: 100%;
-    display: block;
+    display: flex;
+    align-items: center;
+    height: 44px;
 }
 
 .input-group .password-wrapper input {
     width: 100%;
+    height: 44px;
     padding: 12px 45px 12px 14px;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     font-family: 'Poppins', sans-serif;
     font-size: 16px;
+    box-sizing: border-box;
 }
 
 .input-group .password-wrapper input:focus {
@@ -123,9 +127,10 @@ form {
 
 .password-toggle {
     position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
+    right: 12px;
+    top: 0;
+    bottom: 0;
+    height: 44px;
     cursor: pointer;
     font-size: 20px;
     color: var(--label-color);
@@ -133,10 +138,11 @@ form {
     pointer-events: auto;
     z-index: 10;
     background: transparent;
-    padding: 8px;
+    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 0 8px;
     min-width: 44px;
     min-height: 44px;
     border-radius: 4px;
@@ -230,6 +236,19 @@ form {
     .btn {
         padding: 12px 20px;
         font-size: 14px;
+    }
+
+    /* Ensure password wrapper is fixed height on mobile */
+    .input-group .password-wrapper {
+        height: 44px;
+    }
+
+    .input-group .password-wrapper input {
+        height: 44px;
+    }
+
+    .password-toggle {
+        height: 44px;
     }
 }
 
