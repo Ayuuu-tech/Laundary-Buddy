@@ -103,26 +103,44 @@ form input {
 .password-wrapper {
     position: relative;
     width: 100%;
+    display: block;
 }
 
 .password-wrapper input {
     width: 100%;
-    padding-right: 45px;
+    padding: 14px 45px 14px 16px !important;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--input-bg-color);
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
 }
 
 .password-toggle {
     position: absolute;
     right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 14px;
+    transform: none;
     cursor: pointer;
     font-size: 20px;
     color: var(--subtitle-color);
     transition: color 0.3s ease;
+    pointer-events: auto;
+    z-index: 10;
+    background: transparent;
+    padding: 5px;
 }
 
 .password-toggle:hover {
     color: var(--primary-color);
+}
+
+/* Ensure validation errors appear below the input */
+.password-wrapper ~ .error-message,
+.password-wrapper ~ .validation-feedback {
+    margin-top: 6px;
+    width: 100%;
+    clear: both;
 }
 
 form input:focus {

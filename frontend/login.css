@@ -101,30 +101,51 @@ form {
 }
 
 /* Password Toggle Styles */
-.password-wrapper {
+.input-group .password-wrapper {
     position: relative;
     width: 100%;
+    display: block;
 }
 
-.password-wrapper input {
+.input-group .password-wrapper input {
     width: 100%;
-    padding-right: 45px;
+    padding: 12px 45px 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+}
+
+.input-group .password-wrapper input:focus {
+    outline: none;
+    border-color: var(--primary-color);
 }
 
 .password-toggle {
     position: absolute;
     right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 12px;
+    transform: none;
     cursor: pointer;
     font-size: 20px;
     color: var(--label-color);
     transition: color 0.3s ease;
+    pointer-events: auto;
+    z-index: 10;
+    background: transparent;
+    padding: 5px;
 }
 
 .password-toggle:hover {
     color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
+}
+
+/* Ensure validation errors appear below the input */
+.input-group .password-wrapper ~ .error-message,
+.input-group .password-wrapper ~ .validation-feedback {
+    margin-top: 6px;
+    width: 100%;
+    clear: both;
 }
 
 .btn {
