@@ -104,8 +104,6 @@ form {
 .password-wrapper {
     position: relative;
     width: 100%;
-    display: flex;
-    align-items: flex-start;
 }
 
 .password-wrapper input {
@@ -116,18 +114,16 @@ form {
 .password-toggle {
     position: absolute;
     right: 14px;
-    top: 12px;
+    top: 50%;
+    transform: translateY(-50%);
     cursor: pointer;
     font-size: 20px;
     color: var(--label-color);
     transition: color 0.3s ease;
-    pointer-events: all;
-    z-index: 10;
 }
 
 .password-toggle:hover {
     color: var(--primary-color);
-}
     box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
 }
 
