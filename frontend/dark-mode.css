@@ -175,6 +175,13 @@ body.dark-theme nav a.active {
   color: var(--primary-color);
 }
 
+/* Mobile menu active state (keeps text visible on orange background) */
+body.dark-theme nav ul li a.active,
+body.dark-theme nav ul li a:hover {
+  background: var(--primary-color);
+  color: #ffffff;
+}
+
 /* Buttons */
 body.dark-theme .filter-btn {
   background-color: var(--background-secondary);
