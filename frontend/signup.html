@@ -47,8 +47,14 @@
             <form id="signup-form" action="home.html" autocomplete="on">
                 <input type="text" id="name" placeholder="Full Name" required autocomplete="name">
                 <input type="email" id="studentId" placeholder="Email Address" required autocomplete="email">
-                <input type="password" id="signup-password" placeholder="Create Password" required autocomplete="new-password">
-                <input type="password" id="confirm-password" placeholder="Confirm Password" required autocomplete="new-password">
+                <div class="password-wrapper">
+                    <input type="password" id="signup-password" placeholder="Create Password" required autocomplete="new-password">
+                    <i class='bx bx-hide password-toggle' id="toggleSignupPassword"></i>
+                </div>
+                <div class="password-wrapper">
+                    <input type="password" id="confirm-password" placeholder="Confirm Password" required autocomplete="new-password">
+                    <i class='bx bx-hide password-toggle' id="toggleConfirmPassword"></i>
+                </div>
                 <button type="submit" class="btn btn-primary">Sign Up</button>
             </form>
 

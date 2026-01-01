@@ -3,6 +3,45 @@
   'use strict';
 
   document.addEventListener('DOMContentLoaded', async function () {
+    // Password toggle functionality for both password fields
+    const toggleSignupPassword = document.getElementById('toggleSignupPassword');
+    const signupPasswordInput = document.getElementById('signup-password');
+    
+    if (toggleSignupPassword && signupPasswordInput) {
+      toggleSignupPassword.addEventListener('click', function() {
+        const type = signupPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        signupPasswordInput.setAttribute('type', type);
+        
+        // Toggle icon
+        if (type === 'password') {
+          toggleSignupPassword.classList.remove('bx-show');
+          toggleSignupPassword.classList.add('bx-hide');
+        } else {
+          toggleSignupPassword.classList.remove('bx-hide');
+          toggleSignupPassword.classList.add('bx-show');
+        }
+      });
+    }
+
+    const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+    const confirmPasswordInput = document.getElementById('confirm-password');
+    
+    if (toggleConfirmPassword && confirmPasswordInput) {
+      toggleConfirmPassword.addEventListener('click', function() {
+        const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        confirmPasswordInput.setAttribute('type', type);
+        
+        // Toggle icon
+        if (type === 'password') {
+          toggleConfirmPassword.classList.remove('bx-show');
+          toggleConfirmPassword.classList.add('bx-hide');
+        } else {
+          toggleConfirmPassword.classList.remove('bx-hide');
+          toggleConfirmPassword.classList.add('bx-show');
+        }
+      });
+    }
+
     // Check if user is already logged in
     try {
       if (window.authManager) {

@@ -8,6 +8,26 @@
       try { window.loadingManager.hide(); } catch (_) {}
     }
 
+    // Password toggle functionality
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    
+    if (togglePassword && passwordInput) {
+      togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        // Toggle icon
+        if (type === 'password') {
+          togglePassword.classList.remove('bx-show');
+          togglePassword.classList.add('bx-hide');
+        } else {
+          togglePassword.classList.remove('bx-hide');
+          togglePassword.classList.add('bx-show');
+        }
+      });
+    }
+
     // Check if user is already logged in
     if (window.authManager) {
       const isLoggedIn = await window.authManager.isLoggedIn();
@@ -22,7 +42,6 @@
 
     const loginForm = document.querySelector('form');
     const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
     const otpInput = document.getElementById('otp');
 
     if (loginForm && emailInput && passwordInput) {

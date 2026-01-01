@@ -98,6 +98,32 @@ form {
 .input-group input:focus {
     outline: none;
     border-color: var(--primary-color);
+}
+
+/* Password Toggle Styles */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 45px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 20px;
+    color: var(--label-color);
+    transition: color 0.3s ease;
+}
+
+.password-toggle:hover {
+    color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
 }
 
