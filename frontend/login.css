@@ -101,25 +101,14 @@ form {
 }
 
 /* Password Toggle Styles */
-.input-group .password-wrapper {
+.password-wrapper {
     position: relative;
     width: 100%;
-    display: flex;
-    align-items: center;
 }
 
-.input-group .password-wrapper input {
+.password-wrapper input {
     width: 100%;
-    padding: 12px 45px 12px 14px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 16px;
-}
-
-.input-group .password-wrapper input:focus {
-    outline: none;
-    border-color: var(--primary-color);
+    padding-right: 45px;
 }
 
 .password-toggle {
@@ -131,8 +120,6 @@ form {
     font-size: 20px;
     color: var(--label-color);
     transition: color 0.3s ease;
-    pointer-events: auto;
-    z-index: 10;
 }
 
 .password-toggle:hover {
