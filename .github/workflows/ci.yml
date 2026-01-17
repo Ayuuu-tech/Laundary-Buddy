@@ -10,25 +10,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
-
     steps:
     - uses: actions/checkout@v3
 
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Use Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version-file: '.nvmrc'
         cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
 
-    - name: Install Dependencies
-      run: npm ci
-
-    # Add test script here if available, e.g. npm test
-    # - name: Run Tests
-    #   run: npm test
+    - name: Install Backend Dependencies
+      working-directory: ./backend
+      run: npm install
 
     - name: Lint
+      working-directory: ./backend
       run: npm run lint --if-present
