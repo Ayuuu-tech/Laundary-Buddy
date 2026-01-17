@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 
 const securityLogSchema = new mongoose.Schema({
-  userId: { 
-    type: mongoose.Schema.Types.ObjectId, 
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    index: true 
+    index: true
   },
-  event: { 
-    type: String, 
+  event: {
+    type: String,
     required: true,
     enum: [
       'LOGIN_SUCCESS',
@@ -19,7 +19,11 @@ const securityLogSchema = new mongoose.Schema({
       'ACCOUNT_CREATED',
       'SUSPICIOUS_ACTIVITY',
       'TOKEN_REFRESH',
-      'LOGOUT'
+      'LOGOUT',
+      'SQL_INJECTION_ATTEMPT',
+      'XSS_ATTEMPT',
+      'RATE_LIMIT_EXCEEDED',
+      'ADMIN_ACCESS'
     ]
   },
   ipAddress: { type: String },

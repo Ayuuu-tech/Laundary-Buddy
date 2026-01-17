@@ -28,7 +28,12 @@ router.post('/google', async (req, res) => {
     const payload = await tokenResp.json();
 
     // Validate audience
-    const expectedClientId = process.env.GOOGLE_CLIENT_ID || payload.aud;
+    const expectedClientId = process.env.GOOGLE_CLIENT_ID;
+    if (!expectedClientId) {
+      console.error('GOOGLE_CLIENT_ID not set in environment variables');
+      return res.status(500).json({ success: false, message: 'Server configuration error' });
+    }
+
     if (payload.aud !== expectedClientId) {
       console.error('Google token audience mismatch', { expected: expectedClientId, got: payload.aud });
       return res.status(401).json({ success: false, message: 'Token audience mismatch' });
@@ -55,7 +60,8 @@ router.post('/google', async (req, res) => {
         email: user.email,
         phone: user.phone,
         address: user.address,
-        profilePhoto: picture || user.profilePhoto
+        profilePhoto: picture || user.profilePhoto,
+        isAdmin: user.isAdmin || false
       };
 
       return req.session.save((err) => {
@@ -63,7 +69,7 @@ router.post('/google', async (req, res) => {
           console.error('Session save error:', err);
           return res.status(500).json({ success: false, message: 'Error saving session' });
         }
-        console.log('✅ Google login session saved:', req.session.userId);
+        // console.log('✅ Google login session saved');
         return res.json({
           success: true,
           message: 'Login successful!',
@@ -93,7 +99,8 @@ router.post('/google', async (req, res) => {
       email: newUser.email,
       phone: newUser.phone,
       address: newUser.address,
-      profilePhoto: picture
+      profilePhoto: picture,
+      isAdmin: newUser.isAdmin || false
     };
 
     return req.session.save((err) => {
@@ -101,7 +108,7 @@ router.post('/google', async (req, res) => {
         console.error('Session save error:', err);
         return res.status(500).json({ success: false, message: 'Error saving session' });
       }
-      console.log('✅ Google signup session saved:', req.session.userId);
+      console.log('✅ Google signup session saved');
       return res.status(201).json({
         success: true,
         message: 'Account created successfully!',

@@ -31,6 +31,7 @@
     }
 
     // Create new order
+    // Create new order
     async createOrder(orderData) {
       try {
         const response = await apiClient.post('/api/orders', orderData);
@@ -40,6 +41,38 @@
         return response;
       } catch (error) {
         console.error('Error creating order:', error);
+
+        // Offline handling
+        const isOffline = !window.navigator.onLine || error.message.includes('fetch') || error.message.includes('Network request failed');
+
+        if (isOffline && window.IDBUtils && 'serviceWorker' in navigator) {
+          try {
+            // Save to IndexedDB
+            const savedOrder = await window.IDBUtils.addOrder(orderData);
+
+            // Register background sync
+            const registration = await navigator.serviceWorker.ready;
+            if (registration.sync) {
+              try {
+                await registration.sync.register('sync-submissions');
+                console.log('Background sync registered');
+              } catch (syncErr) {
+                console.warn('Background sync registration failed:', syncErr);
+              }
+            }
+
+            return {
+              success: true,
+              order: { ...orderData, id: 'offline-' + Date.now(), status: 'queued (offline)' },
+              message: 'You are offline. Order saved and will sync automatically when back online.',
+              offline: true
+            };
+          } catch (dbError) {
+            console.error('Failed to save order offline:', dbError);
+            return { success: false, message: 'Offline save failed: ' + dbError.message };
+          }
+        }
+
         return { success: false, message: error.message || 'Error creating order' };
       }
     }

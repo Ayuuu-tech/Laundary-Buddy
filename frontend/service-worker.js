@@ -39,7 +39,7 @@ const STATIC_ASSETS = [
   '/contact.html',
   '/support.html',
   '/offline.html',
-  
+
   // CSS files
   '/style.css',
   '/home.css',
@@ -57,7 +57,7 @@ const STATIC_ASSETS = [
   '/toast.css',
   '/dark-mode.css',
   // '/confirmation-modal.css', // removed unused modal styles from precache
-  
+
   // JavaScript files
   '/assests/auth.js',
   '/assests/home.js',
@@ -77,7 +77,7 @@ const STATIC_ASSETS = [
   // '/assests/confirmation-modal.js', // removed unused modal script from precache
   '/assests/dark-mode.js',
   '/assests/keyboard-shortcuts.js',
-  
+
   // Images
   '/assests/laundary_buddy.png',
   '/assests/home.png',
@@ -85,7 +85,7 @@ const STATIC_ASSETS = [
   '/assests/profile.png',
   '/assests/submit.png',
   '/assests/track.png',
-  
+
   // External resources (optional - comment out if too large)
   // 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap',
   // 'https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css'
@@ -97,7 +97,7 @@ const STATIC_ASSETS = [
  */
 self.addEventListener('install', (event) => {
   console.log('[Service Worker] Installing...');
-  
+
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then((cache) => {
@@ -120,7 +120,7 @@ self.addEventListener('install', (event) => {
  */
 self.addEventListener('activate', (event) => {
   console.log('[Service Worker] Activating...');
-  
+
   event.waitUntil(
     caches.keys()
       .then((cacheNames) => {
@@ -165,7 +165,14 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Apply different strategies based on request type
-  if (request.url.includes('/assests/data/')) {
+  if (request.url.includes('/api/')) {
+    // Network-first for API requests (don't cache sensitive data vigorously, or use Network-Only if preferred)
+    // Actually, for API, Network-Only is safest to avoid stale data, especially for orders/auth.
+    // But Network-First allows offline read. Let's send Network-First but ensure we don't return old auth data.
+    // Better: Network-First but with very short validity? 
+    // Safest for 30k users launch: Network-First.
+    event.respondWith(networkFirstStrategy(request));
+  } else if (request.url.includes('/assests/data/')) {
     // Network-first for JSON data
     event.respondWith(networkFirstStrategy(request));
   } else if (request.destination === 'image') {
@@ -185,7 +192,7 @@ async function cacheFirstStrategy(request) {
   try {
     // Try to get from cache
     const cachedResponse = await caches.match(request);
-    
+
     if (cachedResponse) {
       console.log(`[Service Worker] Serving from cache: ${request.url}`);
       return cachedResponse;
@@ -205,7 +212,7 @@ async function cacheFirstStrategy(request) {
     return networkResponse;
   } catch (error) {
     console.error(`[Service Worker] Fetch failed: ${request.url}`, error);
-    
+
     // Return offline page for navigation requests
     if (request.destination === 'document') {
       const offlinePage = await caches.match('/offline.html');
@@ -237,10 +244,10 @@ async function networkFirstStrategy(request) {
     return networkResponse;
   } catch (error) {
     console.log(`[Service Worker] Network failed, trying cache: ${request.url}`);
-    
+
     // Network failed, try cache
     const cachedResponse = await caches.match(request);
-    
+
     if (cachedResponse) {
       console.log(`[Service Worker] Serving from cache (fallback): ${request.url}`);
       return cachedResponse;
@@ -257,11 +264,11 @@ async function networkFirstStrategy(request) {
 async function limitCacheSize(cacheName, maxSize) {
   const cache = await caches.open(cacheName);
   const keys = await cache.keys();
-  
+
   if (keys.length > maxSize) {
     console.log(`[Service Worker] Cache size limit reached, deleting oldest entries`);
     await cache.delete(keys[0]);
-    limitCacheSize(cacheName, maxSize); // Recursive call
+    await limitCacheSize(cacheName, maxSize); // Recursive call
   }
 }
 
@@ -272,7 +279,7 @@ async function limitCacheSize(cacheName, maxSize) {
 self.addEventListener('sync', (event) => {
   if (event.tag === 'sync-submissions') {
     console.log('[Service Worker] Syncing submissions...');
-    
+
     event.waitUntil(
       syncSubmissions()
         .then(() => {
@@ -288,39 +295,50 @@ self.addEventListener('sync', (event) => {
 /**
  * Sync pending submissions
  */
+importScripts('/assests/idb-utils.js');
+
+/**
+ * Sync pending submissions
+ */
 async function syncSubmissions() {
-  // Get pending submissions from IndexedDB or localStorage
-  const pendingSubmissions = JSON.parse(localStorage.getItem('pendingSubmissions') || '[]');
-  
-  if (pendingSubmissions.length === 0) {
-    return;
-  }
-
-  const syncedSubmissions = [];
-
-  for (const submission of pendingSubmissions) {
-    try {
-      // Attempt to submit
-      const response = await fetch('/api/submissions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(submission)
-      });
-
-      if (response.ok) {
-        syncedSubmissions.push(submission);
-      }
-    } catch (error) {
-      console.error('[Service Worker] Failed to sync submission:', error);
+  console.log('[Service Worker] background sync started');
+  try {
+    const offlineOrders = await self.IDBUtils.getAllOrders();
+    if (offlineOrders.length === 0) {
+      console.log('[Service Worker] No offline orders to sync');
+      return;
     }
-  }
 
-  // Remove synced submissions
-  const remainingSubmissions = pendingSubmissions.filter(
-    (sub) => !syncedSubmissions.includes(sub)
-  );
-  
-  localStorage.setItem('pendingSubmissions', JSON.stringify(remainingSubmissions));
+    console.log(`[Service Worker] Syncing ${offlineOrders.length} orders...`);
+
+    for (const order of offlineOrders) {
+      try {
+        // Attempt to send to backend
+        // Note: We need API base URL. Assuming it's same origin for now relative fetch
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+            // Auth headers might be tricky here if tokens are in memory/localStorage (which we can't access)
+            // But browser cookies (HttpOnly) should be sent automatically if we use credentials: 'include'?
+            // The backend uses session cookies.
+          },
+          body: JSON.stringify(order)
+        });
+
+        if (response.ok) {
+          console.log(`[Service Worker] Synced order IDB key: ${order.id}`);
+          await self.IDBUtils.deleteOrder(order.id);
+        } else {
+          console.error('[Service Worker] Failed to sync order', await response.text());
+        }
+      } catch (err) {
+        console.error('[Service Worker] Error processing order sync item', err);
+      }
+    }
+  } catch (error) {
+    console.error('[Service Worker] Error reading from IndexedDB:', error);
+  }
 }
 
 /**
@@ -329,7 +347,7 @@ async function syncSubmissions() {
  */
 self.addEventListener('push', (event) => {
   console.log('[Service Worker] Push notification received');
-  
+
   let data = {
     title: 'Laundry Buddy',
     body: 'You have a new notification',
@@ -365,7 +383,7 @@ self.addEventListener('push', (event) => {
  */
 self.addEventListener('notificationclick', (event) => {
   console.log('[Service Worker] Notification clicked');
-  
+
   event.notification.close();
 
   event.waitUntil(
@@ -377,7 +395,7 @@ self.addEventListener('notificationclick', (event) => {
             return client.focus();
           }
         }
-        
+
         // Open new window
         if (clients.openWindow) {
           return clients.openWindow('/');
@@ -394,7 +412,7 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
-  
+
   if (event.data && event.data.type === 'CACHE_URLS') {
     event.waitUntil(
       caches.open(DYNAMIC_CACHE)

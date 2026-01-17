@@ -7,8 +7,8 @@ services:
     container_name: laundry-buddy-db
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-password123}
       MONGO_INITDB_DATABASE: laundry-buddy
     ports:
       - "27017:27017"
@@ -30,8 +30,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      MONGODB_URI: mongodb://admin:password123@mongodb:27017/laundry-buddy?authSource=admin
-      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}
+      MONGODB_URI: mongodb://${MONGO_USERNAME:-admin}:${MONGO_PASSWORD:-password123}@mongodb:27017/laundry-buddy?authSource=admin
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET_REQUIRED}
       JWT_EXPIRE: 7d
       ALLOWED_ORIGINS: http://localhost:3000,http://localhost:8080,http://frontend:3000
     depends_on:
@@ -39,7 +39,7 @@ services:
     networks:
       - laundry-network
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      test: [ "CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})" ]
       interval: 30s
       timeout: 10s
       retries: 3

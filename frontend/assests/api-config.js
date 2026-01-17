@@ -17,35 +17,64 @@ const API_CONFIG = {
   BASE_URL: getApiBaseUrl(),
   ENDPOINTS: {
     // Auth endpoints
-    REGISTER: '/api/auth/register',
-    LOGIN: '/api/auth/login',
-    GET_USER: '/api/auth/me',
-    UPDATE_PROFILE: '/api/auth/profile',
-    CHANGE_PASSWORD: '/api/auth/change-password',
-    
+    REGISTER: '/auth/register',
+    LOGIN: '/auth/login',
+    GET_USER: '/auth/me',
+    UPDATE_PROFILE: '/auth/profile',
+    CHANGE_PASSWORD: '/auth/change-password',
+
     // Order endpoints
-    ORDERS: '/api/orders',
-    ORDER_HISTORY: '/api/orders/history',
-    
+    ORDERS: '/orders',
+    ORDER_HISTORY: '/orders/history',
+
     // Tracking endpoints
-    TRACKING: '/api/tracking',
-    TRACK_BY_ORDER: '/api/tracking/order'
+    TRACKING: '/tracking',
+    TRACK_BY_ORDER: '/tracking/order'
   }
 };
 
 // Log the current API URL for debugging
-console.log('🔗 API Base URL:', API_CONFIG.BASE_URL);
+// Console log removed for privacy
+
+// Global Error Handling
+window.onerror = function (message, source, lineno, colno, error) {
+  console.error("Global Error:", { message, source, lineno, colno, error });
+  // Could send to backend here if needed
+  return false;
+};
+
+window.onunhandledrejection = function (event) {
+  console.error("Unhandled Rejection:", event.reason);
+};
 
 // HTTP Request Helper - Session-based (no tokens)
 class APIClient {
   constructor() {
     this.baseURL = API_CONFIG.BASE_URL;
+    this.csrfToken = null;
+    this.initCSRF();
+  }
+
+  async initCSRF() {
+    try {
+      const response = await fetch(`${this.baseURL}/csrf-token`);
+      const data = await response.json();
+      if (data.success) {
+        this.csrfToken = data.csrfToken;
+      }
+    } catch (e) {
+      console.warn('Failed to fetch CSRF token', e);
+    }
   }
 
   getHeaders() {
-    return {
+    const headers = {
       'Content-Type': 'application/json'
     };
+    if (this.csrfToken) {
+      headers['x-csrf-token'] = this.csrfToken;
+    }
+    return headers;
   }
 
   async request(endpoint, options = {}) {
@@ -62,15 +91,15 @@ class APIClient {
 
       if (!response.ok) {
         // Handle auth failures - but don't redirect from public pages
-        if (response.status === 401 && 
-          !endpoint.includes('/api/auth/login') && 
-          !endpoint.includes('/api/auth/register') && 
+        if (response.status === 401 &&
+          !endpoint.includes('/api/auth/login') &&
+          !endpoint.includes('/api/auth/register') &&
           !endpoint.includes('/api/auth/me')) {
           console.warn('Session expired/invalid. Redirecting to login...');
-          if (typeof window !== 'undefined' && 
-              !location.href.includes('login.html') && 
-              !location.href.includes('signup.html') && 
-              !location.href.includes('index.html')) {
+          if (typeof window !== 'undefined' &&
+            !location.href.includes('login.html') &&
+            !location.href.includes('signup.html') &&
+            !location.href.includes('index.html')) {
             window.location.href = 'login.html';
           }
         }

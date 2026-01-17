@@ -86,7 +86,7 @@
     // Check if user is logged in by fetching from server
     async isLoggedIn() {
       if (this.checkingAuth) return false;
-      
+
       try {
         this.checkingAuth = true;
         const user = await this.getCurrentUser();
@@ -114,22 +114,7 @@
       }
     }
 
-    // Update current user profile
-    async updateProfile(updatedData) {
-      try {
-        // Merge with current user data to allow partial updates (e.g., just photo)
-        const dataToSend = { ...this.currentUser, ...updatedData };
-        const response = await apiClient.put('/api/auth/profile', dataToSend);
-        if (response.success) {
-          this.currentUser = response.user;
-          return { success: true, message: 'Profile updated successfully!', user: response.user };
-        }
-        return response;
-      } catch (error) {
-        console.error('Update profile error:', error);
-        return { success: false, message: error.message || 'Error updating profile' };
-      }
-    }
+
 
     // Change password
     async changePassword(oldPassword, newPassword) {
@@ -138,7 +123,7 @@
           oldPassword: oldPassword,
           newPassword: newPassword
         });
-        
+
         return response;
       } catch (error) {
         console.error('Change password error:', error);
@@ -178,10 +163,16 @@
       const currentUser = await this.getCurrentUser();
       if (!currentUser || !currentUser.profilePhoto) return;
 
+      let photoUrl = currentUser.profilePhoto;
+      // If it's a relative path (from backend uploads), prepend API URL
+      if (photoUrl.startsWith('/') && window.API_CONFIG && window.API_CONFIG.BASE_URL) {
+        photoUrl = window.API_CONFIG.BASE_URL + photoUrl;
+      }
+
       // Update all profile images on the page
       const headerProfileImgs = document.querySelectorAll('.header-actions img, header img[alt*="Profile"], header img[alt*="User"]');
       headerProfileImgs.forEach(img => {
-        img.src = currentUser.profilePhoto;
+        img.src = photoUrl;
       });
     }
 

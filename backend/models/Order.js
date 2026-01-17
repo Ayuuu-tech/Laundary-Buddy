@@ -20,7 +20,7 @@ const orderSchema = new mongoose.Schema({
   address: String,
   phone: String,
   specialInstructions: String,
-  status: { type: String, default: 'pending' },
+  status: { type: String, default: 'pending', index: true },
   paymentStatus: { type: String, default: 'pending' },
   feedback: {
     rating: { type: Number, min: 1, max: 5 },

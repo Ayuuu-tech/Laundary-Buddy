@@ -42,7 +42,7 @@ const validationRules = {
       .trim()
       .matches(/^[0-9]{10}$/).withMessage('Phone number must be 10 digits')
   ],
-  
+
   login: [
     body('email')
       .trim()
@@ -52,7 +52,7 @@ const validationRules = {
     body('password')
       .notEmpty().withMessage('Password is required')
   ],
-  
+
   createOrder: [
     body('items')
       .isArray({ min: 1 }).withMessage('At least one item is required'),
@@ -69,7 +69,7 @@ const validationRules = {
       .trim()
       .isLength({ max: 200 }).withMessage('Address too long')
   ],
-  
+
   updateProfile: [
     body('name')
       .optional()
@@ -83,6 +83,17 @@ const validationRules = {
       .optional()
       .trim()
       .isLength({ max: 200 }).withMessage('Address too long')
+  ],
+  createTicket: [
+    body('type').notEmpty().withMessage('Type is required'),
+    body('details').notEmpty().withMessage('Details are required').isLength({ min: 10 }).withMessage('Details must be at least 10 characters'),
+    body('orderNumber').optional().trim(),
+    body('orderId').optional().isMongoId().withMessage('Invalid Order ID')
+  ],
+  contact: [
+    body('name').trim().notEmpty().withMessage('Name is required'),
+    body('email').trim().isEmail().withMessage('Valid email is required'),
+    body('message').trim().notEmpty().withMessage('Message is required').isLength({ min: 10 }).withMessage('Message too short')
   ]
 };
 

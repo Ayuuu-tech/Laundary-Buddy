@@ -27,6 +27,12 @@ const authLimiter = createRateLimiter(
   parseInt(process.env.AUTH_RATE_LIMIT_MAX_REQUESTS, 10) || 10 // default: 10 requests per window
 );
 
+// Stricter rate limiter for OTP generation (prevent email spam)
+const otpLimiter = createRateLimiter(
+  60 * 60 * 1000, // 1 hour
+  3 // 3 requests per hour
+);
+
 // Security headers configuration
 const helmetConfig = helmet({
   contentSecurityPolicy: {
@@ -47,31 +53,31 @@ const helmetConfig = helmet({
   },
   crossOriginEmbedderPolicy: false,
   crossOriginResourcePolicy: { policy: "cross-origin" },
-  
+
   // Additional security headers
   hsts: {
     maxAge: 31536000, // 1 year
     includeSubDomains: true,
     preload: true
   },
-  
+
   // Prevent MIME type sniffing
   noSniff: true,
-  
+
   // Control referrer information
   referrerPolicy: {
     policy: 'strict-origin-when-cross-origin'
   },
-  
+
   // XSS Protection (legacy but still good to have)
   xssFilter: true,
-  
+
   // Permissions Policy (formerly Feature Policy)
   permissionsPolicy: {
     features: {
       geolocation: ["'none'"],
       microphone: ["'none'"],
-      camera: ["'none'"],
+      camera: ["'self'"],
       payment: ["'none'"],
       usb: ["'none'"],
       magnetometer: ["'none'"],
@@ -84,5 +90,6 @@ const helmetConfig = helmet({
 module.exports = {
   apiLimiter,
   authLimiter,
+  otpLimiter,
   helmetConfig
 };

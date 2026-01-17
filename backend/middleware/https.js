@@ -9,7 +9,7 @@ const httpsRedirect = (req, res, next) => {
   if (process.env.NODE_ENV === 'production') {
     // Check if the request is not secure
     if (req.header('x-forwarded-proto') !== 'https') {
-      return res.redirect(301, `https://${req.header('host')}${req.url}`);
+      return res.redirect(302, `https://${req.header('host')}${req.url}`);
     }
   }
   next();
@@ -72,11 +72,11 @@ const permissionsPolicyMiddleware = (req, res, next) => {
  */
 const httpsSecurityMiddleware = [
   httpsRedirect,
-  hstsMiddleware,
-  antiClickjackingMiddleware,
-  noSniffMiddleware,
-  referrerPolicyMiddleware,
-  permissionsPolicyMiddleware
+  // hstsMiddleware, // Handled by Helmet
+  // antiClickjackingMiddleware, // Handled by Helmet
+  // noSniffMiddleware, // Handled by Helmet
+  // referrerPolicyMiddleware, // Handled by Helmet
+  // permissionsPolicyMiddleware // Handled by Helmet
 ];
 
 module.exports = {

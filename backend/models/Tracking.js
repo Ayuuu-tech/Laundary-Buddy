@@ -10,7 +10,7 @@ const trackingSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true, required: true },
   order: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },
   orderNumber: { type: String, index: true },
-  status: { type: String, default: 'picked_up' },
+  status: { type: String, default: 'pending' },
   currentLocation: String,
   estimatedDelivery: String,
   timeline: [timelineSchema],

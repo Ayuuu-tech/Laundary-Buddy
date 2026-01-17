@@ -1,20 +1,19 @@
 const authMiddleware = async (req, res, next) => {
   try {
-    console.log('🔐 Auth Check - Session ID:', req.sessionID);
-    console.log('🔐 Auth Check - Session Data:', req.session);
-    console.log('🔐 Auth Check - Cookies:', req.cookies);
-    
     // Check if user session exists
     if (!req.session || !req.session.userId) {
-      console.log('❌ No session or userId found', { session: req.session });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('❌ No session or userId found');
+      }
       return res.status(401).json({
         success: false,
-        message: 'Not authenticated. Please login.',
-        session: req.session
+        message: 'Not authenticated. Please login.'
       });
     }
 
-    console.log('✅ User authenticated:', req.session.userId, { session: req.session });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ User authenticated:', req.session.userId);
+    }
 
     // Attach user info to request
     req.user = {

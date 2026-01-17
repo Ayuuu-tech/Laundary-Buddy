@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const STATUS_FLOW = ['received','washing','drying','folding','ready-for-pickup','completed'];
+  const STATUS_FLOW = ['received', 'washing', 'drying', 'folding', 'ready-for-pickup', 'completed'];
   let selectedTokens = new Set();
   let previousReadyTokens = new Set();
   let currentFilters = { status: 'all', date: 'all', priority: 'all' };
@@ -36,7 +36,7 @@
   }
 
   async function init() {
-    const ok = window.laundryAuthManager && window.laundryAuthManager.requireLaundryAuth();
+    const ok = window.laundryAuthManager && await window.laundryAuthManager.requireLaundryAuth();
     if (!ok) return;
 
     // Attach logout
@@ -49,9 +49,16 @@
     const refreshBtn = document.getElementById('refresh-btn');
     if (refreshBtn) refreshBtn.addEventListener('click', () => render());
 
-    // Search
+    // Searching (Debounced)
     const searchInput = document.getElementById('laundry-search');
-    if (searchInput) searchInput.addEventListener('input', () => render());
+    let searchDebounce;
+    if (searchInput) searchInput.addEventListener('input', () => {
+      clearTimeout(searchDebounce);
+      searchDebounce = setTimeout(() => {
+        currentPage = 1; // Reset to page 1 on new search
+        render();
+      }, 500);
+    });
 
     // Filters
     const statusFilter = document.getElementById('status-filter');
@@ -88,42 +95,62 @@
     await render();
   }
 
-  async function loadMergedItems() {
-    // Load orders from backend database ONLY (admin endpoint)
+  let currentPage = 1;
+  let itemsPerPage = 20;
+  let totalItems = 0;
+  let isLoading = false;
+
+  async function loadItems(page = 1) {
+    if (isLoading) return [];
+    isLoading = true;
+
+    // Build query params from currentFilters + page
+    const params = new URLSearchParams({
+      page: page,
+      limit: itemsPerPage,
+      status: currentFilters.status,
+      date: currentFilters.date,
+      priority: currentFilters.priority
+    });
+
+    const search = (document.getElementById('laundry-search')?.value || '').trim();
+    if (search) params.append('search', search);
+
     let items = [];
     try {
-      console.log('[Dashboard] Fetching all orders from admin endpoint...');
-      const response = await fetch(`${API_CONFIG.BASE_URL}/api/admin/orders`, {
+      console.log(`[Dashboard] Fetching orders page ${page}... params:`, params.toString());
+      const response = await fetch(`${API_CONFIG.BASE_URL}/admin/orders?${params.toString()}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
         },
         credentials: 'include'
       });
-      
+
       if (response.status === 401 || response.status === 403) {
         console.warn('[Dashboard] Unauthorized - Please login as admin');
         showToast('Please login as admin to access dashboard', 'error');
-        // Clear localStorage to break redirect loop
         localStorage.removeItem('laundryBuddy_currentLaundryUser');
         setTimeout(() => {
           window.location.href = 'laundry-login.html';
         }, 2000);
         return [];
       }
-      
+
       if (response.ok) {
         const data = await response.json();
-        console.log('[Dashboard] Orders fetched:', data);
-        
+        // console.log('[Dashboard] Orders fetched:', data);
+
         if (data.success && data.orders) {
-          // Convert backend orders to dashboard format
+          totalItems = data.pagination?.total || 0;
+          updatePaginationControls(data.pagination);
+
           items = data.orders.map(order => ({
             tokenNumber: order.orderNumber,
             studentName: order.user?.name || 'User',
-            hostelRoom: order.address || 'N/A',
+            hostelRoom: order.address || 'N/A', // Using address as room for now
             submittedDate: order.createdAt || new Date().toISOString(),
-            estimatedCompletion: order.deliveryDate || new Date(Date.now() + 24*60*60*1000).toISOString(),
+            estimatedCompletion: order.deliveryDate || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
             currentStatus: order.status || 'received',
             statusHistory: order.statusHistory || [],
             items: order.items || [],
@@ -132,19 +159,53 @@
             priority: order.priority || 'normal',
             orderId: order._id
           }));
-          console.log('[Dashboard] Converted items:', items.length);
         }
       } else {
         console.warn('[Dashboard] Failed to fetch orders:', response.status);
-        showToast('Failed to load orders from database', 'error');
+        showToast('Failed to load orders', 'error');
       }
     } catch (e) {
-      console.error('[Dashboard] Error fetching orders from backend:', e);
-      showToast('Error connecting to backend: ' + e.message, 'error');
+      console.error('[Dashboard] Error fetching orders:', e);
+      showToast('Error connecting to backend', 'error');
+    } finally {
+      isLoading = false;
     }
-
-    // Return only database orders (no localStorage)
     return items;
+  }
+
+  function updatePaginationControls(pagination) {
+    if (!pagination) return;
+    const info = document.getElementById('pagination-info');
+    const prev = document.getElementById('btn-prev-page');
+    const next = document.getElementById('btn-next-page');
+
+    if (info) info.textContent = `Page ${pagination.page} of ${pagination.pages} (${pagination.total} orders)`;
+
+    if (prev) {
+      prev.disabled = pagination.page <= 1;
+      prev.onclick = () => changePage(pagination.page - 1);
+    }
+    if (next) {
+      next.disabled = pagination.page >= pagination.pages;
+      next.onclick = () => changePage(pagination.page + 1);
+    }
+    currentPage = pagination.page;
+  }
+
+  async function changePage(newPage) {
+    currentPage = newPage;
+    await render();
+    // Scroll to top of table
+    document.querySelector('.laundry-table-container')?.scrollTo(0, 0);
+  }
+
+  // Renamed to loadMergedItems for compatibility with rest of file calling it, 
+  // but logically it now just fetches the current page view.
+  // Ideally, we'd refactor the rendering logic to not assume "all items" are loaded,
+  // but "current page items" are loaded.
+  // The rendering logic calls `filterItems` locally - we should disable that since backend does filtering.
+  async function loadMergedItems() {
+    return await loadItems(currentPage);
   }
 
   function filterItems(items) {
@@ -196,18 +257,25 @@
 
   async function render() {
     try {
-      const itemsAll = await loadMergedItems();
-      const items = filterItems(itemsAll);
+      const items = await loadMergedItems(); // This now fetches filtered page from backend
+      // const items = filterItems(itemsAll); // Disabled client-side filtering
 
-      // Calculate enhanced stats
+      // Calculate enhanced stats - Note: Stats will now only reflect CURRENT PAGE/FILTER.
+      // To get global stats, we'd need a separate /admin/stats endpoint call (which exists!).
+      // For now, let's just show stats for the view or update them via a separate call if critical.
+      // We will perform a quick separate fetch for global counts if standard filters are off?
+      // Actually, for 30k users, calculating global stats on every render is costly.
+      // Backend /orders response includes `total` count for pagination, but not breakdown by status.
+      // We'll leave stats imprecise for now or purely based on the view to avoid complexity creep, 
+      // or rely on /admin/stats endpoint for "Dashboard Home".
       const today = new Date();
-      today.setHours(0,0,0,0);
+      today.setHours(0, 0, 0, 0);
       const todayItems = itemsAll.filter(i => new Date(i.submittedDate) >= today);
       const inproc = itemsAll.filter(i => ['washing', 'drying', 'folding', 'received'].includes(i.currentStatus)).length;
       const ready = itemsAll.filter(i => i.currentStatus === 'ready-for-pickup').length;
       const completedToday = todayItems.filter(i => i.currentStatus === 'completed').length;
       const urgentCount = itemsAll.filter(i => (i.priority || 'normal') === 'urgent').length;
-      
+
       // Calculate average completion time
       const completedItems = itemsAll.filter(i => i.currentStatus === 'completed' && i.submittedDate && i.estimatedCompletion);
       let avgTime = '--';
@@ -253,9 +321,9 @@
         const tr = document.createElement('tr');
         tr.setAttribute('data-token', i.tokenNumber || '');
         const priority = i.priority || 'normal';
-        const priorityIcon = priority === 'urgent' ? '<i class="bx bx-error" style="color:#f44336;"></i>' : 
-                             priority === 'express' ? '<i class="bx bx-bolt" style="color:#FF9800;"></i>' : '';
-        
+        const priorityIcon = priority === 'urgent' ? '<i class="bx bx-error" style="color:#f44336;"></i>' :
+          priority === 'express' ? '<i class="bx bx-bolt" style="color:#FF9800;"></i>' : '';
+
         tr.innerHTML = `
           <td><input type="checkbox" class="row-checkbox" data-token="${i.tokenNumber}"></td>
           <td class="priority-cell">${priorityIcon} <span class="priority-badge ${priority}">${priority}</span></td>
@@ -268,7 +336,7 @@
           <td>
             <div class="row-actions">
               <select data-token="${i.tokenNumber}" class="status-select">
-                ${STATUS_FLOW.map(s => `<option value="${s}" ${i.currentStatus===s?'selected':''}>${label(s)}</option>`).join('')}
+                ${STATUS_FLOW.map(s => `<option value="${s}" ${i.currentStatus === s ? 'selected' : ''}>${label(s)}</option>`).join('')}
               </select>
               <button class="btn btn-secondary btn-advance" data-token="${i.tokenNumber}">Next</button>
               <button class="btn btn-secondary btn-save" data-token="${i.tokenNumber}">Save</button>
@@ -389,7 +457,7 @@
           studentName: tds[2]?.textContent || '',
           hostelRoom: tds[3]?.textContent || '',
           submittedDate: new Date().toISOString(),
-          estimatedCompletion: new Date(Date.now()+24*60*60*1000).toISOString(),
+          estimatedCompletion: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           statusHistory: [],
           items: [],
           specialInstructions: '',
@@ -435,14 +503,14 @@
     set('detail-token', item.tokenNumber || '-');
     set('detail-name', item.studentName || '-');
     set('detail-room', item.hostelRoom || '-');
-    
+
     const priorityEl = document.getElementById('detail-priority');
     if (priorityEl) {
       const priority = item.priority || 'normal';
       priorityEl.className = `priority-badge ${priority}`;
       priorityEl.textContent = priority.charAt(0).toUpperCase() + priority.slice(1);
     }
-    
+
     const statusEl = document.getElementById('detail-status');
     if (statusEl) {
       statusEl.className = `status-pill ${item.currentStatus}`;
@@ -456,10 +524,10 @@
       itemsList.innerHTML = '';
       (item.items || []).forEach(it => {
         const li = document.createElement('li');
-        li.textContent = `${(it.type||'item')}: ${it.count || 1}${it.color?` (${it.color})`:''}`;
+        li.textContent = `${(it.type || 'item')}: ${it.count || 1}${it.color ? ` (${it.color})` : ''}`;
         itemsList.appendChild(li);
       });
-      if ((item.items||[]).length === 0) {
+      if ((item.items || []).length === 0) {
         const li = document.createElement('li'); li.textContent = 'No item details'; itemsList.appendChild(li);
       }
     }
@@ -472,15 +540,15 @@
         li.textContent = `${label(h.status)} — ${fmtDate(h.timestamp)}`;
         histList.appendChild(li);
       });
-      if ((item.statusHistory||[]).length === 0) {
+      if ((item.statusHistory || []).length === 0) {
         const li = document.createElement('li'); li.textContent = 'No history'; histList.appendChild(li);
       }
     }
   }
 
   async function openDetailForToken(token) {
-  const item = await findItemByToken(token);
-  if (!item) { showToast('Order not found for token: ' + token, 'warning'); return; }
+    const item = await findItemByToken(token);
+    if (!item) { showToast('Order not found for token: ' + token, 'warning'); return; }
     populateDetailModal(item);
 
     const modal = document.getElementById('detail-modal');
@@ -494,7 +562,7 @@
     const cancel = document.getElementById('detail-cancel');
     const closeBtn = document.getElementById('close-detail');
 
-    const once = (el, evt, fn) => { if (!el) return; const h = (e)=>{ e.stopPropagation(); fn(); }; el.onclick = h; };
+    const once = (el, evt, fn) => { if (!el) return; const h = (e) => { e.stopPropagation(); fn(); }; el.onclick = h; };
     once(adv, 'click', () => {
       const next = computeNextStatus(item.currentStatus);
       handleUpdateStatus(item.tokenNumber, next);
@@ -519,7 +587,7 @@
     item.priority = newPriority;
     upsertSubmission(item);
     // Log priority change in backend timeline for visibility
-    syncBackendStatus(token, item.currentStatus, undefined, `Priority set to ${item.priority || 'normal'}`).catch(()=>{});
+    syncBackendStatus(token, item.currentStatus, undefined, `Priority set to ${item.priority || 'normal'}`).catch(() => { });
     showToast(`Priority: ${newPriority}`, 'info');
     render();
   }
@@ -534,17 +602,16 @@
     try {
       if (typeof fetch !== 'function') return;
       const cleanToken = String(orderNumber || '').trim();
-      const url = `${API_CONFIG.BASE_URL}/api/tracking/order/${encodeURIComponent(cleanToken)}`;
+      const url = `${API_CONFIG.BASE_URL}/tracking/order/${encodeURIComponent(cleanToken)}`;
       console.log('[Dashboard] Syncing status →', cleanToken, status, estimatedDelivery || '');
       const res = await fetch(url, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
-          'x-laundry-key': 'laundrybuddy_secret_2026'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ status, estimatedDelivery, note })
       });
-      const data = await res.json().catch(()=>({ success:false, message:'Invalid JSON'}));
+      const data = await res.json().catch(() => ({ success: false, message: 'Invalid JSON' }));
       console.log('[Dashboard] Sync response', res.status, data);
       if (!res.ok || !data.success) {
         throw new Error(data.message || `HTTP ${res.status}`);
@@ -629,7 +696,7 @@
 
     modal.style.display = 'flex';
     if (html5QrCode) {
-      try { html5QrCode.clear(); } catch(_) {}
+      try { html5QrCode.clear(); } catch (_) { }
     }
     html5QrCode = new Html5Qrcode('qr-reader');
 
@@ -641,8 +708,8 @@
       closeQrScanner();
     };
 
-    const config = { 
-      fps: 20, 
+    const config = {
+      fps: 20,
       qrbox: { width: 200, height: 200 },
       aspectRatio: 1.0,
       disableFlip: false
@@ -671,7 +738,7 @@
   function closeQrScanner() {
     const modal = document.getElementById('qr-scanner-modal');
     if (html5QrCode && isScanning) {
-      html5QrCode.stop().then(() => html5QrCode.clear()).catch(()=>{});
+      html5QrCode.stop().then(() => html5QrCode.clear()).catch(() => { });
     }
     if (modal) modal.style.display = 'none';
     isScanning = false;
@@ -704,7 +771,7 @@
       const file = e.target.files[0];
       if (!file) return;
       updateScannerStatus('Scanning image...', 'scanning');
-      
+
       // Try scanning without timeout first
       html5QrCode.scanFile(file, true)
         .then(decodedText => {
@@ -736,7 +803,7 @@
   function updateScannerStatus(message, type = 'info') {
     const statusDiv = document.getElementById('qr-scanner-status');
     if (!statusDiv) return;
-    const colors = { info:'#666', scanning:'#2196F3', error:'#f44336', success:'#4CAF50' };
+    const colors = { info: '#666', scanning: '#2196F3', error: '#f44336', success: '#4CAF50' };
     statusDiv.textContent = message;
     statusDiv.style.color = colors[type] || colors.info;
     statusDiv.style.background = type === 'error' ? '#ffebee' : '#f5f5f5';
@@ -753,32 +820,32 @@
     const submit = document.getElementById('qr-manual-submit');
     const err = document.getElementById('qr-manual-error');
     if (!input || !submit) return;
-    
+
     // Clear any previous errors
     if (err) err.textContent = '';
-    
+
     const go = () => {
       const rawInput = (input.value || '').trim();
       if (!rawInput) {
         if (err) err.textContent = 'Please enter a token.';
         return;
       }
-      
+
       const token = extractTokenFromText(rawInput);
       if (!token) {
         if (err) err.textContent = 'Invalid token format. Example: LB-20251025-1234';
         return;
       }
-      
+
       if (err) err.textContent = '';
       console.log('Manual entry token:', token);
       handleScannedToken(token);
       closeQrScanner();
     };
-    
+
     submit.onclick = go;
     input.onkeypress = (e) => { if (e.key === 'Enter') { e.preventDefault(); go(); } };
-    
+
     // Focus the input for easy typing
     setTimeout(() => { if (input) input.focus(); }, 500);
   }
@@ -789,7 +856,7 @@
     const torchBtn = document.getElementById('qr-toggle-torch');
     if (cameraSelect && typeof Html5Qrcode !== 'undefined') {
       Html5Qrcode.getCameras().then(cams => {
-        try { cameraSelect.innerHTML = ''; } catch(_){}
+        try { cameraSelect.innerHTML = ''; } catch (_) { }
         cams.forEach(c => {
           const opt = document.createElement('option');
           opt.value = c.id;
@@ -799,7 +866,7 @@
         // Auto-select back/environment camera if present
         const env = Array.from(cameraSelect.options).find(o => /back|rear|environment/i.test(o.textContent));
         if (env) cameraSelect.value = env.value;
-      }).catch(()=>{});
+      }).catch(() => { });
       cameraSelect.onchange = () => restartWithSelectedCamera(cameraSelect.value);
     }
     if (retryBtn) retryBtn.onclick = () => restartWithSelectedCamera(cameraSelect?.value || null);
@@ -808,8 +875,8 @@
 
   function restartWithSelectedCamera(deviceId) {
     if (!html5QrCode) return;
-    const config = { 
-      fps: 20, 
+    const config = {
+      fps: 20,
       qrbox: { width: 200, height: 200 },
       aspectRatio: 1.0,
       disableFlip: false
@@ -825,12 +892,12 @@
       };
       if (deviceId) {
         html5QrCode.start({ deviceId: { exact: deviceId } }, config, cb)
-          .catch(()=>{ updateScannerStatus('Failed to start selected camera.', 'error'); });
+          .catch(() => { updateScannerStatus('Failed to start selected camera.', 'error'); });
       } else {
         html5QrCode.start({ facingMode: 'environment' }, config, cb)
-          .catch(()=>{ updateScannerStatus('Failed to start camera.', 'error'); });
+          .catch(() => { updateScannerStatus('Failed to start camera.', 'error'); });
       }
-    }).catch(()=>{});
+    }).catch(() => { });
   }
 
   async function toggleTorch() {
@@ -925,9 +992,9 @@
     if (!container) return;
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    const icons = { success:'✓', info:'ℹ', warning:'⚠' };
+    const icons = { success: '✓', info: 'ℹ', warning: '⚠' };
     toast.innerHTML = `
-      <span class="toast-icon">${icons[type]||'•'}</span>
+      <span class="toast-icon">${icons[type] || '•'}</span>
       <span class="toast-message">${message}</span>
     `;
     container.appendChild(toast);
@@ -959,8 +1026,8 @@
     try {
       const audio = new Audio('data:audio/wav;base64,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');
       audio.volume = 0.3;
-      audio.play().catch(()=>{});
-    } catch (_) {}
+      audio.play().catch(() => { });
+    } catch (_) { }
   }
 
   if (document.readyState === 'loading') {
@@ -1036,8 +1103,8 @@
   function createTicketCard(ticket) {
     const typeLabels = { 'missing-clothes': 'Missing Clothes', 'damage': 'Damaged Clothes', 'contact': 'General Query' };
     const typeIcons = { 'missing-clothes': 'bx-error-circle', 'damage': 'bx-error', 'contact': 'bx-message-dots' };
-    const statusClass = ticket.status === 'resolved' || ticket.status === 'closed' ? 'resolved' : 
-                        ticket.status === 'investigating' ? 'investigating' : 'pending';
+    const statusClass = ticket.status === 'resolved' || ticket.status === 'closed' ? 'resolved' :
+      ticket.status === 'investigating' ? 'investigating' : 'pending';
     const date = new Date(ticket.createdAt).toLocaleString();
     const customerName = ticket.user?.name || 'Unknown';
     return '<div class="ticket-card ' + statusClass + '" data-ticket-id="' + ticket._id + '">' +

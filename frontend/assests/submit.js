@@ -4,8 +4,7 @@
 
   document.addEventListener('DOMContentLoaded', async function () {
     console.log('📄 Submit page loading...');
-    console.log('🍪 Document cookies:', document.cookie);
-    
+
     // Check authentication before initializing page
     try {
       if (!window.authManager) {
@@ -18,7 +17,7 @@
       console.log('🔍 Checking if user is logged in...');
       const isLoggedIn = await window.authManager.isLoggedIn();
       console.log('✅ Login check result:', isLoggedIn);
-      
+
       if (!isLoggedIn) {
         console.log('❌ User not logged in, redirecting...');
         alert('Please login to submit laundry.');
@@ -103,7 +102,11 @@
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
-      const random = Math.floor(Math.random() * 9000) + 1000;
+
+      const array = new Uint32Array(1);
+      window.crypto.getRandomValues(array);
+      const random = (array[0] % 9000) + 1000;
+
       return `LB-${year}${month}${day}-${random}`;
     }
 
@@ -112,7 +115,7 @@
       try {
         console.log('🚀 Starting order submission...');
         console.log('Order data:', orderData);
-        
+
         // Show loading state
         const submitButton = submitForm.querySelector('button[type="submit"]');
         const originalText = submitButton.textContent;
@@ -126,18 +129,18 @@
         }
 
         console.log('✅ Order manager found, calling API...');
-        
+
         // Call backend API
         const response = await window.orderManager.createOrder(orderData);
         console.log('📦 Backend response:', response);
-        
+
         if (response.success) {
           console.log('✅ Order saved to MongoDB:', response.order);
           alert('🎉 Order submitted successfully!\n\nOrder #: ' + response.order.orderNumber);
-          
+
           // Get current user for submission object
           const currentUser = await authManager.getCurrentUser();
-          
+
           // Create submission object for QR display
           const submission = {
             tokenNumber: response.order.orderNumber || tokenNumber,
@@ -153,24 +156,24 @@
 
           // Also save to localStorage as backup
           saveToLocalStorage(submission);
-          
+
           // Reset form
           submitForm.reset();
-          
+
           // Show success and QR code
           showQrCodeModal(submission);
         } else {
           console.error('❌ Order creation failed:', response.message);
           throw new Error(response.message || 'Failed to create order');
         }
-        
+
         // Restore button
         submitButton.disabled = false;
         submitButton.textContent = originalText;
       } catch (error) {
         console.error('Error submitting order:', error);
         alert('Error submitting order: ' + error.message + '\nPlease try again or contact support.');
-        
+
         // Restore button
         const submitButton = submitForm.querySelector('button[type="submit"]');
         submitButton.disabled = false;
@@ -222,7 +225,7 @@
       const modal = document.getElementById('qr-code-modal');
       const qrContainer = document.getElementById('qr-code-container');
       const tokenDisplay = document.getElementById('token-display');
-      
+
       if (!modal || !qrContainer || !tokenDisplay) {
         // Fallback if modal not found
         alert(`Laundry submitted successfully!\n\nYour Token Number: ${submission.tokenNumber}\n\nYou can track your laundry using this token on the Track page.`);
@@ -287,7 +290,7 @@
     function downloadQrCode(tokenNumber) {
       const qrContainer = document.getElementById('qr-code-container');
       const canvas = qrContainer.querySelector('canvas');
-      
+
       if (canvas) {
         const link = document.createElement('a');
         link.download = `laundry-token-${tokenNumber}.png`;

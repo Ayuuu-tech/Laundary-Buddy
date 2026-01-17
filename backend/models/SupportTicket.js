@@ -8,7 +8,7 @@ const supportTicketSchema = new mongoose.Schema({
   items: { type: String, required: true },
   damageType: { type: String },
   details: { type: String },
-  status: { type: String, default: 'pending', enum: ['pending', 'investigating', 'resolved', 'closed'] },
+  status: { type: String, default: 'pending', enum: ['pending', 'investigating', 'resolved', 'closed'], index: true },
   response: { type: String },
   resolvedAt: { type: Date }
 }, { timestamps: true });

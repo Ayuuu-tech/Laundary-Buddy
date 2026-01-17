@@ -18,7 +18,7 @@
       const response = await fetch(`${API_CONFIG.BASE_URL}/api/orders/my-orders`, {
         credentials: 'include'
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.orders) {
@@ -103,18 +103,18 @@
   function populateOrderDropdowns() {
     const missingTokenSelect = document.getElementById('missing-token');
     const damageTokenSelect = document.getElementById('damage-token');
-    
+
     const options = userOrders.map(order => {
       const date = new Date(order.createdAt).toLocaleDateString();
       const itemsText = order.items.slice(0, 2).map(item => item.item).join(', ');
       const moreItems = order.items.length > 2 ? ` +${order.items.length - 2} more` : '';
       return `<option value="${order.orderNumber}">#${order.orderNumber} - ${date} (${itemsText}${moreItems})</option>`;
     }).join('');
-    
-    const placeholder = userOrders.length > 0 
-      ? '<option value="">Select an order</option>' 
+
+    const placeholder = userOrders.length > 0
+      ? '<option value="">Select an order</option>'
       : '<option value="">No orders found</option>';
-    
+
     if (missingTokenSelect) {
       missingTokenSelect.innerHTML = placeholder + options;
     }
@@ -127,12 +127,12 @@
   function setupOrderChangeHandlers() {
     const missingTokenSelect = document.getElementById('missing-token');
     const missingDateInput = document.getElementById('missing-date');
-    
+
     const damageTokenSelect = document.getElementById('damage-token');
     const damageDateInput = document.getElementById('damage-date');
-    
+
     if (missingTokenSelect && missingDateInput) {
-      missingTokenSelect.addEventListener('change', function() {
+      missingTokenSelect.addEventListener('change', function () {
         const orderNumber = this.value;
         if (orderNumber && ordersMap[orderNumber]) {
           const order = ordersMap[orderNumber];
@@ -143,9 +143,9 @@
         }
       });
     }
-    
+
     if (damageTokenSelect && damageDateInput) {
-      damageTokenSelect.addEventListener('change', function() {
+      damageTokenSelect.addEventListener('change', function () {
         const orderNumber = this.value;
         if (orderNumber && ordersMap[orderNumber]) {
           const order = ordersMap[orderNumber];
@@ -167,20 +167,20 @@
     loadUserOrders();
     setupOrderChangeHandlers();
     loadMyReports();
-    
+
     const supportForm = document.querySelector('.support-form-section form');
-    
+
     // Show/Hide form functionality
     const showMissingFormBtn = document.getElementById('show-missing-form');
     const showDamageFormBtn = document.getElementById('show-damage-form');
     const showContactFormBtn = document.getElementById('show-contact-form');
-    
+
     const missingClothesSection = document.getElementById('missing-clothes-section');
     const damageReportSection = document.getElementById('damage-report-section');
-    
+
     const cancelMissingBtn = document.getElementById('cancel-missing-form');
     const cancelDamageBtn = document.getElementById('cancel-damage-form');
-    
+
     // Show Missing Clothes Form
     if (showMissingFormBtn) {
       showMissingFormBtn.addEventListener('click', function () {
@@ -189,7 +189,7 @@
         missingClothesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     }
-    
+
     // Show Damage Report Form
     if (showDamageFormBtn) {
       showDamageFormBtn.addEventListener('click', function () {
@@ -198,7 +198,7 @@
         damageReportSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     }
-    
+
     // Show Contact Form (scroll to support form section)
     if (showContactFormBtn) {
       showContactFormBtn.addEventListener('click', function () {
@@ -210,14 +210,14 @@
         }
       });
     }
-    
+
     // Cancel buttons
     if (cancelMissingBtn) {
       cancelMissingBtn.addEventListener('click', function () {
         missingClothesSection.classList.add('hidden');
       });
     }
-    
+
     if (cancelDamageBtn) {
       cancelDamageBtn.addEventListener('click', function () {
         damageReportSection.classList.add('hidden');
@@ -229,19 +229,19 @@
     if (managerContactForm) {
       const messageTextarea = document.getElementById('contact-message');
       const charCount = document.querySelector('.char-count');
-      
+
       // Character counter
       if (messageTextarea && charCount) {
-        messageTextarea.addEventListener('input', function() {
+        messageTextarea.addEventListener('input', function () {
           const length = this.value.length;
           const maxLength = 500;
           charCount.textContent = `${length} / ${maxLength} characters`;
-          
+
           if (length > maxLength) {
             this.value = this.value.substring(0, maxLength);
             charCount.textContent = `${maxLength} / ${maxLength} characters`;
           }
-          
+
           if (length > maxLength * 0.9) {
             charCount.style.color = '#DC2626';
           } else {
@@ -249,11 +249,11 @@
           }
         });
       }
-      
+
       // Form submission
-      managerContactForm.addEventListener('submit', function(e) {
+      managerContactForm.addEventListener('submit', function (e) {
         e.preventDefault();
-        
+
         const name = document.getElementById('contact-name').value.trim();
         const studentId = document.getElementById('contact-student-id').value.trim();
         const phone = document.getElementById('contact-phone').value.trim();
@@ -261,26 +261,26 @@
         const subject = document.getElementById('contact-subject').value;
         const message = document.getElementById('contact-message').value.trim();
         const priority = document.querySelector('input[name="priority"]:checked').value;
-        
+
         if (!name || !studentId || !phone || !email || !subject || !message) {
           alert('Please fill out all required fields.');
           return;
         }
-        
+
         // Validate email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
           alert('Please enter a valid email address.');
           return;
         }
-        
+
         // Validate phone (Indian format)
         const phoneRegex = /^[6-9]\d{9}$/;
         if (!phoneRegex.test(phone.replace(/[\s-]/g, ''))) {
           alert('Please enter a valid 10-digit phone number.');
           return;
         }
-        
+
         // Save message to localStorage
         const contactMessage = {
           type: 'manager-contact',
@@ -294,11 +294,11 @@
           timestamp: new Date().toISOString(),
           status: 'pending'
         };
-        
+
         const messages = JSON.parse(localStorage.getItem('laundryBuddy_managerMessages') || '[]');
         messages.push(contactMessage);
         localStorage.setItem('laundryBuddy_managerMessages', JSON.stringify(messages));
-        
+
         // Show success message based on priority
         let responseMessage = 'Your message has been sent to the Laundry Manager successfully!';
         if (priority === 'urgent') {
@@ -306,10 +306,10 @@
         } else {
           responseMessage += '\n\nYou will receive a response within 2 hours.';
         }
-        
+
         alert(responseMessage);
         managerContactForm.reset();
-        
+
         // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
@@ -365,25 +365,25 @@
     // Missing Clothes Form Handler
     const missingClothesForm = document.getElementById('missing-clothes-form');
     if (missingClothesForm) {
-      missingClothesForm.addEventListener('submit', async function(e) {
+      missingClothesForm.addEventListener('submit', async function (e) {
         e.preventDefault();
-        
+
         const tokenNumber = document.getElementById('missing-token').value.trim();
         const missingItems = document.getElementById('missing-items').value.trim();
         const additionalDetails = document.getElementById('missing-details').value.trim();
-        
+
         if (!tokenNumber || !missingItems) {
           alert('Please fill out all required fields.');
           return;
         }
-        
+
         try {
           const order = ordersMap[tokenNumber];
           if (!order) {
             alert('Order not found');
             return;
           }
-          
+
           // Save missing clothes report to database
           const response = await fetch(`${API_CONFIG.BASE_URL}/api/support/report`, {
             method: 'POST',
@@ -400,7 +400,7 @@
               status: 'pending'
             })
           });
-          
+
           const data = await response.json();
           if (data.success) {
             alert('Missing clothes report submitted successfully! We will investigate and contact you soon.');
@@ -419,26 +419,26 @@
     // Damage Report Form Handler
     const damageReportForm = document.getElementById('damage-report-form');
     if (damageReportForm) {
-      damageReportForm.addEventListener('submit', async function(e) {
+      damageReportForm.addEventListener('submit', async function (e) {
         e.preventDefault();
-        
+
         const tokenNumber = document.getElementById('damage-token').value.trim();
         const damagedItems = document.getElementById('damaged-items').value.trim();
         const damageType = document.getElementById('damage-type').value;
         const damageDetails = document.getElementById('damage-details').value.trim();
-        
+
         if (!tokenNumber || !damagedItems || !damageType) {
           alert('Please fill out all required fields.');
           return;
         }
-        
+
         try {
           const order = ordersMap[tokenNumber];
           if (!order) {
             alert('Order not found');
             return;
           }
-          
+
           // Save damage report to database
           const response = await fetch(`${API_CONFIG.BASE_URL}/api/support/report`, {
             method: 'POST',
@@ -456,7 +456,7 @@
               status: 'pending'
             })
           });
-          
+
           const data = await response.json();
           if (data.success) {
             alert('Damage report submitted successfully! We will investigate and contact you soon.');
@@ -475,47 +475,47 @@
     // Report generation functionality
     const reportBtnsNew = document.querySelectorAll('.report-btn');
     const formatRadios = document.querySelectorAll('input[name="report-format"]');
-    
+
     reportBtnsNew.forEach(btn => {
-      btn.addEventListener('click', function() {
+      btn.addEventListener('click', function () {
         const reportType = this.dataset.reportType;
         const selectedFormat = document.querySelector('input[name="report-format"]:checked').value;
-        
+
         generateReport(reportType, selectedFormat);
       });
     });
-    
+
     async function generateReport(reportType, format) {
       // Get current user
       const currentUser = window.authManager ? window.authManager.getCurrentUser() : null;
-      
+
       if (!currentUser) {
         alert('Please login to generate reports');
         return;
       }
-      
+
       try {
         // Show loading indicator
         if (window.showLoading) window.showLoading();
-        
+
         // Fetch orders from backend API
         const response = await fetch(API_CONFIG.BASE_URL + '/api/orders/my-orders', {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include'
         });
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch orders: ' + response.status);
         }
-        
+
         const data = await response.json();
         let userSubmissions = data.orders || [];
-        
+
         // Filter by date range based on report type
         const now = new Date();
         let filteredSubmissions = [];
-        
+
         if (reportType === 'monthly') {
           const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
           filteredSubmissions = userSubmissions.filter(sub => {
@@ -525,17 +525,17 @@
         } else if (reportType === 'custom') {
           const startDate = document.getElementById('report-start-date').value;
           const endDate = document.getElementById('report-end-date').value;
-          
+
           if (!startDate || !endDate) {
             if (window.hideLoading) window.hideLoading();
             alert('Please select both start and end dates for custom report');
             return;
           }
-          
+
           const start = new Date(startDate);
           const end = new Date(endDate);
           end.setHours(23, 59, 59, 999);
-          
+
           filteredSubmissions = userSubmissions.filter(sub => {
             const subDate = new Date(sub.createdAt || sub.timestamp || sub.date);
             return subDate >= start && subDate <= end;
@@ -543,14 +543,14 @@
         } else if (reportType === 'all-time') {
           filteredSubmissions = userSubmissions;
         }
-        
+
         if (window.hideLoading) window.hideLoading();
-        
+
         if (filteredSubmissions.length === 0) {
           alert('No orders found for the selected date range');
           return;
         }
-        
+
         // Generate report based on format
         if (format === 'csv') {
           downloadCSVReport(filteredSubmissions, reportType);
@@ -565,21 +565,21 @@
         alert('Error generating report: ' + error.message + '. Please try again.');
       }
     }
-    
+
     function downloadCSVReport(submissions, reportType) {
       let csv = 'Token Number,Date,Student Name,Room,Items,Status,Priority,Special Instructions,Submitted Date,Estimated Completion\n';
-      
+
       submissions.forEach(sub => {
         const date = new Date(sub.createdAt || sub.timestamp || sub.date).toLocaleDateString();
         const submittedDate = new Date(sub.submittedDate || sub.createdAt).toLocaleDateString();
         const estimatedCompletion = sub.estimatedCompletion ? new Date(sub.estimatedCompletion).toLocaleDateString() : 'N/A';
-        const items = sub.items ? sub.items.map(item => `${item.quantity || item.count} ${item.name || item.type}`).join(' + ') : 
-                     `${sub.clothesCount || 0} ${sub.clothesType || 'items'}`;
+        const items = sub.items ? sub.items.map(item => `${item.quantity || item.count} ${item.name || item.type}`).join(' + ') :
+          `${sub.clothesCount || 0} ${sub.clothesType || 'items'}`;
         const specialInstructions = (sub.specialInstructions || sub.notes || 'None').replace(/"/g, '""');
-        
+
         csv += `"${sub.tokenNumber}","${date}","${sub.studentName || sub.name || 'N/A'}","${sub.hostelRoom || sub.room || 'N/A'}","${items}","${sub.currentStatus || sub.status || 'in-process'}","${sub.priority || 'normal'}","${specialInstructions}","${submittedDate}","${estimatedCompletion}"\n`;
       });
-      
+
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -587,10 +587,10 @@
       a.download = `laundry-report-${reportType}-${Date.now()}.csv`;
       a.click();
       window.URL.revokeObjectURL(url);
-      
+
       alert('CSV report downloaded successfully!');
     }
-    
+
     function downloadJSONReport(submissions, reportType) {
       const reportData = {
         reportType: reportType,
@@ -598,7 +598,7 @@
         totalOrders: submissions.length,
         orders: submissions
       };
-      
+
       const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -606,20 +606,30 @@
       a.download = `laundry-report-${reportType}-${Date.now()}.json`;
       a.click();
       window.URL.revokeObjectURL(url);
-      
+
       alert('JSON report downloaded successfully!');
     }
-    
+
+    function escapeHtml(text) {
+      if (text === null || text === undefined) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     function downloadPDFReport(submissions, reportType) {
       // Simple PDF generation using HTML content
       const reportWindow = window.open('', '_blank');
       const currentUser = window.authManager.getCurrentUser();
-      
+
       let html = `
         <!DOCTYPE html>
         <html>
         <head>
-          <title>Laundry Report - ${reportType}</title>
+          <title>Laundry Report - ${escapeHtml(reportType)}</title>
           <style>
             body { 
               font-family: Arial, sans-serif; 
@@ -666,11 +676,11 @@
           </style>
         </head>
         <body>
-          <h1>🧺 Laundry Buddy - ${reportType.toUpperCase().replace('-', ' ')} Report</h1>
+          <h1>🧺 Laundry Buddy - ${escapeHtml(reportType.toUpperCase().replace('-', ' '))} Report</h1>
           <div class="summary">
-            <p><strong>Student Name:</strong> ${currentUser.name || 'N/A'}</p>
-            <p><strong>Student ID:</strong> ${currentUser.studentId || 'N/A'}</p>
-            <p><strong>Room:</strong> ${currentUser.hostelRoom || currentUser.room || 'N/A'}</p>
+            <p><strong>Student Name:</strong> ${escapeHtml(currentUser.name || 'N/A')}</p>
+            <p><strong>Student ID:</strong> ${escapeHtml(currentUser.studentId || 'N/A')}</p>
+            <p><strong>Room:</strong> ${escapeHtml(currentUser.hostelRoom || currentUser.room || 'N/A')}</p>
             <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
             <p><strong>Total Orders:</strong> ${submissions.length}</p>
           </div>
@@ -687,27 +697,27 @@
             </thead>
             <tbody>
       `;
-      
+
       submissions.forEach(sub => {
         const date = new Date(sub.createdAt || sub.timestamp || sub.date).toLocaleDateString();
-        const items = sub.items ? sub.items.map(item => `${item.quantity || item.count} ${item.name || item.type}`).join(', ') : 
-                     `${sub.clothesCount || 0} ${sub.clothesType || 'items'}`;
+        const items = sub.items ? sub.items.map(item => `${item.quantity || item.count} ${item.name || item.type}`).join(', ') :
+          `${sub.clothesCount || 0} ${sub.clothesType || 'items'}`;
         const estimatedCompletion = sub.estimatedCompletion ? new Date(sub.estimatedCompletion).toLocaleDateString() : 'N/A';
         const priority = sub.priority || 'normal';
         const priorityStyle = priority === 'urgent' ? 'color: #dc2626; font-weight: 600;' : '';
-        
+
         html += `
           <tr>
-            <td>${sub.tokenNumber}</td>
-            <td>${date}</td>
-            <td>${items}</td>
-            <td>${sub.currentStatus || sub.status || 'in-process'}</td>
-            <td style="${priorityStyle}">${priority}</td>
-            <td>${estimatedCompletion}</td>
+            <td>${escapeHtml(sub.tokenNumber)}</td>
+            <td>${escapeHtml(date)}</td>
+            <td>${escapeHtml(items)}</td>
+            <td>${escapeHtml(sub.currentStatus || sub.status || 'in-process')}</td>
+            <td style="${priorityStyle}">${escapeHtml(priority)}</td>
+            <td>${escapeHtml(estimatedCompletion)}</td>
           </tr>
         `;
       });
-      
+
       html += `
             </tbody>
           </table>
@@ -721,10 +731,10 @@
         </body>
         </html>
       `;
-      
+
       reportWindow.document.write(html);
       reportWindow.document.close();
-      
+
       alert('PDF report opened in new window. Use Print dialog (Ctrl+P) to save as PDF.');
     }
 

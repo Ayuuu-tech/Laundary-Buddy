@@ -3,17 +3,17 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const authMiddleware = require('../middleware/auth');
-const { authLimiter } = require('../middleware/security');
+const { authLimiter, otpLimiter } = require('../middleware/security');
 const { refreshAccessToken, revokeRefreshToken, sessionTimeoutMiddleware } = require('../middleware/auth-security');
 
 // Apply auth rate limiting to all auth routes
 router.use(authLimiter);
 
 // OTP-based signup
-router.post('/request-signup-otp', authController.requestSignupOTP);
+router.post('/request-signup-otp', otpLimiter, authController.requestSignupOTP);
 router.post('/verify-signup-otp', authController.verifySignupOTP);
 // OTP-based login
-router.post('/request-login-otp', authController.requestLoginOTP);
+router.post('/request-login-otp', otpLimiter, authController.requestLoginOTP);
 router.post('/verify-login-otp', authController.verifyLoginOTP);
 
 // Public routes
@@ -26,7 +26,7 @@ router.post('/refresh-token', refreshAccessToken);
 router.post('/revoke-token', authMiddleware, revokeRefreshToken);
 
 // Password reset OTP request
-router.post('/request-reset-otp', authController.requestPasswordResetOTP);
+router.post('/request-reset-otp', otpLimiter, authController.requestPasswordResetOTP);
 // OTP verification and password reset
 router.post('/verify-reset-otp', authController.verifyOTPAndResetPassword);
 

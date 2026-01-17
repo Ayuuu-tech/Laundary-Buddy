@@ -35,7 +35,7 @@
     const editBtn = document.querySelector('.btn-secondary');
     const saveBtn = document.querySelector('.btn-primary');
     const logoutBtn = document.querySelector('.btn-logout');
-    
+
     const phoneInput = document.getElementById('phone');
     const roomInput = document.getElementById('room');
     const prefsInput = document.getElementById('prefs');
@@ -44,17 +44,17 @@
     if (editBtn) {
       editBtn.addEventListener('click', function (e) {
         e.preventDefault();
-        
+
         // Enable inputs
         phoneInput.disabled = false;
         roomInput.disabled = false;
         prefsInput.disabled = false;
-        
+
         // Change input styles
         phoneInput.style.backgroundColor = '#fff';
         roomInput.style.backgroundColor = '#fff';
         prefsInput.style.backgroundColor = '#fff';
-        
+
         alert('You can now edit your profile information.');
       });
     }
@@ -141,17 +141,21 @@
 
     // Load saved profile photo if exists
     if (user.profilePhoto) {
-      avatarImg.src = user.profilePhoto;
-      updateHeaderProfilePhoto(user.profilePhoto);
+      let photoUrl = user.profilePhoto;
+      if (photoUrl.startsWith('/') && window.API_CONFIG && window.API_CONFIG.BASE_URL) {
+        photoUrl = window.API_CONFIG.BASE_URL + photoUrl;
+      }
+      avatarImg.src = photoUrl;
+      updateHeaderProfilePhoto(photoUrl);
     }
 
     // Click on avatar wrapper to upload photo
-    avatarWrapper.addEventListener('click', function() {
+    avatarWrapper.addEventListener('click', function () {
       avatarUpload.click();
     });
 
     // Handle file upload
-    avatarUpload.addEventListener('change', async function(e) {
+    avatarUpload.addEventListener('change', async function (e) {
       const file = e.target.files[0];
       if (!file) return;
 
@@ -170,7 +174,7 @@
 
       // Read and preview the image
       const reader = new FileReader();
-      reader.onload = async function(event) {
+      reader.onload = async function (event) {
         const imageData = event.target.result;
         // Update avatar preview
         avatarImg.src = imageData;
@@ -192,7 +196,7 @@
           alert('Error saving profile photo: ' + err.message);
         }
       };
-      reader.onerror = function() {
+      reader.onerror = function () {
         alert('Error reading file. Please try again.');
       };
       reader.readAsDataURL(file);
@@ -219,18 +223,22 @@
     const profileName = document.querySelector('.profile-header h2');
     const profileEmail = document.querySelector('.profile-header p');
     const profileAvatar = document.getElementById('profile-avatar');
-    
+
     if (profileName) {
       profileName.textContent = user.name || 'User';
     }
-    
+
     if (profileEmail) {
       profileEmail.textContent = user.email || '';
     }
 
     // Update profile photo if exists
     if (profileAvatar && user.profilePhoto) {
-      profileAvatar.src = user.profilePhoto;
+      let photoUrl = user.profilePhoto;
+      if (photoUrl.startsWith('/') && window.API_CONFIG && window.API_CONFIG.BASE_URL) {
+        photoUrl = window.API_CONFIG.BASE_URL + photoUrl;
+      }
+      profileAvatar.src = photoUrl;
     }
 
     // Update form inputs
@@ -241,11 +249,11 @@
     if (phoneInput) {
       phoneInput.value = user.phone || '';
     }
-    
+
     if (roomInput) {
       roomInput.value = user.address || '';
     }
-    
+
     if (prefsInput) {
       prefsInput.value = 'Standard detergent';
     }

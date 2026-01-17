@@ -24,6 +24,7 @@
     "@sentry/profiling-node": "^10.32.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
+    "cloudinary": "^2.9.0",
     "compression": "^1.7.4",
     "connect-mongo": "^6.0.0",
     "cookie-parser": "^1.4.7",

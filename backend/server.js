@@ -13,19 +13,22 @@ const bodyParser = require('body-parser');
 const compression = require('compression');
 const mongoSanitize = require('express-mongo-sanitize');
 const session = require('express-session');
-const MongoStore = require('connect-mongo').default || require('connect-mongo');
+const MongoStore = require('connect-mongo');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 const { apiLimiter, helmetConfig } = require('./middleware/security');
 const { logger, httpLogger } = require('./middleware/logger');
 const { httpsSecurityMiddleware } = require('./middleware/https');
-const { 
-  ipBlockingMiddleware, 
-  sanitizeInputMiddleware, 
-  preventSQLInjection 
+const path = require('path');
+const {
+  ipBlockingMiddleware,
+  sanitizeInputMiddleware,
+  preventSQLInjection
 } = require('./middleware/advanced-security');
 
 const app = express();
+// Serve static uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const PORT = process.env.PORT || 3000;
 
 // Initialize Sentry first (before any other middleware)
@@ -52,36 +55,35 @@ app.use(cookieParser());
 
 // CORS configuration
 const isProduction = process.env.NODE_ENV === 'production';
-const allowedOrigins = process.env.ALLOWED_ORIGINS 
-  ? process.env.ALLOWED_ORIGINS.split(',') 
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
   : ['http://localhost:5500', 'http://127.0.0.1:5500', 'http://127.0.0.1:5501', 'http://localhost:5501', 'https://laundrybuddy.ayushmaanyadav.me'];
 
 app.use(cors({
-  origin: function(origin, callback) {
+  origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
-    
+
     // In production, check allowed origins strictly
     if (isProduction) {
       // Allow Cloudflare Pages and configured origins
-      if (origin.includes('.pages.dev') || origin.includes('cloudflare') || 
-          allowedOrigins.some(allowed => origin.includes(allowed.replace(/https?:\/\//, '')))) {
+      if (origin.includes('.pages.dev') || origin.includes('cloudflare') ||
+        allowedOrigins.some(allowed => origin.includes(allowed.replace(/https?:\/\//, '')))) {
         return callback(null, true);
       }
       // Check exact match
       if (allowedOrigins.indexOf(origin) !== -1) {
         return callback(null, true);
       }
-      console.log(`⚠️ CORS blocked: ${origin}`);
-      return callback(null, true); // Allow for now, change to false for strict mode
+      return callback(new Error('Not allowed by CORS'));
     }
-    
+
     // In development, allow localhost
     if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
       return callback(null, true);
     }
-    
-    callback(null, true);
+
+    return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   exposedHeaders: ['set-cookie'],
@@ -132,6 +134,11 @@ app.use(httpLogger);
 // Apply rate limiting to all API routes
 app.use('/api/', apiLimiter);
 
+// CSRF Protection
+const { validateCSRFToken, getCSRFTokenRoute } = require('./middleware/csrf');
+app.get('/api/csrf-token', getCSRFTokenRoute);
+app.use(validateCSRFToken);
+
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/auth', require('./routes/googleAuth'));
@@ -148,8 +155,8 @@ setupHealthCheck(app);
 // Sentry error handler (must be before any other error middleware)
 app.use(sentryMiddleware.errorHandler);
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: 'Laundry Buddy API is running',
     timestamp: new Date().toISOString()
   });
@@ -157,7 +164,7 @@ app.get('/api/health', (req, res) => {
 
 // Root route
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     success: true,
     message: 'Welcome to Laundry Buddy API',
     version: '1.0.0',
@@ -172,28 +179,28 @@ app.get('/', (req, res) => {
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ 
-    success: false, 
-    message: 'Route not found' 
+  res.status(404).json({
+    success: false,
+    message: 'Route not found'
   });
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   logger.error(`Error: ${err.message}`, { stack: err.stack });
-  
+
   // Don't leak error details in production
   const errorResponse = {
     success: false,
-    message: process.env.NODE_ENV === 'production' 
-      ? 'An error occurred' 
+    message: process.env.NODE_ENV === 'production'
+      ? 'An error occurred'
       : err.message
   };
-  
+
   if (process.env.NODE_ENV === 'development') {
     errorResponse.error = err.stack;
   }
-  
+
   res.status(err.status || 500).json(errorResponse);
 });
 
@@ -206,10 +213,14 @@ async function start() {
     await connectDB();
     const mongoose = require('mongoose');
     app.locals.db = mongoose.connection.db;
-    
+
     // Setup database query logging
     setupDatabaseQueryLogging(mongoose);
-    
+
+    // Start scheduler
+    const { startScheduler } = require('./cron/scheduler');
+    startScheduler();
+
     // Start Express server
     server = app.listen(PORT, () => {
       logger.info('========================================');

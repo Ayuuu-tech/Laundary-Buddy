@@ -1,10 +1,11 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
-const { 
-  generateAccessToken, 
-  generateRefreshToken, 
+const crypto = require('crypto');
+const {
+  generateAccessToken,
+  generateRefreshToken,
   checkAccountLock,
-  logSecurityEvent 
+  logSecurityEvent
 } = require('../middleware/auth-security');
 
 // Request OTP for Signup
@@ -26,10 +27,11 @@ exports.requestSignupOTP = async (req, res) => {
     // Save OTP and signup data in a temp user (or you can use a separate collection for production)
     let tempUser = await User.findOne({ email: email.toLowerCase(), signupOTP: { $exists: true } });
     if (!tempUser) {
-      tempUser = new User({ name, email: email.toLowerCase(), password, phone, address });
+      const hashedPassword = await bcrypt.hash(password, 10);
+      tempUser = new User({ name, email: email.toLowerCase(), password: hashedPassword, phone, address });
     } else {
       tempUser.name = name;
-      tempUser.password = password;
+      tempUser.password = await bcrypt.hash(password, 10);
       tempUser.phone = phone;
       tempUser.address = address;
     }
@@ -77,14 +79,25 @@ exports.verifySignupOTP = async (req, res) => {
     if (!user || !user.signupOTP || !user.signupOTPExpiry) {
       return res.status(400).json({ success: false, message: 'OTP not requested or user not found' });
     }
-    if (user.signupOTP !== otp) {
+    // Use constant-time comparison for OTP
+    const userOtp = Buffer.from(user.signupOTP);
+    const inputOtp = Buffer.from(otp);
+    if (userOtp.length !== inputOtp.length || !crypto.timingSafeEqual(userOtp, inputOtp)) {
       return res.status(400).json({ success: false, message: 'Invalid OTP' });
     }
     if (user.signupOTPExpiry < new Date()) {
       return res.status(400).json({ success: false, message: 'OTP has expired' });
     }
     // Hash password and finalize user
-    user.password = await require('bcryptjs').hash(user.password, 10);
+    // Password already hashed in requestSignupOTP, but if it was re-supplied we would hash it.
+    // In this flow, we already stored the hashed password in tempUser.
+    // However, if we didn't update password logic above, we would hash here.
+    // Since we now hash BEFORE storing in tempUser, we don't need to hash again here IF we trust the stored hash.
+    // BUT 'user' is the mongoose document.
+    // WAITING: The original code saved plaintext. Now we save hashed.
+    // So user.password is ALREADY hashed. We should NOT hash it again.
+    // Removing the re-hashing line.
+    // user.password = await require('bcryptjs').hash(user.password, 10); // REMOVED
     user.signupOTP = null;
     user.signupOTPExpiry = null;
     await user.save();
@@ -170,7 +183,10 @@ exports.verifyLoginOTP = async (req, res) => {
     if (!user || !user.loginOTP || !user.loginOTPExpiry) {
       return res.status(400).json({ success: false, message: 'OTP not requested or user not found' });
     }
-    if (user.loginOTP !== otp) {
+    // Use constant-time comparison for OTP
+    const userOtp = Buffer.from(user.loginOTP);
+    const inputOtp = Buffer.from(otp);
+    if (userOtp.length !== inputOtp.length || !crypto.timingSafeEqual(userOtp, inputOtp)) {
       return res.status(400).json({ success: false, message: 'Invalid OTP' });
     }
     if (user.loginOTPExpiry < new Date()) {
@@ -212,7 +228,10 @@ exports.verifyOTPAndResetPassword = async (req, res) => {
     if (!user || !user.resetOTP || !user.resetOTPExpiry) {
       return res.status(400).json({ success: false, message: 'OTP not requested or user not found' });
     }
-    if (user.resetOTP !== otp) {
+    // Use constant-time comparison for OTP
+    const userOtp = Buffer.from(user.resetOTP);
+    const inputOtp = Buffer.from(otp);
+    if (userOtp.length !== inputOtp.length || !crypto.timingSafeEqual(userOtp, inputOtp)) {
       return res.status(400).json({ success: false, message: 'Invalid OTP' });
     }
     if (user.resetOTPExpiry < new Date()) {
@@ -232,19 +251,19 @@ exports.verifyOTPAndResetPassword = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error resetting password', error: error.message });
   }
 };
-const nodemailer = require('nodemailer');
+// Nodemailer removed in favor of Resend
 // Request Password Reset OTP
 exports.requestPasswordResetOTP = async (req, res) => {
   try {
     const { email } = req.body;
-    console.log('OTP request received for email:', email);
+    // console.log('OTP request received for email:', email);
     if (!email) {
-      console.log('No email provided');
+      // console.log('No email provided');
       return res.status(400).json({ success: false, message: 'Email is required' });
     }
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
-      console.log('User not found for email:', email);
+      // console.log('User not found for email');
       return res.status(404).json({ success: false, message: 'User not found with this email' });
     }
 
@@ -255,7 +274,7 @@ exports.requestPasswordResetOTP = async (req, res) => {
     user.resetOTP = otp;
     user.resetOTPExpiry = expiry;
     await user.save();
-    console.log('OTP generated and saved for user:', user.email, 'OTP:', otp);
+    // console.log('OTP generated and saved for user');
 
     // Send OTP using Resend API
     const { Resend } = require('resend');
@@ -306,9 +325,9 @@ exports.register = async (req, res) => {
     // Check if user exists
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'User already exists with this email' 
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists with this email'
       });
     }
 
@@ -339,13 +358,13 @@ exports.register = async (req, res) => {
     req.session.save((err) => {
       if (err) {
         console.error('Session save error:', err);
-        return res.status(500).json({ 
-          success: false, 
-          message: 'Error saving session' 
+        return res.status(500).json({
+          success: false,
+          message: 'Error saving session'
         });
       }
 
-      console.log('✅ Signup session saved:', req.session.userId);
+      // console.log('✅ Signup session saved');
       res.status(201).json({
         success: true,
         message: 'User registered successfully',
@@ -353,17 +372,17 @@ exports.register = async (req, res) => {
       });
     });
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      message: 'Error registering user', 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      message: 'Error registering user',
+      error: error.message
     });
   }
 };
 
 // Login User
 exports.login = async (req, res) => {
-  console.log('🔑 Login attempt:', req.body.email);
+  // console.log('🔑 Login attempt:', req.body.email);
   try {
     const { email, password } = req.body;
     const ipAddress = req.ip || req.connection.remoteAddress;
@@ -374,15 +393,15 @@ exports.login = async (req, res) => {
     if (!user) {
       // Log failed attempt
       if (global.securityLogger) {
-        await global.securityLogger(null, 'LOGIN_FAILED', { 
-          email, 
+        await global.securityLogger(null, 'LOGIN_FAILED', {
+          email,
           ipAddress,
           reason: 'User not found'
         });
       }
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid email or password' 
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
       });
     }
 
@@ -390,8 +409,8 @@ exports.login = async (req, res) => {
     const lockCheck = await checkAccountLock(user);
     if (lockCheck.locked) {
       await logSecurityEvent(user._id, 'LOGIN_LOCKED', { ipAddress, userAgent });
-      return res.status(423).json({ 
-        success: false, 
+      return res.status(423).json({
+        success: false,
         message: lockCheck.message,
         code: 'ACCOUNT_LOCKED'
       });
@@ -402,15 +421,15 @@ exports.login = async (req, res) => {
     if (!isMatch) {
       // Increment failed attempts
       await user.incrementLoginAttempts();
-      await logSecurityEvent(user._id, 'LOGIN_FAILED', { 
-        ipAddress, 
+      await logSecurityEvent(user._id, 'LOGIN_FAILED', {
+        ipAddress,
         userAgent,
-        failedAttempts: user.failedLoginAttempts 
+        failedAttempts: user.failedLoginAttempts
       });
-      
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid email or password' 
+
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
       });
     }
 
@@ -427,7 +446,7 @@ exports.login = async (req, res) => {
     // Generate tokens
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
-    
+
     // Store refresh token
     await user.addRefreshToken(refreshToken);
 
@@ -451,15 +470,14 @@ exports.login = async (req, res) => {
     req.session.save((err) => {
       if (err) {
         console.error('Session save error:', err);
-        return res.status(500).json({ 
-          success: false, 
-          message: 'Error saving session' 
+        return res.status(500).json({
+          success: false,
+          message: 'Error saving session'
         });
       }
 
-      console.log('✅ Session saved successfully:', req.session.userId);
-      console.log('✅ Session ID:', req.sessionID);
-      
+      // console.log('✅ Session saved successfully');
+
       res.json({
         success: true,
         message: 'Login successful',
@@ -470,10 +488,10 @@ exports.login = async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Error logging in', 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      message: 'Error logging in',
+      error: error.message
     });
   }
 };
@@ -515,9 +533,9 @@ exports.getCurrentUser = async (req, res) => {
 
     const user = await User.findById(req.session.userId).select('-password');
     if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
       });
     }
 
@@ -529,14 +547,15 @@ exports.getCurrentUser = async (req, res) => {
         email: user.email,
         phone: user.phone,
         address: user.address,
-        profilePhoto: user.profilePhoto
+        profilePhoto: user.profilePhoto,
+        isAdmin: user.isAdmin || false
       }
     });
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      message: 'Error fetching user', 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching user',
+      error: error.message
     });
   }
 };
@@ -549,7 +568,70 @@ exports.updateProfile = async (req, res) => {
     if (name !== undefined) updateFields.name = name;
     if (phone !== undefined) updateFields.phone = phone;
     if (address !== undefined) updateFields.address = address;
-    if (profilePhoto !== undefined) updateFields.profilePhoto = profilePhoto;
+    if (profilePhoto !== undefined) {
+      // Limit profile photo size (approx 3MB for Base64)
+      if (profilePhoto.length > 3 * 1024 * 1024) {
+        return res.status(400).json({
+          success: false,
+          message: 'Profile photo is too large'
+        });
+      }
+
+      // Check if it's a base64 string
+      if (profilePhoto.startsWith('data:image')) {
+        // Check if Cloudinary is configured
+        if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+          const uploadService = require('../services/uploadService');
+          try {
+            const secureUrl = await uploadService.uploadBase64(profilePhoto);
+            updateFields.profilePhoto = secureUrl;
+          } catch (uploadErr) {
+            console.error('Cloudinary upload failed:', uploadErr);
+            if (process.env.NODE_ENV === 'production') {
+              return res.status(500).json({
+                success: false,
+                message: 'Failed to upload photo to cloud storage. Please try again.'
+              });
+            }
+            // Only fallback to local in development
+            saveLocally(profilePhoto, req, updateFields);
+          }
+        } else {
+          // Local storage fallback (Development Only ideally)
+          if (process.env.NODE_ENV === 'production') {
+            // If keys are missing in production, don't silently save locally
+            console.warn('Cloudinary keys missing in production!');
+            return res.status(500).json({ success: false, message: 'Server storage configuration error' });
+          }
+          saveLocally(profilePhoto, req, updateFields);
+        }
+
+        function saveLocally(dataStr, req, fields) {
+          const fs = require('fs');
+          const path = require('path');
+          const matches = dataStr.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
+          if (matches && matches.length === 3) {
+            const ext = matches[1];
+            const data = matches[2];
+            const buffer = Buffer.from(data, 'base64');
+            const filename = `profile-${req.user.id}-${Date.now()}.${ext}`;
+            const filepath = path.join(__dirname, '../uploads/profiles', filename);
+            const dir = path.dirname(filepath);
+            if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+            fs.writeFileSync(filepath, buffer);
+            fields.profilePhoto = `/uploads/profiles/${filename}`;
+          }
+        }
+      } else {
+        // Assume it's already a URL or handle accordingly
+        // If it sends a URL (e.g. external), we allow it?
+        // For now, if it's not data URI and not empty, we assume it's valid if it is a string.
+        // But to be safe, maybe we only allow if it starts with /uploads/ or http
+        if (profilePhoto.startsWith('/uploads/') || profilePhoto.startsWith('http')) {
+          updateFields.profilePhoto = profilePhoto;
+        }
+      }
+    }
 
     const updatedUser = await User.findByIdAndUpdate(
       req.user.id,
@@ -558,9 +640,9 @@ exports.updateProfile = async (req, res) => {
     );
 
     if (!updatedUser) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
       });
     }
 
@@ -577,10 +659,10 @@ exports.updateProfile = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      message: 'Error updating profile', 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      message: 'Error updating profile',
+      error: error.message
     });
   }
 };
@@ -592,17 +674,17 @@ exports.changePassword = async (req, res) => {
 
     const user = await User.findById(req.user.id).select('+password');
     if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
       });
     }
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Current password is incorrect' 
+      return res.status(401).json({
+        success: false,
+        message: 'Current password is incorrect'
       });
     }
 
@@ -615,10 +697,10 @@ exports.changePassword = async (req, res) => {
       message: 'Password changed successfully'
     });
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      message: 'Error changing password', 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      message: 'Error changing password',
+      error: error.message
     });
   }
 };

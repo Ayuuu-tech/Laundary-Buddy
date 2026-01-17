@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,6 +19,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
+
 <body>
   <header>
     <div class="container navbar">
@@ -46,13 +48,14 @@
         <i class='bx bx-refresh bx-spin'></i>
         <span>Release to refresh</span>
       </div>
-      
+
       <h1>Laundry Staff Dashboard</h1>
 
       <div class="orders-toolbar">
         <div class="search-bar">
           <i class='bx bx-search'></i>
-          <input type="text" id="laundry-search" placeholder="Search by token, student, or room (Press F)" accesskey="f">
+          <input type="text" id="laundry-search" placeholder="Search by token, student, or room (Press F)"
+            accesskey="f">
         </div>
         <div class="filter-group">
           <select id="status-filter" class="filter-select" aria-label="Filter by status" title="Filter by status">
@@ -73,8 +76,10 @@
           </select>
         </div>
         <button class="btn btn-secondary" id="scan-qr-btn"><i class='bx bx-qr-scan'></i> Scan QR</button>
-        <button class="btn btn-secondary" id="refresh-btn" title="Refresh (Press R)"><i class='bx bx-refresh'></i> Refresh</button>
-        <button class="btn btn-secondary" id="export-btn" title="Export (Press E)"><i class='bx bx-download'></i> Export</button>
+        <button class="btn btn-secondary" id="refresh-btn" title="Refresh (Press R)"><i class='bx bx-refresh'></i>
+          Refresh</button>
+        <button class="btn btn-secondary" id="export-btn" title="Export (Press E)"><i class='bx bx-download'></i>
+          Export</button>
       </div>
 
       <div class="bulk-actions-bar" id="bulk-actions-bar">
@@ -138,9 +143,21 @@
             </tr>
           </thead>
           <tbody id="laundry-table-body">
-            <tr><td colspan="8">Loading...</td></tr>
+            <tr>
+              <td colspan="8">Loading...</td>
+            </tr>
           </tbody>
         </table>
+
+        <!-- Pagination Controls -->
+        <div class="pagination-controls"
+          style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--bg-surface);">
+          <button id="btn-prev-page" class="btn btn-secondary" disabled><i class='bx bx-chevron-left'></i>
+            Previous</button>
+          <span id="pagination-info">Page 1</span>
+          <button id="btn-next-page" class="btn btn-secondary" disabled>Next <i
+              class='bx bx-chevron-right'></i></button>
+        </div>
       </div>
 
       <!-- Support Tickets Section -->
@@ -164,7 +181,7 @@
             <button class="btn btn-secondary" id="refresh-tickets-btn"><i class='bx bx-refresh'></i> Refresh</button>
           </div>
         </div>
-        
+
         <div class="tickets-grid" id="tickets-grid">
           <div class="loading-placeholder">Loading tickets...</div>
         </div>
@@ -206,8 +223,10 @@
         <label for="qr-camera-select">Camera</label>
         <select id="qr-camera-select"></select>
         <div class="button-group">
-          <button id="qr-toggle-torch" class="btn btn-secondary" title="Toggle flash/torch"><i class='bx bx-flash'></i> Torch</button>
-          <button id="qr-retry" class="btn btn-secondary" title="Restart scanning"><i class='bx bx-refresh'></i> Retry</button>
+          <button id="qr-toggle-torch" class="btn btn-secondary" title="Toggle flash/torch"><i class='bx bx-flash'></i>
+            Torch</button>
+          <button id="qr-retry" class="btn btn-secondary" title="Restart scanning"><i class='bx bx-refresh'></i>
+            Retry</button>
         </div>
       </div>
       <button id="use-file-upload" class="btn btn-secondary">
@@ -233,7 +252,8 @@
         <div class="details-row"><strong>Token:</strong> <span id="detail-token">-</span></div>
         <div class="details-row"><strong>Student:</strong> <span id="detail-name">-</span></div>
         <div class="details-row"><strong>Room:</strong> <span id="detail-room">-</span></div>
-        <div class="details-row"><strong>Priority:</strong> <span id="detail-priority" class="priority-badge">Normal</span></div>
+        <div class="details-row"><strong>Priority:</strong> <span id="detail-priority"
+            class="priority-badge">Normal</span></div>
         <div class="details-row"><strong>Status:</strong> <span id="detail-status" class="status-pill">-</span></div>
         <div class="details-row"><strong>Submitted:</strong> <span id="detail-submitted">-</span></div>
         <div class="details-row"><strong>ETA:</strong> <span id="detail-eta">-</span></div>
@@ -252,7 +272,8 @@
           <button class="btn btn-secondary" id="detail-advance"><i class='bx bx-chevrons-right'></i> Advance</button>
           <button class="btn btn-secondary" id="detail-ready"><i class='bx bx-package'></i> Mark Ready</button>
           <button class="btn btn-secondary" id="detail-complete"><i class='bx bx-check'></i> Complete</button>
-          <button class="btn btn-danger" id="detail-toggle-urgent" title="Toggle urgent priority"><i class='bx bx-error'></i> Toggle Urgent</button>
+          <button class="btn btn-danger" id="detail-toggle-urgent" title="Toggle urgent priority"><i
+              class='bx bx-error'></i> Toggle Urgent</button>
           <button class="btn btn-secondary" id="detail-cancel"><i class='bx bx-x'></i> Close</button>
         </div>
       </div>
@@ -349,4 +370,5 @@
   <script src="assests/laundry-dashboard.js?v=1.3"></script>
 </body>
 <!-- Created: 2025 -->
+
 </html>

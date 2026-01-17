@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,11 +8,12 @@
     <link rel="stylesheet" href="submit.css?v=2.0">
     <link rel="stylesheet" href="modal.css?v=2.0">
     <link rel="stylesheet" href="dark-mode.css?v=2.0">
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="responsive.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
+
 <body>
 
     <header>
@@ -56,7 +58,7 @@
                 </div>
             </div>
 
-            <form action="#">
+            <form action="#" method="POST">
                 <div class="input-group">
                     <label for="clothes-count">Clothes Count</label>
                     <input type="number" id="clothes-count" placeholder="Enter number of clothes">
@@ -107,11 +109,12 @@
 
     <!-- Include QRCode.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    
+
     <!-- Backend Integration Scripts -->
     <script src="assests/api-config.js"></script>
+    <script src="assests/idb-utils.js"></script>
     <script src="assests/order-api.js"></script>
-    
+
     <!-- Existing Scripts -->
     <script src="assests/crypto-utils.js"></script>
     <script src="assests/auth.js"></script>
@@ -121,4 +124,5 @@
     <script src="assests/submit.js?v=2.0"></script>
 
 </body>
+
 </html>

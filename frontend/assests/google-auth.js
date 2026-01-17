@@ -1,5 +1,5 @@
 // google-auth.js - Google OAuth integration
-(function() {
+(function () {
   'use strict';
 
   // Google Client ID from Google Cloud Console (read from central env config when available)
@@ -77,7 +77,7 @@
         type: 'standard',
         size: 'large',
         theme: 'outline',
-        click_listener: () => {}
+        click_listener: () => { }
       });
 
       // Click the button
@@ -95,7 +95,7 @@
 
       try {
         const result = await this.authenticateWithBackend(response.credential);
-        
+
         if (result.success) {
           // Session is now stored server-side automatically
           if (window.authManager) {
@@ -103,7 +103,7 @@
           }
 
           if (window.toastManager) {
-            const message = result.isNewUser 
+            const message = result.isNewUser
               ? `Welcome to Laundry Buddy, ${result.user.name}!`
               : `Welcome back, ${result.user.name}!`;
             window.toastManager.success(message, result.isNewUser ? 'Account Created!' : 'Login Successful');
@@ -132,13 +132,8 @@
 
     async authenticateWithBackend(credential) {
       // Use the same logic as api-config.js to always use production API URL unless on localhost
-      const hostname = window.location.hostname;
-      let apiUrl;
-      if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        apiUrl = 'http://localhost:3000/api';
-      } else {
-        apiUrl = 'https://api.ayushmaanyadav.me';
-      }
+      const apiUrl = (window.API_CONFIG && window.API_CONFIG.BASE_URL) ||
+        (window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : 'https://api.ayushmaanyadav.me');
 
       const response = await fetch(`${apiUrl}/api/auth/google`, {
         method: 'POST',

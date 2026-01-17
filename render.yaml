@@ -3,24 +3,45 @@ services:
   - type: web
     name: laundry-buddy-backend
     env: node
+    rootDir: backend
     region: oregon
     plan: free
-    buildCommand: cd backend && npm install
-    startCommand: cd backend && node server.js
+    buildCommand: npm install
+    startCommand: node server.js
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 3000
+        value: 10000
       - key: MONGODB_URI
         sync: false
+      - key: SESSION_SECRET
+        generateValue: true
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRE
         value: 7d
       - key: ALLOWED_ORIGINS
+        sync: false  # Add frontend URL here after deployment
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
         sync: false
     healthCheckPath: /api/health
+
+  # Frontend Static Site
+  - type: static
+    name: laundry-buddy-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: "" # No build needed for raw HTML/JS
+    staticPublishPath: .
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
 
 databases:
   # MongoDB Database
@@ -29,4 +50,6 @@ databases:
     user: laundry_user
     plan: free
 
-# Note: After deploying backend, update frontend API URL in api-config.js
+# Note: After deploying:
+# 1. Update ALLOWED_ORIGINS in Backend with Frontend URL
+# 2. Update API URL in frontend/assests/api-config.js with Backend URL

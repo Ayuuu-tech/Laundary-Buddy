@@ -2,12 +2,8 @@
 (function () {
   'use strict';
 
-  // Check authentication before initializing page
-  if (window.authManager && !window.authManager.isLoggedIn()) {
-    alert('Please login to view order history.');
-    window.location.href = 'login.html';
-    return;
-  }
+  // Check authentication is now handled in DOMContentLoaded
+
 
   // Class representing a single order
   class Order {
@@ -84,7 +80,7 @@
       this.tableBody.innerHTML = '';
 
       if (this.filteredOrders.length === 0) {
-        const emptyMessage = this.orders.length === 0 
+        const emptyMessage = this.orders.length === 0
           ? '<tr><td colspan="4" style="text-align: center; padding: 40px;"><i class="bx bx-package" style="font-size: 48px; color: #ccc;"></i><br><br>No orders yet. <a href="submit.html" style="color: var(--primary-color);">Submit your first laundry</a> to get started!</td></tr>'
           : '<tr><td colspan="4" style="text-align: center; padding: 40px;">No orders found matching your filter.</td></tr>';
         this.tableBody.innerHTML = emptyMessage;
@@ -151,12 +147,12 @@
     filterByDateRange(range) {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      
+
       if (range === 'week') {
         // Get start of this week (Sunday)
         const startOfWeek = new Date(today);
         startOfWeek.setDate(today.getDate() - today.getDay());
-        
+
         this.filteredOrders = this.orders.filter(order => {
           const orderDate = new Date(order.date);
           return orderDate >= startOfWeek && orderDate <= now;
@@ -164,7 +160,7 @@
       } else if (range === 'month') {
         // Get start of this month
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        
+
         this.filteredOrders = this.orders.filter(order => {
           const orderDate = new Date(order.date);
           return orderDate >= startOfMonth && orderDate <= now;
@@ -172,7 +168,7 @@
       } else {
         this.filteredOrders = [...this.orders];
       }
-      
+
       this.renderOrders();
     }
 
@@ -180,8 +176,8 @@
       const term = searchTerm.toLowerCase();
       this.filteredOrders = this.orders.filter(order => {
         return order.displayDate.toLowerCase().includes(term) ||
-               order.getItemsDescription().toLowerCase().includes(term) ||
-               order.getStatusLabel().toLowerCase().includes(term);
+          order.getItemsDescription().toLowerCase().includes(term) ||
+          order.getStatusLabel().toLowerCase().includes(term);
       });
       this.renderOrders();
     }
@@ -194,20 +190,20 @@
         switch (sortType) {
           case 'date-newest':
             return new Date(b.date) - new Date(a.date);
-          
+
           case 'date-oldest':
             return new Date(a.date) - new Date(b.date);
-          
+
           case 'status':
             const statusOrder = { 'in-process': 1, 'completed': 2, 'cancelled': 3 };
             return (statusOrder[a.status] || 4) - (statusOrder[b.status] || 4);
-          
+
           case 'items-most':
             return b.totalItems - a.totalItems;
-          
+
           case 'items-least':
             return a.totalItems - b.totalItems;
-          
+
           default:
             return 0;
         }
@@ -243,10 +239,10 @@
     handleFilterClick(btn) {
       // Remove active class from all buttons
       this.filterBtns.forEach(b => b.classList.remove('active'));
-      
+
       // Add active class to clicked button
       btn.classList.add('active');
-      
+
       const filterType = btn.textContent.trim();
       this.applyFilter(filterType);
     }
@@ -391,7 +387,7 @@
       try {
         // Load orders data from JSON
         const ordersData = await this.loadOrdersData();
-        
+
         // Initialize managers
         this.historyManager = new OrderHistoryManager(ordersData);
         this.filterManager = new FilterManager(this.historyManager);
@@ -417,15 +413,15 @@
         if (window.orderManager) {
           console.log('📦 Fetching orders from backend...');
           const backendOrders = await window.orderManager.getOrders();
-          
+
           if (backendOrders && backendOrders.length > 0) {
             console.log(`✅ Loaded ${backendOrders.length} orders from backend`);
-            
+
             // Convert backend orders to history format
             const orders = backendOrders.map((order, index) => {
               const orderDate = new Date(order.createdAt || order.pickupDate || Date.now());
-              const mappedStatus = order.status === 'completed' ? 'completed' : 
-                                  (order.status === 'cancelled' ? 'cancelled' : 'in-process');
+              const mappedStatus = order.status === 'completed' ? 'completed' :
+                (order.status === 'cancelled' ? 'cancelled' : 'in-process');
 
               return {
                 id: order._id || order.orderNumber || `ORDER-${index + 1}`,
@@ -442,7 +438,7 @@
                 orderData: order // Keep full order data for reference
               };
             });
-            
+
             // Calculate summary
             const summary = {
               totalOrders: orders.length,
@@ -450,7 +446,7 @@
               inProcessOrders: orders.filter(o => o.status === 'in-process').length,
               cancelledOrders: orders.filter(o => o.status === 'cancelled').length
             };
-            
+
             return { orders, summary };
           }
         }
@@ -463,20 +459,20 @@
         console.log('📁 Loading orders from localStorage...');
         const currentUser = window.authManager ? window.authManager.getCurrentUser() : null;
         const submissions = JSON.parse(localStorage.getItem('laundryBuddy_submissions') || '[]');
-        
+
         // Filter submissions for current user
         let userSubmissions = submissions;
         if (currentUser) {
-          userSubmissions = submissions.filter(sub => 
-            sub.studentId === currentUser.studentId || 
+          userSubmissions = submissions.filter(sub =>
+            sub.studentId === currentUser.studentId ||
             sub.hostelRoom === currentUser.hostelRoom
           );
         }
-        
+
         if (userSubmissions.length > 0) {
           console.log(`✅ Loaded ${userSubmissions.length} orders from localStorage`);
         }
-        
+
         // Convert submissions to orders format
         const orders = userSubmissions.map((submission, index) => {
           const orderDate = new Date(submission.submittedDate || submission.timestamp || submission.date || Date.now());
@@ -494,7 +490,7 @@
             totalItems: submission.items ? submission.items.reduce((sum, item) => sum + (item.count || 0), 0) : 0
           };
         });
-        
+
         // Calculate summary
         const summary = {
           totalOrders: orders.length,
@@ -502,7 +498,7 @@
           inProcessOrders: orders.filter(o => o.status === 'in-process').length,
           cancelledOrders: orders.filter(o => o.status === 'cancelled').length
         };
-        
+
         return { orders, summary };
       } catch (error) {
         console.error('❌ Error loading orders from localStorage:', error);
@@ -518,7 +514,7 @@
     loadFallbackData() {
       // Fallback data if loading fails - show empty state
       console.log('Loading fallback data (empty state)');
-      
+
       const fallbackData = {
         orders: [],
         summary: {
@@ -536,11 +532,18 @@
   }
 
   // Initialize when DOM is ready
-  document.addEventListener('DOMContentLoaded', function () {
-    // Update profile photo everywhere after login check
+  document.addEventListener('DOMContentLoaded', async function () {
+    // Check authentication
     if (window.authManager) {
+      const isLoggedIn = await window.authManager.isLoggedIn();
+      if (!isLoggedIn) {
+        alert('Please login to view order history.');
+        window.location.href = 'login.html';
+        return;
+      }
       window.authManager.loadProfilePhoto();
     }
+
     const app = new OrderHistoryApp();
     app.init();
 
@@ -560,7 +563,7 @@
     if (starRating) {
       const stars = starRating.querySelectorAll('i');
       stars.forEach(star => {
-        star.addEventListener('mouseenter', function() {
+        star.addEventListener('mouseenter', function () {
           const rating = parseInt(this.dataset.rating);
           stars.forEach((s, i) => {
             if (i < rating) {
@@ -573,7 +576,7 @@
           });
         });
 
-        star.addEventListener('click', function() {
+        star.addEventListener('click', function () {
           selectedRating = parseInt(this.dataset.rating);
           stars.forEach((s, i) => {
             if (i < selectedRating) {
@@ -587,7 +590,7 @@
         });
       });
 
-      starRating.addEventListener('mouseleave', function() {
+      starRating.addEventListener('mouseleave', function () {
         stars.forEach((s, i) => {
           if (i < selectedRating) {
             s.classList.remove('bx-star');
@@ -602,14 +605,14 @@
 
     // Close modal
     if (feedbackClose) {
-      feedbackClose.addEventListener('click', function() {
+      feedbackClose.addEventListener('click', function () {
         feedbackModal.style.display = 'none';
         selectedRating = 0;
       });
     }
 
     if (feedbackCancel) {
-      feedbackCancel.addEventListener('click', function() {
+      feedbackCancel.addEventListener('click', function () {
         feedbackModal.style.display = 'none';
         selectedRating = 0;
       });
@@ -617,7 +620,7 @@
 
     // Submit feedback
     if (feedbackSubmit) {
-      feedbackSubmit.addEventListener('click', async function() {
+      feedbackSubmit.addEventListener('click', async function () {
         if (selectedRating === 0) {
           alert('Please select a star rating before submitting.');
           return;
@@ -637,7 +640,7 @@
             // Use mongoId if available, otherwise use the id
             const orderId = order.mongoId || order.id;
             console.log('Submitting feedback for order:', orderId, order);
-            
+
             const response = await window.orderManager.updateOrder(orderId, {
               feedback: {
                 rating: selectedRating,
@@ -682,7 +685,7 @@
     }
 
     // Close modal when clicking outside
-    window.addEventListener('click', function(event) {
+    window.addEventListener('click', function (event) {
       if (event.target === feedbackModal) {
         feedbackModal.style.display = 'none';
         selectedRating = 0;
