@@ -108,7 +108,7 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000,
     sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-site in production
     path: '/',
-    domain: isProduction ? '.ayushmaanyadav.me' : undefined // Enable cross-subdomain cookies in production
+    // domain: isProduction ? '.ayushmaanyadav.me' : undefined // Removed to allow Render/custom domain flexibility
   }
 }));
 
