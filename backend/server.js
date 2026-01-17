@@ -29,6 +29,8 @@ const {
 const app = express();
 // Serve static uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve Frontend Static Files (Unified Deployment)
+app.use(express.static(path.join(__dirname, '../frontend')));
 const PORT = process.env.PORT || 3000;
 
 // Initialize Sentry first (before any other middleware)
@@ -162,8 +164,8 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Root route
-app.get('/', (req, res) => {
+// Root route for API info (moved from / to /api)
+app.get('/api', (req, res) => {
   res.json({
     success: true,
     message: 'Welcome to Laundry Buddy API',
@@ -175,6 +177,11 @@ app.get('/', (req, res) => {
       health: '/api/health'
     }
   });
+});
+
+// Explicitly serve index.html for root if static didn't catch it (fallback)
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
 // 404 handler
