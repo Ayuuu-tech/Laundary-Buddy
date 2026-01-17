@@ -23,15 +23,15 @@ class CSRFProtection {
 
   validateToken(token) {
     if (!token) return false;
-    
+
     const expiry = this.tokens.get(token);
     if (!expiry) return false;
-    
+
     if (Date.now() > expiry) {
       this.tokens.delete(token);
       return false;
     }
-    
+
     return true;
   }
 
@@ -63,18 +63,23 @@ function generateCSRFToken(req, res, next) {
  */
 function validateCSRFToken(req, res, next) {
   const token = req.headers['x-csrf-token'] || req.body._csrf;
-  
+
   // Skip CSRF for certain routes (customize as needed)
   const skipRoutes = [
     '/api/auth/login',
     '/api/auth/register',
     '/api/auth/google',
+    '/api/auth/request-login-otp',
+    '/api/auth/request-signup-otp',
+    '/api/auth/request-reset-otp',
+    '/api/auth/verify-login-otp',
+    '/api/auth/verify-signup-otp',
   ];
-  
+
   if (skipRoutes.some(route => req.path.startsWith(route))) {
     return next();
   }
-  
+
   // Validate token
   if (!token || token !== req.session.csrfToken) {
     return res.status(403).json({
@@ -83,7 +88,7 @@ function validateCSRFToken(req, res, next) {
       code: 'CSRF_INVALID'
     });
   }
-  
+
   if (!csrfProtection.validateToken(token)) {
     return res.status(403).json({
       success: false,
@@ -91,7 +96,7 @@ function validateCSRFToken(req, res, next) {
       code: 'CSRF_EXPIRED'
     });
   }
-  
+
   next();
 }
 
@@ -102,7 +107,7 @@ function getCSRFTokenRoute(req, res) {
   if (!req.session.csrfToken) {
     req.session.csrfToken = csrfProtection.generateToken();
   }
-  
+
   res.json({
     success: true,
     csrfToken: req.session.csrfToken
