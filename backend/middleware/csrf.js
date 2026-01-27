@@ -80,6 +80,8 @@ function validateCSRFToken(req, res, next) {
     '/api/auth/verify-login-otp',
     '/api/auth/verify-signup-otp',
     '/api/auth/verify-reset-otp',
+    '/api/auth/profile',        // Protected by session auth
+    '/api/auth/change-password', // Protected by session auth
   ];
 
   if (skipRoutes.some(route => req.path.startsWith(route))) {
