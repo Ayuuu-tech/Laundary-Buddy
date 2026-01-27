@@ -165,14 +165,17 @@
 
       let photoUrl = currentUser.profilePhoto;
       // If it's a relative path (from backend uploads), prepend API base URL without /api
-      if (photoUrl.startsWith('/') && window.API_CONFIG && window.API_CONFIG.BASE_URL) {
-        // Remove /api suffix from BASE_URL since uploads are at root
-        const baseUrl = window.API_CONFIG.BASE_URL.replace(/\/api$/, '');
+      if (photoUrl.startsWith('/')) {
+        // Get base URL, removing /api suffix since uploads are at root
+        let baseUrl = 'https://api.ayushmaanyadav.me'; // Default fallback
+        if (window.API_CONFIG && window.API_CONFIG.BASE_URL) {
+          baseUrl = window.API_CONFIG.BASE_URL.replace(/\/api$/, '');
+        }
         photoUrl = baseUrl + photoUrl;
       }
 
-      // Update all profile images on the page
-      const headerProfileImgs = document.querySelectorAll('.header-actions img, header img[alt*="Profile"], header img[alt*="User"]');
+      // Update all profile images on the page - expanded selector for all common patterns
+      const headerProfileImgs = document.querySelectorAll('.header-actions img, header img[alt*="Profile"], header img[alt*="User"], .profile img, header .profile img');
       headerProfileImgs.forEach(img => {
         img.src = photoUrl;
       });

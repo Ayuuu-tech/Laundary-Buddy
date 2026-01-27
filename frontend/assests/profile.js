@@ -142,9 +142,12 @@
     // Load saved profile photo if exists
     if (user.profilePhoto) {
       let photoUrl = user.profilePhoto;
-      if (photoUrl.startsWith('/') && window.API_CONFIG && window.API_CONFIG.BASE_URL) {
-        // Remove /api suffix since uploads are at root
-        const baseUrl = window.API_CONFIG.BASE_URL.replace(/\/api$/, '');
+      if (photoUrl.startsWith('/')) {
+        // Get base URL, removing /api suffix since uploads are at root
+        let baseUrl = 'https://api.ayushmaanyadav.me'; // Default fallback
+        if (window.API_CONFIG && window.API_CONFIG.BASE_URL) {
+          baseUrl = window.API_CONFIG.BASE_URL.replace(/\/api$/, '');
+        }
         photoUrl = baseUrl + photoUrl;
       }
       avatarImg.src = photoUrl;
@@ -237,9 +240,12 @@
     // Update profile photo if exists
     if (profileAvatar && user.profilePhoto) {
       let photoUrl = user.profilePhoto;
-      if (photoUrl.startsWith('/') && window.API_CONFIG && window.API_CONFIG.BASE_URL) {
-        // Remove /api suffix since uploads are at root
-        const baseUrl = window.API_CONFIG.BASE_URL.replace(/\/api$/, '');
+      if (photoUrl.startsWith('/')) {
+        // Get base URL, removing /api suffix since uploads are at root
+        let baseUrl = 'https://api.ayushmaanyadav.me'; // Default fallback
+        if (window.API_CONFIG && window.API_CONFIG.BASE_URL) {
+          baseUrl = window.API_CONFIG.BASE_URL.replace(/\/api$/, '');
+        }
         photoUrl = baseUrl + photoUrl;
       }
       profileAvatar.src = photoUrl;
