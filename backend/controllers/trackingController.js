@@ -154,7 +154,15 @@ exports.upsertByOrderNumberForLaundry = async (req, res) => {
 
   try {
     // Strictly require authenticated admin access
-    if (!req.user || !req.user.isAdmin) {
+    if (!req.user || !req.user.id) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(401).json({ success: false, message: 'Authentication required' });
+    }
+
+    // Check admin status from database (session may not have isAdmin field)
+    const adminUser = await require('../models/User').findById(req.user.id);
+    if (!adminUser || !adminUser.isAdmin) {
       await session.abortTransaction();
       session.endSession();
       return res.status(403).json({ success: false, message: 'Forbidden: Admin access required' });

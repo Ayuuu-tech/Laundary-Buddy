@@ -609,6 +609,7 @@
         headers: {
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({ status, estimatedDelivery, note })
       });
       const data = await res.json().catch(() => ({ success: false, message: 'Invalid JSON' }));
