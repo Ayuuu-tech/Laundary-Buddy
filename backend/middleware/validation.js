@@ -59,15 +59,32 @@ const validationRules = {
   createOrder: [
     body('items')
       .isArray({ min: 1 }).withMessage('At least one item is required'),
+    body('items.*.type')
+      .optional()
+      .trim(),
     body('items.*.name')
-      .trim()
-      .notEmpty().withMessage('Item name is required'),
+      .optional()
+      .trim(),
     body('items.*.quantity')
+      .optional()
       .isInt({ min: 1 }).withMessage('Quantity must be at least 1'),
+    body('items.*.count')
+      .optional()
+      .isInt({ min: 1 }).withMessage('Count must be at least 1'),
+    body('serviceType')
+      .optional()
+      .trim(),
     body('pickupDate')
       .optional()
       .isISO8601().withMessage('Invalid date format'),
+    body('deliveryDate')
+      .optional()
+      .isISO8601().withMessage('Invalid date format'),
     body('deliveryAddress')
+      .optional()
+      .trim()
+      .isLength({ max: 200 }).withMessage('Address too long'),
+    body('address')
       .optional()
       .trim()
       .isLength({ max: 200 }).withMessage('Address too long')
