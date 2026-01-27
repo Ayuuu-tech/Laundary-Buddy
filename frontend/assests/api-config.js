@@ -9,9 +9,10 @@ const getApiBaseUrl = () => {
     return 'http://localhost:3000/api';
   }
 
-  // Production (any deployed domain)
-  // Use relative path for unified deployment to avoid CORS/Cookie issues
-  return '/api';
+  // Production (deployed domain)
+  // TODO: Replace with your actual Render backend URL
+  // Example: https://laundry-buddy-backend.onrender.com/api
+  return 'https://laundry-buddy-backend.onrender.com/api';
 };
 
 const API_CONFIG = {
