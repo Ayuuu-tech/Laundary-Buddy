@@ -83,6 +83,11 @@ function validateCSRFToken(req, res, next) {
     '/api/auth/verify-reset-otp',
     '/api/auth/profile',        // Protected by session auth
     '/api/auth/change-password', // Protected by session auth
+    '/api/orders',              // Protected by session auth
+    '/api/tracking',            // Protected by session auth
+    '/api/support',             // Protected by session auth
+    '/api/contact',             // Public contact form
+    '/api/user',                // Protected by session auth
   ];
 
   if (skipRoutes.some(route => req.path.startsWith(route))) {
