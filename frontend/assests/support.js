@@ -43,7 +43,7 @@
     reportsGrid.innerHTML = '<p style="text-align:center;color:#666;">Loading your reports...</p>';
 
     try {
-      const response = await fetch(`${API_CONFIG.BASE_URL}/api/support/my-tickets`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/support/my-tickets`, {
         credentials: 'include'
       });
 
@@ -385,7 +385,7 @@
           }
 
           // Save missing clothes report to database
-          const response = await fetch(`${API_CONFIG.BASE_URL}/api/support/report`, {
+          const response = await fetch(`${API_CONFIG.BASE_URL}/support/report`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -440,7 +440,7 @@
           }
 
           // Save damage report to database
-          const response = await fetch(`${API_CONFIG.BASE_URL}/api/support/report`, {
+          const response = await fetch(`${API_CONFIG.BASE_URL}/support/report`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'

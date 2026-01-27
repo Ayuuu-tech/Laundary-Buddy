@@ -22,7 +22,7 @@
     // Get single order by ID
     async getOrder(orderId) {
       try {
-        const response = await apiClient.get(`/api/orders/${orderId}`);
+        const response = await apiClient.get(`/orders/${orderId}`);
         return response.order;
       } catch (error) {
         console.error('Error fetching order:', error);
@@ -80,7 +80,7 @@
     // Update order
     async updateOrder(orderId, updates) {
       try {
-        const response = await apiClient.put(`/api/orders/${orderId}`, updates);
+        const response = await apiClient.put(`/orders/${orderId}`, updates);
         if (response.success) {
           return { success: true, order: response.order, message: 'Order updated successfully!' };
         }
@@ -94,7 +94,7 @@
     // Delete order
     async deleteOrder(orderId) {
       try {
-        const response = await apiClient.delete(`/api/orders/${orderId}`);
+        const response = await apiClient.delete(`/orders/${orderId}`);
         return response;
       } catch (error) {
         console.error('Error deleting order:', error);
