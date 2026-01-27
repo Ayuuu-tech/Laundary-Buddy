@@ -62,6 +62,11 @@ function generateCSRFToken(req, res, next) {
  * Apply this to all state-changing routes (POST, PUT, DELETE, PATCH)
  */
 function validateCSRFToken(req, res, next) {
+  // Skip CSRF for safe HTTP methods (GET, HEAD, OPTIONS)
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+    return next();
+  }
+
   const token = req.headers['x-csrf-token'] || req.body._csrf;
 
   // Skip CSRF for certain routes (customize as needed)
@@ -74,6 +79,7 @@ function validateCSRFToken(req, res, next) {
     '/api/auth/request-reset-otp',
     '/api/auth/verify-login-otp',
     '/api/auth/verify-signup-otp',
+    '/api/auth/verify-reset-otp',
   ];
 
   if (skipRoutes.some(route => req.path.startsWith(route))) {
