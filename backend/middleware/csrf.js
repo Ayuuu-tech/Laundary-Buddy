@@ -74,6 +74,7 @@ function validateCSRFToken(req, res, next) {
     '/api/auth/login',
     '/api/auth/register',
     '/api/auth/google',
+    '/api/auth/logout',         // Must work even without valid token
     '/api/auth/request-login-otp',
     '/api/auth/request-signup-otp',
     '/api/auth/request-reset-otp',
