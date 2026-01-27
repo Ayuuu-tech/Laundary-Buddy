@@ -16,7 +16,8 @@ class EnvironmentConfig {
     if (hostname.includes('vercel.app') || 
         hostname.includes('netlify.app') || 
         hostname.includes('github.io') ||
-        hostname === 'your-domain.com') {
+        hostname.includes('ayushmaanyadav.me') ||
+        hostname.includes('onrender.com')) {
       return 'production';
     }
     
@@ -31,12 +32,12 @@ class EnvironmentConfig {
         enableServiceWorker: false
       },
       staging: {
-        apiUrl: 'https://your-staging-backend.onrender.com/api',
+        apiUrl: 'https://api.ayushmaanyadav.me/api',
         enableDebug: true,
         enableServiceWorker: true
       },
       production: {
-        apiUrl: 'https://laundry-buddy-api.onrender.com/api',
+        apiUrl: 'https://api.ayushmaanyadav.me/api',
         enableDebug: false,
         enableServiceWorker: true,
         // Google OAuth Client ID loaded from meta tag for security

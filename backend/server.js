@@ -76,14 +76,14 @@ app.use(cors({
       if (allowedOrigins.indexOf(origin) !== -1) {
         return callback(null, true);
       }
-      
+
       // Allow Cloudflare Pages, Render, and other deployment platforms
-      if (origin.includes('.pages.dev') || 
-          origin.includes('.onrender.com') ||
-          origin.includes('cloudflare')) {
+      if (origin.includes('.pages.dev') ||
+        origin.includes('.onrender.com') ||
+        origin.includes('cloudflare')) {
         return callback(null, true);
       }
-      
+
       // Check if origin domain matches any allowed domain (without protocol)
       const originDomain = origin.replace(/https?:\/\//, '');
       if (allowedOrigins.some(allowed => {
@@ -92,7 +92,7 @@ app.use(cors({
       })) {
         return callback(null, true);
       }
-      
+
       logger.warn(`CORS blocked origin: ${origin}`);
       return callback(new Error('Not allowed by CORS'));
     }
@@ -106,7 +106,7 @@ app.use(cors({
   },
   credentials: true,
   exposedHeaders: ['set-cookie'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With', 'x-laundry-key']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With', 'x-laundry-key', 'x-csrf-token']
 }));
 
 // Session configuration with MongoDB store
