@@ -22,7 +22,7 @@
       try {
         // Use the student auth endpoint since staff are also users (admins)
         // Or if there's a specific admin/me endpoint. auth/me is generic.
-        const response = await fetch(`${API_CONFIG.BASE_URL}/api/auth/me`, {
+        const response = await fetch(`${API_CONFIG.BASE_URL}/auth/me`, {
           credentials: 'include'
         });
 
@@ -48,7 +48,7 @@
       try {
         console.log('[Laundry Auth] Attempting backend login for:', email);
 
-        const response = await fetch(`${API_CONFIG.BASE_URL}/api/auth/login`, {
+        const response = await fetch(`${API_CONFIG.BASE_URL}/auth/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -82,7 +82,7 @@
 
     async logout() {
       try {
-        await fetch(`${API_CONFIG.BASE_URL}/api/auth/logout`, {
+        await fetch(`${API_CONFIG.BASE_URL}/auth/logout`, {
           method: 'POST',
           credentials: 'include'
         });
