@@ -270,14 +270,14 @@
       // or rely on /admin/stats endpoint for "Dashboard Home".
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const todayItems = itemsAll.filter(i => new Date(i.submittedDate) >= today);
-      const inproc = itemsAll.filter(i => ['washing', 'drying', 'folding', 'received'].includes(i.currentStatus)).length;
-      const ready = itemsAll.filter(i => i.currentStatus === 'ready-for-pickup').length;
+      const todayItems = items.filter(i => new Date(i.submittedDate) >= today);
+      const inproc = items.filter(i => ['washing', 'drying', 'folding', 'received'].includes(i.currentStatus)).length;
+      const ready = items.filter(i => i.currentStatus === 'ready-for-pickup').length;
       const completedToday = todayItems.filter(i => i.currentStatus === 'completed').length;
-      const urgentCount = itemsAll.filter(i => (i.priority || 'normal') === 'urgent').length;
+      const urgentCount = items.filter(i => (i.priority || 'normal') === 'urgent').length;
 
       // Calculate average completion time
-      const completedItems = itemsAll.filter(i => i.currentStatus === 'completed' && i.submittedDate && i.estimatedCompletion);
+      const completedItems = items.filter(i => i.currentStatus === 'completed' && i.submittedDate && i.estimatedCompletion);
       let avgTime = '--';
       if (completedItems.length > 0) {
         const totalMs = completedItems.reduce((sum, item) => {
@@ -290,7 +290,7 @@
         avgTime = `${hours}h`;
       }
 
-      document.getElementById('stat-total').textContent = itemsAll.length;
+      document.getElementById('stat-total').textContent = items.length;
       document.getElementById('stat-inprocess').textContent = inproc;
       document.getElementById('stat-ready').textContent = ready;
       document.getElementById('stat-completed').textContent = completedToday;
@@ -396,7 +396,7 @@
       }
 
       // Check for new ready orders (notifications)
-      checkForReadyOrders(itemsAll);
+      checkForReadyOrders(items);
     } catch (e) {
       console.error('Failed to load laundry data', e);
       const tbody = document.getElementById('laundry-table-body');
