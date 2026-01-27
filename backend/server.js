@@ -66,17 +66,34 @@ app.use(cors({
     // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
 
+    // Log for debugging in production
+    logger.debug(`CORS check for origin: ${origin}`);
+    logger.debug(`Allowed origins: ${allowedOrigins.join(', ')}`);
+
     // In production, check allowed origins strictly
     if (isProduction) {
-      // Allow Cloudflare Pages and configured origins
-      if (origin.includes('.pages.dev') || origin.includes('cloudflare') ||
-        allowedOrigins.some(allowed => origin.includes(allowed.replace(/https?:\/\//, '')))) {
-        return callback(null, true);
-      }
-      // Check exact match
+      // Check exact match first
       if (allowedOrigins.indexOf(origin) !== -1) {
         return callback(null, true);
       }
+      
+      // Allow Cloudflare Pages, Render, and other deployment platforms
+      if (origin.includes('.pages.dev') || 
+          origin.includes('.onrender.com') ||
+          origin.includes('cloudflare')) {
+        return callback(null, true);
+      }
+      
+      // Check if origin domain matches any allowed domain (without protocol)
+      const originDomain = origin.replace(/https?:\/\//, '');
+      if (allowedOrigins.some(allowed => {
+        const allowedDomain = allowed.replace(/https?:\/\//, '');
+        return originDomain === allowedDomain;
+      })) {
+        return callback(null, true);
+      }
+      
+      logger.warn(`CORS blocked origin: ${origin}`);
       return callback(new Error('Not allowed by CORS'));
     }
 
