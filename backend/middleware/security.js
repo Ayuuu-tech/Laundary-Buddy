@@ -91,5 +91,6 @@ module.exports = {
   apiLimiter,
   authLimiter,
   otpLimiter,
-  helmetConfig
+  helmetConfig,
+  createRateLimiter
 };

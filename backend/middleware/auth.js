@@ -1,9 +1,11 @@
+const { logger } = require('./logger');
+
 const authMiddleware = async (req, res, next) => {
   try {
     // Check if user session exists
     if (!req.session || !req.session.userId) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('❌ No session or userId found');
+        logger.debug('No session or userId found');
       }
       return res.status(401).json({
         success: false,
@@ -12,7 +14,7 @@ const authMiddleware = async (req, res, next) => {
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('✅ User authenticated:', req.session.userId);
+      logger.debug('User authenticated', { userId: req.session.userId });
     }
 
     // Attach user info to request
@@ -23,7 +25,7 @@ const authMiddleware = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error('❌ Auth middleware error:', error);
+    logger.error('Auth middleware error', { error: error.message, stack: error.stack });
     return res.status(401).json({
       success: false,
       message: 'Authentication error',

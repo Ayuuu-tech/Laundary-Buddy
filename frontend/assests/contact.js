@@ -86,7 +86,7 @@
 
         try {
           // Send to backend API
-          const response = await fetch(API_CONFIG.BASE_URL + '/api/contact/submit', {
+          const response = await fetch(API_CONFIG.BASE_URL + '/contact/submit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',

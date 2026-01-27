@@ -14,7 +14,7 @@
       try {
         if (!otp) {
           // Step 1: Request OTP
-          const response = await apiClient.post('/api/auth/request-signup-otp', {
+          const response = await apiClient.post('/auth/request-signup-otp', {
             name: userData.name,
             email: userData.email,
             password: userData.password,
@@ -24,7 +24,7 @@
           return response;
         } else {
           // Step 2: Verify OTP
-          const response = await apiClient.post('/api/auth/verify-signup-otp', {
+          const response = await apiClient.post('/auth/verify-signup-otp', {
             email: userData.email,
             otp: otp
           });
@@ -46,14 +46,14 @@
       try {
         if (!otp) {
           // Step 1: Request OTP
-          const response = await apiClient.post('/api/auth/request-login-otp', {
+          const response = await apiClient.post('/auth/request-login-otp', {
             email: email,
             password: password
           });
           return response;
         } else {
           // Step 2: Verify OTP
-          const response = await apiClient.post('/api/auth/verify-login-otp', {
+          const response = await apiClient.post('/auth/verify-login-otp', {
             email: email,
             otp: otp
           });
@@ -72,7 +72,7 @@
     // Logout user
     async logout() {
       try {
-        await apiClient.post('/api/auth/logout');
+        await apiClient.post('/auth/logout');
         this.currentUser = null;
         window.location.href = 'index.html';
       } catch (error) {
@@ -101,7 +101,7 @@
     // Get current logged-in user from server (always fetch fresh)
     async getCurrentUser() {
       try {
-        const response = await apiClient.get('/api/auth/me');
+        const response = await apiClient.get('/auth/me');
         if (response.success) {
           this.currentUser = response.user;
           return response.user;
@@ -119,7 +119,7 @@
     // Change password
     async changePassword(oldPassword, newPassword) {
       try {
-        const response = await apiClient.put('/api/auth/change-password', {
+        const response = await apiClient.put('/auth/change-password', {
           oldPassword: oldPassword,
           newPassword: newPassword
         });
@@ -135,7 +135,7 @@
     async googleSignIn(credential) {
       // This method intentionally skips OTP and directly calls backend
       try {
-        const response = await apiClient.post('/api/auth/google', { credential });
+        const response = await apiClient.post('/auth/google', { credential });
         if (response.success) {
           this.currentUser = response.user;
           return response;
@@ -179,7 +179,7 @@
     // Update profile and reload photo everywhere after update
     async updateProfile(data) {
       try {
-        const response = await apiClient.put('/api/auth/profile', data);
+        const response = await apiClient.put('/auth/profile', data);
         if (response.success) {
           this.currentUser = response.user;
           await this.loadProfilePhoto();

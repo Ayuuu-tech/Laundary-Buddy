@@ -59,7 +59,8 @@ class IPBlocker {
     for (const [ip, blockedUntil] of this.blockedIPs.entries()) {
       if (blockedUntil < now) {
         this.blockedIPs.delete(ip);
-        console.log(`✅ IP unblocked: ${ip}`);
+        const { logger } = require('./logger');
+        logger.info('IP unblocked', { ip });
       }
     }
   }
@@ -123,7 +124,8 @@ function sanitizeInputMiddleware(req, res, next) {
     
     next();
   } catch (error) {
-    console.error('Sanitization error:', error);
+    const { logger } = require('./logger');
+    logger.error('Sanitization error', { error: error.message, stack: error.stack });
     next();
   }
 }

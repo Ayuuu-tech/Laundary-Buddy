@@ -10,7 +10,7 @@
     // Get all orders for current user
     async getOrders() {
       try {
-        const response = await apiClient.get('/api/orders');
+        const response = await apiClient.get('/orders');
         return response.orders || [];
       } catch (error) {
         console.error('Error fetching orders:', error);
@@ -34,7 +34,7 @@
     // Create new order
     async createOrder(orderData) {
       try {
-        const response = await apiClient.post('/api/orders', orderData);
+        const response = await apiClient.post('/orders', orderData);
         if (response.success) {
           return { success: true, order: response.order, message: 'Order created successfully!' };
         }
@@ -105,7 +105,7 @@
     // Get order history
     async getOrderHistory() {
       try {
-        const response = await apiClient.get('/api/orders/history');
+        const response = await apiClient.get('/orders/history');
         return response.orders || [];
       } catch (error) {
         console.error('Error fetching order history:', error);

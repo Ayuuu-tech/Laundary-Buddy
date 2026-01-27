@@ -93,9 +93,20 @@ app.use(cors({
 }));
 
 // Session configuration with MongoDB store
+const getSessionSecret = () => {
+  if (!process.env.SESSION_SECRET) {
+    if (isProduction) {
+      throw new Error('SESSION_SECRET environment variable is required in production');
+    }
+    logger.warn('Using default SESSION_SECRET for development only');
+    return 'dev-only-secret-do-not-use-in-production';
+  }
+  return process.env.SESSION_SECRET;
+};
+
 app.use(session({
   name: 'connect.sid',
-  secret: process.env.SESSION_SECRET || 'laundry-buddy-secret-key-change-in-production',
+  secret: getSessionSecret(),
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({

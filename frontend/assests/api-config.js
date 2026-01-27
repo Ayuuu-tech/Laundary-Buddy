@@ -10,7 +10,8 @@ const getApiBaseUrl = () => {
   }
 
   // Production (any deployed domain)
-  return 'https://api.ayushmaanyadav.me';
+  // Use relative path for unified deployment to avoid CORS/Cookie issues
+  return '/api';
 };
 
 const API_CONFIG = {
@@ -92,9 +93,9 @@ class APIClient {
       if (!response.ok) {
         // Handle auth failures - but don't redirect from public pages
         if (response.status === 401 &&
-          !endpoint.includes('/api/auth/login') &&
-          !endpoint.includes('/api/auth/register') &&
-          !endpoint.includes('/api/auth/me')) {
+          !endpoint.includes('/auth/login') &&
+          !endpoint.includes('/auth/register') &&
+          !endpoint.includes('/auth/me')) {
           console.warn('Session expired/invalid. Redirecting to login...');
           if (typeof window !== 'undefined' &&
             !location.href.includes('login.html') &&

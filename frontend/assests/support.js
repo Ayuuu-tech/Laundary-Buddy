@@ -499,7 +499,7 @@
         if (window.showLoading) window.showLoading();
 
         // Fetch orders from backend API
-        const response = await fetch(API_CONFIG.BASE_URL + '/api/orders/my-orders', {
+        const response = await fetch(API_CONFIG.BASE_URL + '/orders/my-orders', {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include'
