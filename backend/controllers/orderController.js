@@ -138,7 +138,7 @@ exports.updateOrder = async (req, res) => {
 
     // Whitelist allowed fields
     // List allowed fields to prevent mass assignment
-    const { items, totalAmount, serviceType, pickupDate, deliveryDate, deliveryAddress, specialInstructions, status, paymentStatus } = req.body;
+    const { items, totalAmount, serviceType, pickupDate, deliveryDate, deliveryAddress, specialInstructions, status, paymentStatus, feedback } = req.body;
 
     // Only admins can update status/paymentStatus via this generic route?
     // Usually status updates have their own flow, but if we allow it here for now,
@@ -153,6 +153,7 @@ exports.updateOrder = async (req, res) => {
     // Let's include them if present but sanitize.
     if (status) updateData.status = status;
     if (paymentStatus) updateData.paymentStatus = paymentStatus;
+    if (feedback) updateData.feedback = feedback;
 
     const updatedOrder = await Order.findOneAndUpdate(
       { _id: req.params.id, user: req.user.id },
