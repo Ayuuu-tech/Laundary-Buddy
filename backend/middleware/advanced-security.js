@@ -19,9 +19,9 @@ class IPBlocker {
     current.count += 1;
     current.reasons.push({ reason, timestamp: Date.now() });
     current.lastViolation = Date.now();
-    
+
     this.suspiciousIPs.set(ip, current);
-    
+
     // Block after 10 violations in 1 hour
     if (current.count >= 10) {
       this.blockIP(ip, 24 * 60 * 60 * 1000); // Block for 24 hours
@@ -47,14 +47,14 @@ class IPBlocker {
   cleanup() {
     const now = Date.now();
     const oneHourAgo = now - 60 * 60 * 1000;
-    
+
     // Clean up old violations
     for (const [ip, data] of this.suspiciousIPs.entries()) {
       if (data.lastViolation < oneHourAgo) {
         this.suspiciousIPs.delete(ip);
       }
     }
-    
+
     // Clean up expired blocks
     for (const [ip, blockedUntil] of this.blockedIPs.entries()) {
       if (blockedUntil < now) {
@@ -73,7 +73,7 @@ const ipBlocker = new IPBlocker();
  */
 function ipBlockingMiddleware(req, res, next) {
   const ip = req.ip || req.connection.remoteAddress;
-  
+
   if (ipBlocker.isBlocked(ip)) {
     console.warn(`🚫 Blocked IP attempted access: ${ip}`);
     return res.status(403).json({
@@ -82,7 +82,7 @@ function ipBlockingMiddleware(req, res, next) {
       code: 'IP_BLOCKED'
     });
   }
-  
+
   next();
 }
 
@@ -98,14 +98,14 @@ function sanitizeInputMiddleware(req, res, next) {
         if (typeof obj[key] === 'string') {
           // Remove null bytes
           obj[key] = obj[key].replace(/\0/g, '');
-          
+
           // Trim whitespace
           obj[key] = obj[key].trim();
-          
+
           // Escape HTML to prevent XSS (for display purposes)
           // Note: validator.escape is already applied by express-validator when needed
           // This is an additional layer
-          
+
           // Check for suspicious patterns
           if (containsSuspiciousPatterns(obj[key])) {
             const ip = req.ip || req.connection.remoteAddress;
@@ -117,11 +117,11 @@ function sanitizeInputMiddleware(req, res, next) {
         }
       }
     };
-    
+
     if (req.body) sanitizeObject(req.body);
     if (req.query) sanitizeObject(req.query);
     if (req.params) sanitizeObject(req.params);
-    
+
     next();
   } catch (error) {
     const { logger } = require('./logger');
@@ -145,7 +145,7 @@ function containsSuspiciousPatterns(input) {
     /eval\s*\(/gi,                    // eval function
     /\.\.\/\.\.\//g,                  // Path traversal
   ];
-  
+
   return suspiciousPatterns.some(pattern => pattern.test(input));
 }
 
@@ -157,19 +157,19 @@ function requestSizeValidation(maxSizeKB = 5000) {
   return (req, res, next) => {
     const contentLength = parseInt(req.get('content-length') || '0');
     const maxSizeBytes = maxSizeKB * 1024;
-    
+
     if (contentLength > maxSizeBytes) {
       const ip = req.ip || req.connection.remoteAddress;
       console.warn(`⚠️ Oversized request from ${ip}: ${contentLength} bytes`);
       ipBlocker.addViolation(ip, 'oversized_request');
-      
+
       return res.status(413).json({
         success: false,
         message: 'Request entity too large',
         code: 'REQUEST_TOO_LARGE'
       });
     }
-    
+
     next();
   };
 }
@@ -180,14 +180,14 @@ function requestSizeValidation(maxSizeKB = 5000) {
 function validateEmailMiddleware(fieldName = 'email') {
   return (req, res, next) => {
     const email = req.body[fieldName];
-    
+
     if (email && !validator.isEmail(email)) {
       return res.status(400).json({
         success: false,
         message: 'Invalid email format'
       });
     }
-    
+
     next();
   };
 }
@@ -198,14 +198,14 @@ function validateEmailMiddleware(fieldName = 'email') {
 function validateURLMiddleware(fieldName) {
   return (req, res, next) => {
     const url = req.body[fieldName];
-    
+
     if (url && !validator.isURL(url, { require_protocol: true })) {
       return res.status(400).json({
         success: false,
         message: `Invalid URL format for ${fieldName}`
       });
     }
-    
+
     next();
   };
 }
@@ -216,14 +216,14 @@ function validateURLMiddleware(fieldName) {
 function validatePhoneMiddleware(fieldName = 'phone') {
   return (req, res, next) => {
     const phone = req.body[fieldName];
-    
+
     if (phone && !validator.isMobilePhone(phone, 'any', { strictMode: false })) {
       return res.status(400).json({
         success: false,
         message: 'Invalid phone number format'
       });
     }
-    
+
     next();
   };
 }
@@ -238,17 +238,21 @@ function preventSQLInjection(req, res, next) {
     /(-{2}|\/\*|\*\/|;)/g,
     /(xp_|sp_)/gi
   ];
-  
-  const checkValue = (value) => {
+
+  const checkValue = (value, key) => {
     if (typeof value === 'string') {
+      // Skip base64 data URIs (images, files) - they contain legitimate semicolons
+      if (value.startsWith('data:') || key === 'profilePhoto') {
+        return false;
+      }
       return sqlPatterns.some(pattern => pattern.test(value));
     }
     return false;
   };
-  
+
   const checkObject = (obj) => {
     for (const key in obj) {
-      if (checkValue(obj[key])) {
+      if (checkValue(obj[key], key)) {
         return true;
       }
       if (typeof obj[key] === 'object' && obj[key] !== null) {
@@ -259,19 +263,19 @@ function preventSQLInjection(req, res, next) {
     }
     return false;
   };
-  
+
   if (checkObject(req.body) || checkObject(req.query) || checkObject(req.params)) {
     const ip = req.ip || req.connection.remoteAddress;
     console.warn(`🚨 SQL injection attempt detected from ${ip}`);
     ipBlocker.addViolation(ip, 'sql_injection_attempt');
-    
+
     return res.status(400).json({
       success: false,
       message: 'Invalid input detected',
       code: 'INVALID_INPUT'
     });
   }
-  
+
   next();
 }
 
