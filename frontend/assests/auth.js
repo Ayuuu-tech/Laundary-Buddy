@@ -164,9 +164,11 @@
       if (!currentUser || !currentUser.profilePhoto) return;
 
       let photoUrl = currentUser.profilePhoto;
-      // If it's a relative path (from backend uploads), prepend API URL
+      // If it's a relative path (from backend uploads), prepend API base URL without /api
       if (photoUrl.startsWith('/') && window.API_CONFIG && window.API_CONFIG.BASE_URL) {
-        photoUrl = window.API_CONFIG.BASE_URL + photoUrl;
+        // Remove /api suffix from BASE_URL since uploads are at root
+        const baseUrl = window.API_CONFIG.BASE_URL.replace(/\/api$/, '');
+        photoUrl = baseUrl + photoUrl;
       }
 
       // Update all profile images on the page
