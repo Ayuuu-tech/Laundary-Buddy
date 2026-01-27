@@ -10,9 +10,7 @@ const getApiBaseUrl = () => {
   }
 
   // Production (deployed domain)
-  // TODO: Replace with your actual Render backend URL
-  // Example: https://laundry-buddy-backend.onrender.com/api
-  return 'https://laundry-buddy-backend.onrender.com/api';
+  return 'https://api.ayushmaanyadav.me/api';
 };
 
 const API_CONFIG = {
