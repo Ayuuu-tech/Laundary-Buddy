@@ -160,6 +160,22 @@ exports.updateOrder = async (req, res) => {
       { $set: updateData },
       { new: true }
     );
+
+    // Send Push Notification if status changed
+    if (status && status !== order.status) {
+      const notificationController = require('./notificationController');
+      try {
+        await notificationController.sendNotificationToUser(order.user, {
+          title: 'Order Updated',
+          body: `Your order #${order.orderNumber} status is now: ${status}`,
+          url: `/track.html?id=${order._id}` // Link to open
+        });
+      } catch (notifyErr) {
+        console.error('Failed to send push notification:', notifyErr);
+        // Don't fail the request if notification fails
+      }
+    }
+
     res.json({ success: true, message: 'Order updated successfully', order: updatedOrder });
   } catch (error) {
     res.status(500).json({

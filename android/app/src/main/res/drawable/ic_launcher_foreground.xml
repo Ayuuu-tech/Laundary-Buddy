@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Background circle -->
+    <path
+        android:fillColor="#F97316"
+        android:pathData="M54,54m-54,0a54,54 0,1 1,108 0a54,54 0,1 1,-108 0"/>
+    <!-- Simple laundry/clothes icon -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,30 L38,48 L32,42 L54,20 L76,42 L70,48 L54,30Z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M36,52 L72,52 L72,75 C72,78 70,80 67,80 L41,80 C38,80 36,78 36,75 L36,52Z"/>
+</vector>

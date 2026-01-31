@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dark_background">
+
+    <!-- Camera Preview -->
+    <androidx.camera.view.PreviewView
+        android:id="@+id/cameraPreview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Scan overlay -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000" />
+
+    <!-- Scan frame -->
+    <FrameLayout
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_gravity="center"
+        android:background="@android:color/transparent">
+
+        <!-- Corner indicators -->
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="top|start"
+            android:background="@color/primary" />
+        <View
+            android:layout_width="4dp"
+            android:layout_height="40dp"
+            android:layout_gravity="top|start"
+            android:background="@color/primary" />
+
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="top|end"
+            android:background="@color/primary" />
+        <View
+            android:layout_width="4dp"
+            android:layout_height="40dp"
+            android:layout_gravity="top|end"
+            android:background="@color/primary" />
+
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="bottom|start"
+            android:background="@color/primary" />
+        <View
+            android:layout_width="4dp"
+            android:layout_height="40dp"
+            android:layout_gravity="bottom|start"
+            android:background="@color/primary" />
+
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="bottom|end"
+            android:background="@color/primary" />
+        <View
+            android:layout_width="4dp"
+            android:layout_height="40dp"
+            android:layout_gravity="bottom|end"
+            android:background="@color/primary" />
+
+    </FrameLayout>
+
+    <!-- Instructions -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginTop="100dp"
+        android:gravity="center"
+        android:text="Position QR code within the frame"
+        android:textColor="@color/text_on_primary"
+        android:textSize="16sp" />
+
+    <!-- Status message -->
+    <TextView
+        android:id="@+id/scannerStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="150dp"
+        android:gravity="center"
+        android:padding="16dp"
+        android:text="Scanning..."
+        android:textColor="@color/primary"
+        android:textSize="14sp" />
+
+    <!-- Bottom controls -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="24dp"
+        android:background="@color/dark_surface">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/galleryButton"
+            style="@style/SecondaryButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="Gallery"
+            app:icon="@android:drawable/ic_menu_gallery" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/closeButton"
+            style="@style/PrimaryButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Close" />
+
+    </LinearLayout>
+
+</FrameLayout>

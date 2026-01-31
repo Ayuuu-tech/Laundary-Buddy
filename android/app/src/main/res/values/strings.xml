@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Laundry Buddy</string>
+    <string name="app_tagline">Your personal laundry management solution</string>
+    
+    <!-- Auth -->
+    <string name="login">Login</string>
+    <string name="signup">Sign Up</string>
+    <string name="logout">Logout</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="name">Name</string>
+    <string name="hostel_room">Hostel Room</string>
+    <string name="phone">Phone Number</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="dont_have_account">Don\'t have an account?</string>
+    <string name="already_have_account">Already have an account?</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="or">OR</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_track">Track</string>
+    <string name="nav_history">History</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_support">Support</string>
+    
+    <!-- Home -->
+    <string name="welcome_back">Welcome back,</string>
+    <string name="submit_order">Submit Order</string>
+    <string name="track_order">Track Order</string>
+    <string name="order_history">Order History</string>
+    <string name="quick_actions">Quick Actions</string>
+    <string name="recent_orders">Recent Orders</string>
+    
+    <!-- Orders -->
+    <string name="new_order">New Laundry Order</string>
+    <string name="order_number">Order Number</string>
+    <string name="total_items">Total Items</string>
+    <string name="special_instructions">Special Instructions</string>
+    <string name="select_items">Select Items</string>
+    <string name="submit">Submit</string>
+    <string name="cancel">Cancel</string>
+    
+    <!-- Tracking -->
+    <string name="search_order">Search by order number</string>
+    <string name="order_status">Order Status</string>
+    <string name="estimated_delivery">Estimated Delivery</string>
+    <string name="status_timeline">Status Timeline</string>
+    
+    <!-- Status labels -->
+    <string name="status_pending">Pending</string>
+    <string name="status_received">Received</string>
+    <string name="status_washing">Washing</string>
+    <string name="status_drying">Drying</string>
+    <string name="status_folding">Folding</string>
+    <string name="status_ready">Ready for Pickup</string>
+    <string name="status_delivered">Delivered</string>
+    <string name="status_cancelled">Cancelled</string>
+    
+    <!-- Profile -->
+    <string name="edit_profile">Edit Profile</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="change_photo">Change Photo</string>
+    <string name="settings">Settings</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="notifications">Notifications</string>
+    
+    <!-- Support -->
+    <string name="create_ticket">Create Ticket</string>
+    <string name="my_tickets">My Tickets</string>
+    <string name="ticket_subject">Subject</string>
+    <string name="ticket_description">Description</string>
+    <string name="ticket_category">Category</string>
+    <string name="ticket_priority">Priority</string>
+    <string name="related_order">Related Order (Optional)</string>
+    
+    <!-- Contact -->
+    <string name="contact_us">Contact Us</string>
+    <string name="your_message">Your Message</string>
+    <string name="send_message">Send Message</string>
+    
+    <!-- Staff Dashboard -->
+    <string name="staff_dashboard">Staff Dashboard</string>
+    <string name="all_orders">All Orders</string>
+    <string name="pending_orders">Pending Orders</string>
+    <string name="update_status">Update Status</string>
+    
+    <!-- Messages -->
+    <string name="loading">Loading…</string>
+    <string name="error_occurred">An error occurred</string>
+    <string name="no_orders">No orders found</string>
+    <string name="no_tickets">No support tickets</string>
+    <string name="login_success">Login successful!</string>
+    <string name="signup_success">Account created successfully!</string>
+    <string name="order_submitted">Order submitted successfully!</string>
+    <string name="order_updated">Order status updated</string>
+    <string name="ticket_created">Ticket created successfully</string>
+    <string name="message_sent">Message sent successfully</string>
+    <string name="profile_updated">Profile updated successfully</string>
+    
+    <!-- Errors -->
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_invalid_email">Please enter a valid email</string>
+    <string name="error_password_short">Password must be at least 8 characters</string>
+    <string name="error_passwords_mismatch">Passwords do not match</string>
+    <string name="error_required_field">This field is required</string>
+    <string name="error_login_failed">Login failed. Please check your credentials.</string>
+    <string name="error_session_expired">Session expired. Please login again.</string>
+
+    <!-- Additional strings -->
+    <string name="subject">Subject</string>
+    <string name="message">Message</string>
+    <string name="send">Send</string>
+    <string name="staff_login">Staff Login</string>
+
+    <!-- Google Sign-In - Replace with your actual client ID -->
+    <string name="google_client_id">708319771344-7qt9aj690fvqlcmqg6lplq6o1aag9193.apps.googleusercontent.com</string>
+
+    <!-- Legal -->
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="terms_of_service">Terms of Service</string>
+</resources>

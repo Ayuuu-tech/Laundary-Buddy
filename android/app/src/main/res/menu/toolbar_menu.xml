@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_support"
+        android:icon="@android:drawable/ic_menu_help"
+        android:title="@string/nav_support"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_dark_mode"
+        android:icon="@android:drawable/ic_menu_day"
+        android:title="@string/dark_mode"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_logout"
+        android:icon="@android:drawable/ic_menu_close_clear_cancel"
+        android:title="@string/logout"
+        app:showAsAction="never" />
+</menu>

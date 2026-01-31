@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Colors - Orange Theme matching PWA -->
+    <color name="primary">#F97316</color>
+    <color name="primary_variant">#EA580C</color>
+    <color name="primary_light">#FB923C</color>
+    <color name="primary_dark">#C2410C</color>
+    
+    <!-- Secondary Colors -->
+    <color name="secondary">#0EA5E9</color>
+    <color name="secondary_variant">#0284C7</color>
+    
+    <!-- Background Colors -->
+    <color name="background">#FFFFFF</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="card_background">#F9FAFB</color>
+    <color name="divider">#E5E7EB</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#111827</color>
+    <color name="text_secondary">#6B7280</color>
+    <color name="text_hint">#9CA3AF</color>
+    <color name="text_on_primary">#FFFFFF</color>
+    
+    <!-- Status Colors -->
+    <color name="status_pending">#FCD34D</color>
+    <color name="status_received">#60A5FA</color>
+    <color name="status_washing">#818CF8</color>
+    <color name="status_drying">#A78BFA</color>
+    <color name="status_folding">#F472B6</color>
+    <color name="status_ready">#34D399</color>
+    <color name="status_delivered">#10B981</color>
+    <color name="status_cancelled">#EF4444</color>
+    
+    <!-- Other Colors -->
+    <color name="error">#EF4444</color>
+    <color name="success">#10B981</color>
+    <color name="status_success">#10B981</color>
+    <color name="warning">#F59E0B</color>
+    <color name="info">#3B82F6</color>
+    
+    <!-- Dark Theme Colors -->
+    <color name="dark_background">#111827</color>
+    <color name="dark_surface">#1F2937</color>
+    <color name="dark_card_background">#374151</color>
+    <color name="dark_text_primary">#F9FAFB</color>
+    <color name="dark_text_secondary">#9CA3AF</color>
+    <color name="dark_divider">#374151</color>
+</resources>

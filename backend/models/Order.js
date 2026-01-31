@@ -29,4 +29,8 @@ const orderSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+// Indexes for performance
+orderSchema.index({ createdAt: -1 }); // For Admin Dashboard sorting
+orderSchema.index({ user: 1, createdAt: -1 }); // For User Order History sorting
+
 module.exports = mongoose.model('Order', orderSchema);
