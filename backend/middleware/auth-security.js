@@ -9,13 +9,13 @@ const jwt = require('jsonwebtoken');
  */
 function generateAccessToken(user) {
   return jwt.sign(
-    { 
-      id: user._id, 
+    {
+      id: user._id,
       email: user.email,
-      isAdmin: user.isAdmin 
+      isAdmin: user.isAdmin
     },
     process.env.JWT_SECRET,
-    { expiresIn: '15m' } // Short-lived for security
+    { expiresIn: '30d' } // Extended for mobile app usage without refresh flow
   );
 }
 
@@ -26,8 +26,8 @@ function generateAccessToken(user) {
  */
 function generateRefreshToken(user) {
   return jwt.sign(
-    { 
-      id: user._id, 
+    {
+      id: user._id,
       type: 'refresh'
     },
     process.env.JWT_SECRET,
@@ -41,61 +41,61 @@ function generateRefreshToken(user) {
 async function refreshAccessToken(req, res) {
   try {
     const { refreshToken } = req.body;
-    
+
     if (!refreshToken) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Refresh token required' 
+      return res.status(401).json({
+        success: false,
+        message: 'Refresh token required'
       });
     }
-    
+
     // Verify refresh token
     const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
-    
+
     if (decoded.type !== 'refresh') {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid token type' 
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid token type'
       });
     }
-    
+
     // Find user and check if refresh token exists
     const User = require('../models/User');
     const user = await User.findById(decoded.id);
-    
+
     if (!user) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'User not found' 
+      return res.status(401).json({
+        success: false,
+        message: 'User not found'
       });
     }
-    
+
     // Check if refresh token is in user's tokens list
     const tokenExists = user.refreshTokens.some(rt => {
       return rt.token === refreshToken && rt.expiresAt > Date.now();
     });
-    
+
     if (!tokenExists) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid or expired refresh token' 
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid or expired refresh token'
       });
     }
-    
+
     // Generate new access token
     const newAccessToken = generateAccessToken(user);
-    
+
     return res.json({
       success: true,
       token: newAccessToken,
       message: 'Token refreshed successfully'
     });
-    
+
   } catch (error) {
     console.error('Refresh token error:', error);
-    return res.status(401).json({ 
-      success: false, 
-      message: 'Invalid or expired refresh token' 
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid or expired refresh token'
     });
   }
 }
@@ -107,31 +107,31 @@ async function revokeRefreshToken(req, res) {
   try {
     const { refreshToken } = req.body;
     const userId = req.user?.id;
-    
+
     if (!userId) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Unauthorized' 
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized'
       });
     }
-    
+
     const User = require('../models/User');
     const user = await User.findById(userId);
-    
+
     if (user && refreshToken) {
       await user.removeRefreshToken(refreshToken);
     }
-    
+
     return res.json({
       success: true,
       message: 'Logged out successfully'
     });
-    
+
   } catch (error) {
     console.error('Revoke token error:', error);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Logout failed' 
+    return res.status(500).json({
+      success: false,
+      message: 'Logout failed'
     });
   }
 }
@@ -143,22 +143,22 @@ function sessionTimeoutMiddleware(req, res, next) {
   if (req.session && req.session.lastActivity) {
     const idleTimeout = 30 * 60 * 1000; // 30 minutes
     const timeSinceLastActivity = Date.now() - req.session.lastActivity;
-    
+
     if (timeSinceLastActivity > idleTimeout) {
       req.session.destroy();
-      return res.status(401).json({ 
-        success: false, 
+      return res.status(401).json({
+        success: false,
         message: 'Session expired due to inactivity',
         code: 'SESSION_TIMEOUT'
       });
     }
   }
-  
+
   // Update last activity time
   if (req.session) {
     req.session.lastActivity = Date.now();
   }
-  
+
   next();
 }
 
@@ -167,7 +167,7 @@ function sessionTimeoutMiddleware(req, res, next) {
  */
 async function logSecurityEvent(userId, event, metadata = {}) {
   const SecurityLog = require('../models/SecurityLog');
-  
+
   try {
     await SecurityLog.create({
       userId,

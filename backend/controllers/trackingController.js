@@ -9,6 +9,7 @@ exports.getTrackingItems = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const tracking = await Tracking.find({ user: req.user.id })
+      .populate('order')
       .sort({ updatedAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -128,7 +129,7 @@ exports.updateTrackingItem = async (req, res) => {
 exports.trackByOrderNumber = async (req, res) => {
   try {
     const { orderNumber } = req.params;
-    const item = await Tracking.findOne({ orderNumber });
+    const item = await Tracking.findOne({ orderNumber }).populate('order');
     if (!item) {
       return res.status(404).json({
         success: false,
@@ -227,6 +228,34 @@ exports.upsertByOrderNumberForLaundry = async (req, res) => {
       const isoDate = new Date(d).toISOString().split('T')[0];
       order.deliveryDate = isoDate;
       console.log(`📅 Set deliveryDate to ${isoDate}`);
+
+      // Check if user requested notification
+      if (tracking.notifyWhenReady && (status === 'ready-for-pickup' || status === 'ready')) {
+        try {
+          const { Resend } = require('resend');
+          const resend = new Resend(process.env.RESEND_API_KEY);
+          const userEmail = order.userEmail;
+
+          if (userEmail) {
+            console.log(`📧 Sending 'Ready' notification email to ${userEmail}`);
+            await resend.emails.send({
+              from: 'Laundry Buddy <onboarding@resend.dev>',
+              to: userEmail,
+              subject: 'Message from Laundry Buddy: Your Order is Ready!',
+              html: `<p>Hello!</p><p>Your laundry order <strong>${orderNumber}</strong> is now <strong>${status}</strong>.</p><p>You can pick it up at your convenience.</p><p>Thanks,<br>Laundry Buddy Team</p>`
+            });
+
+            // Add note to timeline
+            const timeline = tracking.timeline || [];
+            timeline.push({ status: 'notification_sent', timestamp: new Date(), note: 'Email notification sent to user' });
+            tracking.timeline = timeline;
+            await tracking.save({ session });
+          }
+        } catch (emailErr) {
+          console.error('Failed to send notification email:', emailErr);
+          // Don't fail the transaction just for email
+        }
+      }
     }
     await order.save({ session });
     console.log(`✅ Order ${order._id} status updated to "${status}" successfully`);
@@ -240,5 +269,31 @@ exports.upsertByOrderNumberForLaundry = async (req, res) => {
     session.endSession();
     console.error('❌ Upsert tracking error:', error);
     return res.status(500).json({ success: false, message: 'Error updating tracking', error: error.message });
+  }
+};
+
+// Toggle notification preference
+exports.toggleNotifyWhenReady = async (req, res) => {
+  try {
+    const { orderNumber } = req.params;
+    const tracking = await Tracking.findOne({ orderNumber });
+
+    if (!tracking) {
+      return res.status(404).json({ success: false, message: 'Tracking not found' });
+    }
+
+    // Toggle the value (default is false if undefined)
+    const currentValue = tracking.notifyWhenReady || false;
+    tracking.notifyWhenReady = !currentValue;
+
+    await tracking.save();
+
+    res.json({
+      success: true,
+      message: tracking.notifyWhenReady ? 'Notification enabled' : 'Notification disabled',
+      tracking
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error toggling notification', error: error.message });
   }
 };

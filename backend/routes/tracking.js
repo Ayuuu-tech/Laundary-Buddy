@@ -13,6 +13,7 @@ router.use(authMiddleware);
 router.get('/', trackingController.getTrackingItems);
 router.get('/:id', trackingController.getTrackingItem);
 router.post('/', trackingController.createTrackingItem);
+router.post('/notify/:orderNumber', trackingController.toggleNotifyWhenReady);
 router.put('/:id', trackingController.updateTrackingItem);
 
 module.exports = router;
