@@ -62,12 +62,24 @@ public class RecentOrderAdapter extends RecyclerView.Adapter<RecentOrderAdapter.
         }
 
         void bind(Order order) {
-            binding.orderNumber.setText("#" + order.getOrderNumber());
-            binding.statusChip.setText(getStatusDisplay(order.getStatus()));
-            binding.statusChip.setChipBackgroundColor(ColorStateList.valueOf(getStatusColor(order.getStatus())));
-            binding.statusChip
-                    .setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.text_on_primary));
+            // Order number from backend already may have ORD prefix
+            String orderNum = order.getOrderNumber();
+            if (orderNum != null && !orderNum.startsWith("ORD")) {
+                orderNum = "ORD" + orderNum;
+            }
+            binding.orderNumber.setText(orderNum != null ? orderNum : "Unknown");
+
+            // Status Text
+            String status = getStatusDisplay(order.getStatus());
+            binding.statusText.setText(status);
+            // Optional: Set color if needed, but XML has default blue.
+            // We can keep dynamic color if desired.
+            binding.statusText.setTextColor(getStatusColor(order.getStatus()));
+
             binding.orderDate.setText(formatDate(order.getCreatedAt()));
+
+            // Items Summary
+            binding.itemsSummary.setText(getItemsSummary(order));
 
             binding.getRoot().setOnClickListener(v -> {
                 if (listener != null) {
@@ -76,51 +88,80 @@ public class RecentOrderAdapter extends RecyclerView.Adapter<RecentOrderAdapter.
             });
         }
 
+        private String getItemsSummary(Order order) {
+            if (order.getItems() == null || order.getItems().isEmpty()) {
+                int total = order.getTotalItems();
+                if (total > 0) {
+                    return total + " items";
+                }
+                return "No items";
+            }
+
+            StringBuilder sb = new StringBuilder();
+            List<Order.OrderItem> items = order.getItems();
+            int limit = Math.min(items.size(), 3);
+            int totalCount = 0;
+
+            for (int i = 0; i < limit; i++) {
+                Order.OrderItem item = items.get(i);
+                // Get quantity (use getQuantity first, fallback to getCount)
+                int qty = item.getQuantity();
+                if (qty == 0)
+                    qty = item.getCount();
+                // Get name (use getName first, fallback to getType)
+                String name = item.getName();
+                if (name == null || name.isEmpty())
+                    name = item.getType();
+                if (name == null)
+                    name = "items";
+
+                totalCount += qty;
+                if (sb.length() > 0)
+                    sb.append(", ");
+                sb.append(qty).append(" ").append(name);
+            }
+
+            if (items.size() > limit) {
+                sb.append("...");
+            }
+
+            if (sb.length() == 0) {
+                return order.getTotalItems() + " items";
+            }
+
+            return sb.toString();
+        }
+
         private String getStatusDisplay(String status) {
             if (status == null)
                 return "Unknown";
-            switch (status.toLowerCase()) {
+            String s = status.toLowerCase();
+            switch (s) {
+                case "submitted":
+                    return "submitted";
                 case "pending":
-                    return "Pending";
+                    return "Submitted (10%)";
                 case "received":
-                    return "Received";
+                    return "Received (30%)";
                 case "washing":
-                    return "Washing";
+                    return "Washing (50%)";
                 case "drying":
-                    return "Drying";
+                    return "Drying (70%)";
                 case "folding":
-                    return "Folding";
+                    return "Folding (90%)";
                 case "ready":
-                    return "Ready";
+                    return "Ready (100%)";
                 case "delivered":
                     return "Delivered";
-                case "cancelled":
-                    return "Cancelled";
                 default:
                     return status;
             }
         }
 
         private int getStatusColor(String status) {
-            if (status == null)
-                return ContextCompat.getColor(binding.getRoot().getContext(), R.color.text_hint);
-            switch (status.toLowerCase()) {
-                case "pending":
-                    return ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_pending);
-                case "received":
-                case "washing":
-                case "drying":
-                case "folding":
-                    return ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_washing);
-                case "ready":
-                    return ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_ready);
-                case "delivered":
-                    return ContextCompat.getColor(binding.getRoot().getContext(), R.color.success);
-                case "cancelled":
-                    return ContextCompat.getColor(binding.getRoot().getContext(), R.color.error);
-                default:
-                    return ContextCompat.getColor(binding.getRoot().getContext(), R.color.text_hint);
-            }
+            // Return Blue for active, Green for done?
+            // Mockup uses Blue for "Submitted".
+            return ContextCompat.getColor(binding.getRoot().getContext(), R.color.primary);
         }
 
         private String formatDate(String dateString) {
@@ -129,10 +170,10 @@ public class RecentOrderAdapter extends RecyclerView.Adapter<RecentOrderAdapter.
             try {
                 SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
                 Date date = inputFormat.parse(dateString);
-                SimpleDateFormat outputFormat = new SimpleDateFormat("MMM dd", Locale.getDefault());
+                SimpleDateFormat outputFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
                 return outputFormat.format(date);
             } catch (ParseException e) {
-                return dateString.substring(0, Math.min(10, dateString.length()));
+                return dateString;
             }
         }
     }

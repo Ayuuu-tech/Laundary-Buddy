@@ -9,6 +9,7 @@ import java.util.Map;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
@@ -18,21 +19,24 @@ import retrofit2.http.Query;
  */
 public interface TrackingApi {
 
-    @GET("tracking/search")
-    Call<ApiResponse<List<Tracking>>> searchOrders(@Query("q") String query);
+        @GET("tracking/search")
+        Call<ApiResponse<List<Tracking>>> searchOrders(@Query("q") String query);
 
-    @GET("tracking/order/{orderNumber}")
-    Call<ApiResponse<Tracking>> getOrderByNumber(@Path("orderNumber") String orderNumber);
+        @GET("tracking/order/{orderNumber}")
+        Call<ApiResponse<Tracking>> getOrderByNumber(@Path("orderNumber") String orderNumber);
 
-    @PUT("tracking/order/{orderNumber}")
-    Call<ApiResponse<Tracking>> updateOrderStatus(
-            @Path("orderNumber") String orderNumber,
-            @Body Map<String, Object> body);
+        @POST("tracking/notify/{orderNumber}")
+        Call<ApiResponse<Tracking>> toggleNotify(@Path("orderNumber") String orderNumber);
 
-    // Admin endpoints
-    @GET("tracking/all")
-    Call<ApiResponse<List<Tracking>>> getAllTracking(
-            @Query("status") String status,
-            @Query("page") int page,
-            @Query("limit") int limit);
+        @PUT("tracking/order/{orderNumber}")
+        Call<ApiResponse<Tracking>> updateOrderStatus(
+                        @Path("orderNumber") String orderNumber,
+                        @Body Map<String, Object> body);
+
+        // Admin endpoints
+        @GET("tracking/all")
+        Call<ApiResponse<List<Tracking>>> getAllTracking(
+                        @Query("status") String status,
+                        @Query("page") int page,
+                        @Query("limit") int limit);
 }

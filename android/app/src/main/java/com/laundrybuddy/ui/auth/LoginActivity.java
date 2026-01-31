@@ -152,6 +152,8 @@ public class LoginActivity extends AppCompatActivity {
                         User user = apiResponse.getUser() != null ? apiResponse.getUser() : apiResponse.getData();
                         if (user != null) {
                             handleLoginSuccess(user);
+                            String tokenStatus = (apiResponse.getToken() != null) ? "Token RX" : "Token NULL";
+                            Toast.makeText(LoginActivity.this, "Login OK. " + tokenStatus, Toast.LENGTH_LONG).show();
                         } else {
                             Toast.makeText(LoginActivity.this, getString(R.string.error_login_failed),
                                     Toast.LENGTH_SHORT).show();

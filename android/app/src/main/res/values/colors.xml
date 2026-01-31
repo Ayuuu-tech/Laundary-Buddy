@@ -22,6 +22,19 @@
     <color name="text_hint">#9CA3AF</color>
     <color name="text_on_primary">#FFFFFF</color>
     
+    <!-- Dashboard Colors -->
+    <color name="bg_submit_laundry">#FFF0F0</color> <!-- Pale Red -->
+    <color name="bg_track_laundry">#E8F4FE</color> <!-- Pale Blue -->
+    <color name="bg_laundry_history">#E8F8E8</color> <!-- Pale Green -->
+    <color name="bg_support">#F0F0FE</color> <!-- Pale Purple -->
+    <color name="bg_contact">#FFFDE0</color> <!-- Pale Yellow -->
+    
+    <color name="bg_extra_schedule">#FFE8CC</color> <!-- Peach -->
+    <color name="bg_extra_notif">#FCE4EC</color> <!-- Pink -->
+    <color name="bg_extra_qr">#CCFCE4</color> <!-- Mint -->
+    
+    <color name="hero_button_orange">#FF8800</color>
+    
     <!-- Status Colors -->
     <color name="status_pending">#FCD34D</color>
     <color name="status_received">#60A5FA</color>

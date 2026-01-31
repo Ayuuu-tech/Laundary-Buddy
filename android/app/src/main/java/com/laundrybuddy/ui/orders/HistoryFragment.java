@@ -38,6 +38,18 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import android.content.ContentValues;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.widget.ImageView;
+import android.widget.TextView;
+import com.google.android.material.button.MaterialButton;
+import com.laundrybuddy.utils.QrCodeGenerator;
+import com.laundrybuddy.LaundryBuddyApp;
+import java.io.OutputStream;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -55,6 +67,10 @@ public class HistoryFragment extends Fragment {
     private OrderAdapter orderAdapter;
     private List<Order> allOrders = new ArrayList<>();
     private List<Order> filteredOrders = new ArrayList<>();
+
+    // QR Code vars
+    private Bitmap currentQrBitmap;
+    private String currentOrderNumber;
 
     // Filter states
     private String currentStatusFilter = "all";
@@ -87,7 +103,7 @@ public class HistoryFragment extends Fragment {
 
     private void setupRecyclerView() {
         orderAdapter = new OrderAdapter(filteredOrders, order -> {
-            ToastManager.showInfo(requireContext(), "Order: #" + order.getOrderNumber());
+            showQrCodeDialog(order);
         });
 
         // Set up rating click listener
@@ -580,6 +596,81 @@ public class HistoryFragment extends Fragment {
         binding.emptyState.setVisibility(View.VISIBLE);
         binding.ordersRecycler.setVisibility(View.GONE);
         binding.emptyStateText.setText(message);
+    }
+
+    private void showQrCodeDialog(Order order) {
+        currentOrderNumber = order.getOrderNumber();
+        String userName = LaundryBuddyApp.getInstance().getUserName();
+
+        // Get total items
+        int totalItems = order.getTotalItems();
+
+        // Generate QR code content
+        String qrContent = QrCodeGenerator.buildOrderQrContent(
+                currentOrderNumber,
+                userName != null ? userName : "User",
+                "", // hostel room
+                totalItems,
+                order.getStatus());
+
+        currentQrBitmap = QrCodeGenerator.generateQrCode(qrContent, 400);
+
+        // Inflate dialog view
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_qr_code, null);
+
+        TextView orderNumberText = dialogView.findViewById(R.id.orderNumberText);
+        ImageView qrCodeImage = dialogView.findViewById(R.id.qrCodeImage);
+        MaterialButton downloadBtn = dialogView.findViewById(R.id.downloadQrButton);
+        MaterialButton shareBtn = dialogView.findViewById(R.id.shareQrButton);
+        MaterialButton doneBtn = dialogView.findViewById(R.id.doneButton);
+
+        orderNumberText.setText("Order #" + currentOrderNumber);
+        if (currentQrBitmap != null) {
+            qrCodeImage.setImageBitmap(currentQrBitmap);
+        }
+
+        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
+                .setView(dialogView)
+                .setCancelable(true)
+                .create();
+
+        downloadBtn.setOnClickListener(v -> saveQrCode());
+
+        shareBtn.setOnClickListener(v -> {
+            ToastManager.showInfo(requireContext(), "Share functionality coming soon");
+        });
+
+        doneBtn.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
+    private void saveQrCode() {
+        if (currentQrBitmap == null || currentOrderNumber == null) {
+            ToastManager.showError(requireContext(), "No QR code to save");
+            return;
+        }
+
+        try {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DISPLAY_NAME, "LaundryBuddy_" + currentOrderNumber + ".png");
+            values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+            values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/LaundryBuddy");
+
+            Uri uri = requireContext().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    values);
+            if (uri != null) {
+                OutputStream outputStream = requireContext().getContentResolver().openOutputStream(uri);
+                if (outputStream != null) {
+                    currentQrBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                    outputStream.close();
+                    ToastManager.showSuccess(requireContext(), "QR Code saved to gallery");
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to save QR code", e);
+            ToastManager.showError(requireContext(), "Failed to save QR code");
+        }
     }
 
     @Override

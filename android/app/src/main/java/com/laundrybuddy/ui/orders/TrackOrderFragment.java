@@ -17,6 +17,11 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import android.widget.TextView;
+import android.widget.ImageView;
+import com.google.android.material.button.MaterialButton;
+import androidx.appcompat.app.AlertDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import com.laundrybuddy.R;
 import com.laundrybuddy.api.ApiClient;
@@ -53,10 +58,9 @@ public class TrackOrderFragment extends Fragment {
     };
 
     private FragmentTrackOrderBinding binding;
-    private TimelineAdapter timelineAdapter;
     private RecentOrderAdapter recentOrderAdapter;
-    private List<TimelineAdapter.TimelineStep> timelineSteps = new ArrayList<>();
     private List<Order> recentOrders = new ArrayList<>();
+    private Order selectedOrder = null; // Track selected order for QR display
 
     private final ActivityResultLauncher<Intent> scannerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -81,8 +85,8 @@ public class TrackOrderFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setupSearch();
+        setupTrackButton();
         setupQrScanner();
-        setupTimeline();
         setupRecentOrders();
         loadRecentOrders();
     }
@@ -107,6 +111,17 @@ public class TrackOrderFragment extends Fragment {
         });
     }
 
+    private void setupTrackButton() {
+        if (binding.btnTrack != null) {
+            binding.btnTrack.setOnClickListener(v -> {
+                String query = binding.searchInput.getText().toString().trim();
+                if (!TextUtils.isEmpty(query)) {
+                    searchOrder(query);
+                }
+            });
+        }
+    }
+
     private void setupQrScanner() {
         if (binding.scanButton != null) {
             binding.scanButton.setOnClickListener(v -> {
@@ -116,24 +131,41 @@ public class TrackOrderFragment extends Fragment {
         }
     }
 
-    private void setupTimeline() {
-        timelineAdapter = new TimelineAdapter(timelineSteps);
-        binding.timelineRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
-        binding.timelineRecycler.setAdapter(timelineAdapter);
-        binding.timelineRecycler.setNestedScrollingEnabled(false);
-    }
+    // Timeline removed
 
     private void setupRecentOrders() {
         recentOrderAdapter = new RecentOrderAdapter(recentOrders, order -> {
             String orderNumber = order.getOrderNumber();
             if (orderNumber != null) {
-                binding.searchInput.setText(orderNumber);
-                searchOrder(orderNumber);
+                selectedOrder = order; // Track selected order
+                String cleanOrdNum = orderNumber.trim();
+                binding.searchInput.setText(cleanOrdNum);
+                searchOrder(cleanOrdNum);
             }
         });
         binding.recentOrdersRecycler.setLayoutManager(
-                new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+                new LinearLayoutManager(getContext()));
         binding.recentOrdersRecycler.setAdapter(recentOrderAdapter);
+
+        // Setup Show My QR button for showing QR of first/selected order
+        setupShowMyQrButton();
+    }
+
+    private void setupShowMyQrButton() {
+        if (binding.btnShowQr != null) {
+            binding.btnShowQr.setOnClickListener(v -> {
+                // Show QR for selected order, or first recent order
+                Order orderToShow = selectedOrder;
+                if (orderToShow == null && !recentOrders.isEmpty()) {
+                    orderToShow = recentOrders.get(0);
+                }
+                if (orderToShow != null) {
+                    showQrDialog(orderToShow);
+                } else {
+                    ToastManager.showWarning(requireContext(), "No orders available");
+                }
+            });
+        }
     }
 
     private void loadRecentOrders() {
@@ -155,7 +187,10 @@ public class TrackOrderFragment extends Fragment {
                                 recentOrderAdapter.notifyDataSetChanged();
 
                                 if (!recentOrders.isEmpty()) {
-                                    binding.recentSection.setVisibility(View.VISIBLE);
+                                    if (binding.submissionsHeader != null)
+                                        binding.submissionsHeader.setVisibility(View.VISIBLE);
+                                    if (binding.recentOrdersRecycler != null)
+                                        binding.recentOrdersRecycler.setVisibility(View.VISIBLE);
                                 }
                             }
                         }
@@ -187,92 +222,221 @@ public class TrackOrderFragment extends Fragment {
 
     private void searchOrder(String query) {
         binding.loadingProgress.setVisibility(View.VISIBLE);
-        binding.orderCard.setVisibility(View.GONE);
+        if (binding.orderDetailsLayout != null) {
+            binding.orderDetailsLayout.setVisibility(View.GONE);
+        }
         binding.emptyState.setVisibility(View.GONE);
 
-        ApiClient.getInstance().getTrackingApi().searchOrders(query)
-                .enqueue(new Callback<ApiResponse<List<Tracking>>>() {
+        ApiClient.getInstance().getTrackingApi().getOrderByNumber(query)
+                .enqueue(new Callback<ApiResponse<Tracking>>() {
                     @Override
-                    public void onResponse(Call<ApiResponse<List<Tracking>>> call,
-                            Response<ApiResponse<List<Tracking>>> response) {
+                    public void onResponse(Call<ApiResponse<Tracking>> call,
+                            Response<ApiResponse<Tracking>> response) {
                         binding.loadingProgress.setVisibility(View.GONE);
 
                         if (response.isSuccessful() && response.body() != null) {
-                            ApiResponse<List<Tracking>> apiResponse = response.body();
-                            if (apiResponse.isSuccess() && apiResponse.getData() != null
-                                    && !apiResponse.getData().isEmpty()) {
-                                displayOrder(apiResponse.getData().get(0));
+                            ApiResponse<Tracking> apiResponse = response.body();
+                            if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                                displayOrder(apiResponse.getData());
                             } else {
-                                binding.emptyState.setVisibility(View.VISIBLE);
+                                // binding.emptyState.setVisibility(View.VISIBLE);
                                 ToastManager.showWarning(requireContext(), "Order not found");
                             }
                         } else {
-                            binding.emptyState.setVisibility(View.VISIBLE);
+                            // binding.emptyState.setVisibility(View.VISIBLE);
                             ToastManager.showWarning(requireContext(), "Order not found");
                         }
                     }
 
                     @Override
-                    public void onFailure(Call<ApiResponse<List<Tracking>>> call, Throwable t) {
+                    public void onFailure(Call<ApiResponse<Tracking>> call, Throwable t) {
                         binding.loadingProgress.setVisibility(View.GONE);
-                        binding.emptyState.setVisibility(View.VISIBLE);
+                        // binding.emptyState.setVisibility(View.VISIBLE);
                         Log.e(TAG, "Search failed", t);
                         ToastManager.showError(requireContext(), getString(R.string.error_network));
                     }
                 });
     }
 
-    private void displayOrder(Tracking tracking) {
-        binding.orderCard.setVisibility(View.VISIBLE);
-        binding.emptyState.setVisibility(View.GONE);
-
-        // Order number
-        binding.orderNumber.setText("#" + tracking.getOrderNumber());
-
-        // Status
-        String status = tracking.getStatus();
-        binding.statusChip.setText(getStatusDisplay(status));
-        binding.statusChip.setChipBackgroundColor(ColorStateList.valueOf(getStatusColor(status)));
-        binding.statusChip.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_on_primary));
-
-        // Items count from status history
-        int historyCount = tracking.getStatusHistory() != null ? tracking.getStatusHistory().size() : 0;
-        binding.itemsCount.setText(historyCount + " updates");
-
-        // Estimated delivery
-        String delivery = tracking.getEstimatedDelivery();
-        binding.estimatedDelivery.setText(delivery != null ? delivery : "TBD");
-
-        // Build and display timeline
-        buildTimeline(status);
+    private void setupQrLogic(Tracking tracking) {
+        if (binding.btnShowQr != null) {
+            binding.btnShowQr.setOnClickListener(v -> {
+                Order orderToUse = tracking.getOrder();
+                if (orderToUse == null) {
+                    // Fallback if order not populated
+                    orderToUse = new Order();
+                    orderToUse.setOrderNumber(tracking.getOrderNumber());
+                    orderToUse.setTotalItems(0);
+                }
+                showQrDialog(orderToUse);
+            });
+        }
     }
 
-    private void buildTimeline(String currentStatus) {
-        timelineSteps.clear();
-        String currentLower = currentStatus != null ? currentStatus.toLowerCase() : "pending";
-        int currentIndex = getStatusIndex(currentLower);
-        String now = new SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()).format(new Date());
+    private void showQrDialog(Order order) {
+        // Build QR dialog inline since QrCodeDialog class is not available
+        String orderNumber = order.getOrderNumber();
+        int totalItems = order.getTotalItems();
+        String userName = com.laundrybuddy.LaundryBuddyApp.getInstance().getUserName();
 
-        for (int i = 0; i < STATUS_PROGRESSION.length; i++) {
-            String status = STATUS_PROGRESSION[i];
-            boolean isCompleted = i < currentIndex;
-            boolean isCurrent = i == currentIndex;
-            String time = "";
+        String qrContent = com.laundrybuddy.utils.QrCodeGenerator.buildOrderQrContent(
+                orderNumber,
+                userName != null ? userName : "User",
+                "",
+                totalItems,
+                order.getStatus());
 
-            if (isCompleted || isCurrent) {
-                time = now; // In real app, would use actual timestamps
-            }
+        android.graphics.Bitmap qrBitmap = com.laundrybuddy.utils.QrCodeGenerator.generateQrCode(qrContent, 400);
 
-            timelineSteps.add(new TimelineAdapter.TimelineStep(
-                    status,
-                    getStatusDisplay(status),
-                    time,
-                    isCompleted,
-                    isCurrent));
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_qr_code, null);
+        TextView orderNumberText = dialogView.findViewById(R.id.orderNumberText);
+        ImageView qrCodeImage = dialogView.findViewById(R.id.qrCodeImage);
+        android.widget.ImageButton doneBtn = dialogView.findViewById(R.id.doneButton);
+        // We can hide download/share for now if not implemented here, or just stub them
+
+        orderNumberText.setText("Order #" + orderNumber);
+        if (qrBitmap != null) {
+            qrCodeImage.setImageBitmap(qrBitmap);
         }
 
-        timelineAdapter.notifyDataSetChanged();
+        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
+                .setView(dialogView)
+                .setCancelable(true)
+                .create();
+
+        doneBtn.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
     }
+
+    private void displayOrder(Tracking tracking) {
+        if (binding.orderDetailsLayout != null) {
+            binding.orderDetailsLayout.setVisibility(View.VISIBLE);
+        }
+        binding.emptyState.setVisibility(View.GONE);
+
+        // 1. Status Headline
+        String status = tracking.getStatus();
+        String displayStatus = getStatusDisplay(status);
+        String est = tracking.getEstimatedDelivery();
+        if (est == null)
+            est = "TBD";
+
+        binding.statusHeadline.setText(displayStatus + " - Estimated Completion: " + est);
+
+        // 2. Grey Card Details
+        binding.detailOrderNumber.setText("ORD" + tracking.getOrderNumber()); // Match format
+
+        // Items & Instructions from Nested Order
+        Order order = tracking.getOrder();
+        if (order == null && selectedOrder != null) {
+            // Fallback to selected order if tracking has unpopulated order
+            order = selectedOrder;
+        }
+
+        if (order != null) {
+            binding.detailItems.setText(order.getTotalItems() + " items");
+            binding.detailInstructions
+                    .setText(order.getSpecialInstructions() != null ? order.getSpecialInstructions() : "None");
+        } else {
+            binding.detailItems.setText("Details unavailable");
+            binding.detailInstructions.setText("None");
+        }
+
+        // Latest Update
+        List<Tracking.StatusUpdate> history = tracking.getStatusHistory();
+        if (history != null && !history.isEmpty()) {
+            Tracking.StatusUpdate latest = history.get(history.size() - 1);
+            binding.detailLastUpdate.setText(latest.getStatus() + " (" + latest.getTimestamp() + ")");
+        } else {
+            binding.detailLastUpdate.setText("No recent updates");
+        }
+
+        // 3. Progress Bar
+        int progress = 0;
+        if (status != null) {
+            switch (status.toLowerCase()) {
+                case "pending":
+                    progress = 10;
+                    break;
+                case "received":
+                    progress = 30;
+                    break;
+                case "washing":
+                    progress = 50;
+                    break;
+                case "drying":
+                    progress = 70;
+                    break;
+                case "folding":
+                    progress = 90;
+                    break;
+                case "ready":
+                    progress = 100;
+                    break;
+                case "delivered":
+                    progress = 100;
+                    break;
+            }
+        }
+        binding.orderProgressBar.setProgress(progress);
+
+        setupQrLogic(tracking);
+        setupNotifyButton(tracking);
+
+    }
+
+    private void setupNotifyButton(Tracking tracking) {
+        if (binding.btnNotify != null) {
+            String status = tracking.getStatus();
+            boolean isReady = "ready".equalsIgnoreCase(status) || "delivered".equalsIgnoreCase(status);
+
+            if (isReady) {
+                binding.btnNotify.setVisibility(View.GONE);
+            } else {
+                binding.btnNotify.setVisibility(View.VISIBLE);
+                if (tracking.isNotifyWhenReady()) {
+                    binding.btnNotify.setText("Notification Enabled");
+                    binding.btnNotify.setEnabled(false);
+                    binding.btnNotify.setAlpha(0.6f);
+                } else {
+                    binding.btnNotify.setText("Notify Me When Ready");
+                    binding.btnNotify.setEnabled(true);
+                    binding.btnNotify.setAlpha(1.0f);
+                    binding.btnNotify.setOnClickListener(v -> toggleNotification(tracking.getOrderNumber()));
+                }
+            }
+        }
+    }
+
+    private void toggleNotification(String orderNumber) {
+        binding.loadingProgress.setVisibility(View.VISIBLE);
+        ApiClient.getInstance().getTrackingApi().toggleNotify(orderNumber)
+                .enqueue(new Callback<ApiResponse<Tracking>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Tracking>> call, Response<ApiResponse<Tracking>> response) {
+                        binding.loadingProgress.setVisibility(View.GONE);
+                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                            String message = response.body().getMessage();
+                            ToastManager.showSuccess(requireContext(),
+                                    message != null ? message : "Notification updated");
+                            // Refresh display
+                            if (response.body().getData() != null) {
+                                displayOrder(response.body().getData());
+                            }
+                        } else {
+                            ToastManager.showError(requireContext(), "Failed to update notification");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<Tracking>> call, Throwable t) {
+                        binding.loadingProgress.setVisibility(View.GONE);
+                        ToastManager.showError(requireContext(), getString(R.string.error_network));
+                    }
+                });
+    }
+
+    // Timeline logic removed
 
     private int getStatusIndex(String status) {
         for (int i = 0; i < STATUS_PROGRESSION.length; i++) {
@@ -287,6 +451,8 @@ public class TrackOrderFragment extends Fragment {
         if (status == null)
             return "Unknown";
         switch (status.toLowerCase()) {
+            case "submitted":
+                return "Submitted";
             case "pending":
                 return "Pending";
             case "received":

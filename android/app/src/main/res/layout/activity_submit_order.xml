@@ -47,7 +47,7 @@
             style="@style/TitleLarge"
             android:layout_marginBottom="16dp" />
 
-        <!-- Clothing Items Grid -->
+        <!-- Items Input Section -->
         <com.google.android.material.card.MaterialCardView
             style="@style/CardStyle"
             android:layout_width="match_parent"
@@ -60,168 +60,78 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- Shirts -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="16dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Shirts"
-                        android:textSize="16sp"
-                        android:textColor="@color/text_primary" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnShirtsMinus"
-                        style="@style/Widget.Material3.Button.IconButton.Outlined"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        app:icon="@android:drawable/ic_menu_delete" />
-
-                    <TextView
-                        android:id="@+id/shirtsCount"
-                        android:layout_width="48dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:text="0"
-                        android:textSize="18sp"
-                        android:textColor="@color/text_primary" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnShirtsPlus"
-                        style="@style/Widget.Material3.Button.IconButton.Outlined"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        app:icon="@android:drawable/ic_input_add" />
-
-                </LinearLayout>
-
-                <!-- Pants -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="16dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Pants"
-                        android:textSize="16sp"
-                        android:textColor="@color/text_primary" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnPantsMinus"
-                        style="@style/Widget.Material3.Button.IconButton.Outlined"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        app:icon="@android:drawable/ic_menu_delete" />
-
-                    <TextView
-                        android:id="@+id/pantsCount"
-                        android:layout_width="48dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:text="0"
-                        android:textSize="18sp"
-                        android:textColor="@color/text_primary" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnPantsPlus"
-                        style="@style/Widget.Material3.Button.IconButton.Outlined"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        app:icon="@android:drawable/ic_input_add" />
-
-                </LinearLayout>
-
-                <!-- Towels -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="16dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Towels"
-                        android:textSize="16sp"
-                        android:textColor="@color/text_primary" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnTowelsMinus"
-                        style="@style/Widget.Material3.Button.IconButton.Outlined"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        app:icon="@android:drawable/ic_menu_delete" />
-
-                    <TextView
-                        android:id="@+id/towelsCount"
-                        android:layout_width="48dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:text="0"
-                        android:textSize="18sp"
-                        android:textColor="@color/text_primary" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnTowelsPlus"
-                        style="@style/Widget.Material3.Button.IconButton.Outlined"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        app:icon="@android:drawable/ic_input_add" />
-
-                </LinearLayout>
-
-                <!-- Bedsheets -->
+                <!-- Add New Item Input -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
 
-                    <TextView
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:layout_marginEnd="8dp"
+                        android:hint="Item Name (e.g. Shirts)">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/inputItemName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textCapWords" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Bedsheets"
-                        android:textSize="16sp"
-                        android:textColor="@color/text_primary" />
+                        android:layout_marginEnd="8dp"
+                        android:hint="Qty">
 
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/inputItemQty"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:text="1" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+                    
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnBedsheetsMinus"
-                        style="@style/Widget.Material3.Button.IconButton.Outlined"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        app:icon="@android:drawable/ic_menu_delete" />
-
-                    <TextView
-                        android:id="@+id/bedsheetsCount"
+                        android:id="@+id/btnAddItem"
+                        style="@style/Widget.Material3.Button.IconButton.Filled"
                         android:layout_width="48dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:text="0"
-                        android:textSize="18sp"
-                        android:textColor="@color/text_primary" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnBedsheetsPlus"
-                        style="@style/Widget.Material3.Button.IconButton.Outlined"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        app:icon="@android:drawable/ic_input_add" />
+                        android:layout_height="48dp"
+                        app:icon="@android:drawable/ic_input_add"
+                        app:iconTint="@android:color/white" />
 
                 </LinearLayout>
+                
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#EEEEEE"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="8dp"/>
+
+                <!-- Added Items List Container -->
+                <LinearLayout
+                    android:id="@+id/addedItemsContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+                    
+                 <TextView
+                    android:id="@+id/emptyListText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="No items added yet"
+                    android:textColor="#999999"
+                    android:gravity="center"
+                    android:padding="16dp" />
 
             </LinearLayout>
 

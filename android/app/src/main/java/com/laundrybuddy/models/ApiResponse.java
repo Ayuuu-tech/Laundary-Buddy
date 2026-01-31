@@ -13,7 +13,7 @@ public class ApiResponse<T> {
     @SerializedName("message")
     private String message;
 
-    @SerializedName("data")
+    @SerializedName(value = "data", alternate = { "order", "orders", "tracking" })
     private T data;
 
     @SerializedName("error")

@@ -48,6 +48,7 @@ public class ApiClient {
                 .addInterceptor(chain -> {
                     okhttp3.Request original = chain.request();
                     String token = com.laundrybuddy.LaundryBuddyApp.getInstance().getAuthToken();
+                    android.util.Log.d("ApiClient", "Interceptor Check. Token: " + token);
 
                     if (token != null && !token.isEmpty()) {
                         okhttp3.Request request = original.newBuilder()

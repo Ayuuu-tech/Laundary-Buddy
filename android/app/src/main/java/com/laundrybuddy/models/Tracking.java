@@ -27,7 +27,7 @@ public class Tracking {
     @SerializedName("status")
     private String status;
 
-    @SerializedName("statusHistory")
+    @SerializedName(value = "statusHistory", alternate = { "timeline" })
     private List<StatusUpdate> statusHistory;
 
     @SerializedName("createdAt")
@@ -38,6 +38,34 @@ public class Tracking {
 
     @SerializedName("estimatedDelivery")
     private String estimatedDelivery;
+
+    @SerializedName("order")
+    private com.google.gson.JsonElement orderElement;
+
+    public Order getOrder() {
+        if (orderElement != null && orderElement.isJsonObject()) {
+            return new com.google.gson.Gson().fromJson(orderElement, Order.class);
+        }
+        return null;
+    }
+
+    public String getOrderId() {
+        if (orderElement != null) {
+            if (orderElement.isJsonPrimitive()) {
+                return orderElement.getAsString();
+            } else if (orderElement.isJsonObject()) {
+                com.google.gson.JsonObject obj = orderElement.getAsJsonObject();
+                if (obj.has("_id")) {
+                    return obj.get("_id").getAsString();
+                }
+            }
+        }
+        return null;
+    }
+
+    public void setOrderElement(com.google.gson.JsonElement orderElement) {
+        this.orderElement = orderElement;
+    }
 
     // Nested StatusUpdate class
     public static class StatusUpdate {
@@ -154,6 +182,17 @@ public class Tracking {
 
     public void setEstimatedDelivery(String estimatedDelivery) {
         this.estimatedDelivery = estimatedDelivery;
+    }
+
+    @SerializedName("notifyWhenReady")
+    private boolean notifyWhenReady;
+
+    public boolean isNotifyWhenReady() {
+        return notifyWhenReady;
+    }
+
+    public void setNotifyWhenReady(boolean notifyWhenReady) {
+        this.notifyWhenReady = notifyWhenReady;
     }
 
     // Get progress percentage based on status

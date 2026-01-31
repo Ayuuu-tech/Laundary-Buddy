@@ -9,8 +9,11 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -37,7 +40,7 @@ import retrofit2.Response;
 
 /**
  * Activity for submitting new laundry orders
- * Shows QR code on successful submission
+ * Features dynamic item input list
  */
 public class SubmitOrderActivity extends AppCompatActivity {
 
@@ -45,10 +48,8 @@ public class SubmitOrderActivity extends AppCompatActivity {
 
     private ActivitySubmitOrderBinding binding;
 
-    private int shirtsCount = 0;
-    private int pantsCount = 0;
-    private int towelsCount = 0;
-    private int bedsheetsCount = 0;
+    // Dynamic list of items
+    private List<Map<String, Object>> dynamicItems = new ArrayList<>();
 
     private Bitmap currentQrBitmap;
     private String currentOrderNumber;
@@ -67,129 +68,138 @@ public class SubmitOrderActivity extends AppCompatActivity {
         // Back button
         binding.backButton.setOnClickListener(v -> finish());
 
-        // Shirts
-        binding.btnShirtsPlus.setOnClickListener(v -> {
-            shirtsCount++;
-            binding.shirtsCount.setText(String.valueOf(shirtsCount));
-            updateTotalItems();
-        });
-        binding.btnShirtsMinus.setOnClickListener(v -> {
-            if (shirtsCount > 0) {
-                shirtsCount--;
-                binding.shirtsCount.setText(String.valueOf(shirtsCount));
-                updateTotalItems();
-            }
-        });
-
-        // Pants
-        binding.btnPantsPlus.setOnClickListener(v -> {
-            pantsCount++;
-            binding.pantsCount.setText(String.valueOf(pantsCount));
-            updateTotalItems();
-        });
-        binding.btnPantsMinus.setOnClickListener(v -> {
-            if (pantsCount > 0) {
-                pantsCount--;
-                binding.pantsCount.setText(String.valueOf(pantsCount));
-                updateTotalItems();
-            }
-        });
-
-        // Towels
-        binding.btnTowelsPlus.setOnClickListener(v -> {
-            towelsCount++;
-            binding.towelsCount.setText(String.valueOf(towelsCount));
-            updateTotalItems();
-        });
-        binding.btnTowelsMinus.setOnClickListener(v -> {
-            if (towelsCount > 0) {
-                towelsCount--;
-                binding.towelsCount.setText(String.valueOf(towelsCount));
-                updateTotalItems();
-            }
-        });
-
-        // Bedsheets
-        binding.btnBedsheetsPlus.setOnClickListener(v -> {
-            bedsheetsCount++;
-            binding.bedsheetsCount.setText(String.valueOf(bedsheetsCount));
-            updateTotalItems();
-        });
-        binding.btnBedsheetsMinus.setOnClickListener(v -> {
-            if (bedsheetsCount > 0) {
-                bedsheetsCount--;
-                binding.bedsheetsCount.setText(String.valueOf(bedsheetsCount));
-                updateTotalItems();
-            }
-        });
+        // Add Item Button
+        binding.btnAddItem.setOnClickListener(v -> addItem());
 
         // Submit button
         binding.submitButton.setOnClickListener(v -> submitOrder());
     }
 
+    private void addItem() {
+        String name = binding.inputItemName.getText().toString().trim();
+        String qtyStr = binding.inputItemQty.getText().toString().trim();
+
+        if (name.isEmpty()) {
+            binding.inputItemName.setError("Required");
+            return;
+        }
+
+        if (qtyStr.isEmpty()) {
+            binding.inputItemQty.setError("Required");
+            return;
+        }
+
+        int qty = 0;
+        try {
+            qty = Integer.parseInt(qtyStr);
+        } catch (NumberFormatException e) {
+            binding.inputItemQty.setError("Invalid number");
+            return;
+        }
+
+        if (qty <= 0) {
+            binding.inputItemQty.setError("Qty must be > 0");
+            return;
+        }
+
+        // Add to list
+        Map<String, Object> item = new HashMap<>();
+        item.put("name", name);
+        item.put("quantity", qty);
+        item.put("category", "micellaneous"); // Default category
+
+        dynamicItems.add(item);
+
+        // Add View
+        addItemView(item);
+
+        // Clear input
+        binding.inputItemName.setText("");
+        binding.inputItemQty.setText("1");
+        binding.inputItemName.requestFocus();
+
+        updateTotalItems();
+    }
+
+    private void addItemView(Map<String, Object> item) {
+        String name = (String) item.get("name");
+        int quantity = (int) item.get("quantity");
+
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        row.setPadding(0, 16, 0, 16);
+
+        TextView text = new TextView(this);
+        text.setText(name + " (" + quantity + ")");
+        text.setTextSize(16);
+        text.setTextColor(getResources().getColor(R.color.text_primary));
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
+        text.setLayoutParams(params);
+
+        com.google.android.material.button.MaterialButton deleteBtn = new com.google.android.material.button.MaterialButton(
+                this);
+        // Simplified delete button
+        deleteBtn.setText("Remove");
+        deleteBtn.setTextSize(12);
+        deleteBtn.setPadding(0, 0, 0, 0);
+        // Ideally use icon, but text is safer without complicated styles
+
+        deleteBtn.setOnClickListener(v -> {
+            dynamicItems.remove(item);
+            binding.addedItemsContainer.removeView(row);
+            updateTotalItems();
+            if (dynamicItems.isEmpty())
+                binding.emptyListText.setVisibility(View.VISIBLE);
+        });
+
+        row.addView(text);
+        row.addView(deleteBtn);
+
+        binding.addedItemsContainer.addView(row);
+        binding.emptyListText.setVisibility(View.GONE);
+    }
+
     private void updateTotalItems() {
-        int total = shirtsCount + pantsCount + towelsCount + bedsheetsCount;
+        int total = 0;
+        for (Map<String, Object> item : dynamicItems) {
+            total += (int) item.get("quantity");
+        }
         binding.totalItems.setText(String.valueOf(total));
     }
 
     private void submitOrder() {
-        int total = shirtsCount + pantsCount + towelsCount + bedsheetsCount;
+        int total = 0;
+        for (Map<String, Object> item : dynamicItems) {
+            total += (int) item.get("quantity");
+        }
 
-        if (total == 0) {
+        if (total == 0 || dynamicItems.isEmpty()) {
             ToastManager.showWarning(this, "Please add at least one item");
             return;
         }
 
         setLoading(true);
 
-        // Build items list
-        List<Map<String, Object>> items = new ArrayList<>();
-
-        if (shirtsCount > 0) {
-            Map<String, Object> item = new HashMap<>();
-            item.put("name", "Shirts");
-            item.put("quantity", shirtsCount);
-            item.put("category", "tops");
-            items.add(item);
-        }
-
-        if (pantsCount > 0) {
-            Map<String, Object> item = new HashMap<>();
-            item.put("name", "Pants");
-            item.put("quantity", pantsCount);
-            item.put("category", "bottoms");
-            items.add(item);
-        }
-
-        if (towelsCount > 0) {
-            Map<String, Object> item = new HashMap<>();
-            item.put("name", "Towels");
-            item.put("quantity", towelsCount);
-            item.put("category", "linens");
-            items.add(item);
-        }
-
-        if (bedsheetsCount > 0) {
-            Map<String, Object> item = new HashMap<>();
-            item.put("name", "Bedsheets");
-            item.put("quantity", bedsheetsCount);
-            item.put("category", "linens");
-            items.add(item);
-        }
-
         // Build request body
         Map<String, Object> body = new HashMap<>();
-        body.put("items", items);
+        body.put("items", dynamicItems);
         body.put("totalItems", total);
 
         // Add required fields
         body.put("serviceType", "Wash & Fold"); // Default service
-        body.put("pickupDate", "Today");
+        // Format dates as ISO8601 (yyyy-MM-dd)
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US);
+        java.util.Calendar calendar = java.util.Calendar.getInstance();
+        String today = sdf.format(calendar.getTime());
+
+        calendar.add(java.util.Calendar.DAY_OF_YEAR, 1);
+        String tomorrow = sdf.format(calendar.getTime());
+
+        body.put("pickupDate", today);
         body.put("pickupTime", "Anytime");
-        body.put("deliveryDate", "Tomorrow");
-        body.put("totalAmount", total * 10); // Est calculation
-        // Address/Phone should come from Profile, but backend might take them here too
-        // if new.
+        body.put("deliveryDate", tomorrow);
+        body.put("totalAmount", total * 10);
 
         String instructions = binding.instructionsInput.getText().toString().trim();
         if (!instructions.isEmpty()) {
@@ -209,9 +219,6 @@ public class SubmitOrderActivity extends AppCompatActivity {
                     } else {
                         String error = apiResponse.getMessage() != null ? apiResponse.getMessage()
                                 : "Failed to submit order";
-                        Log.e(TAG, "API Error: " + error);
-                        if (apiResponse.getError() != null)
-                            Log.e(TAG, "API Error Details: " + apiResponse.getError());
                         ToastManager.showError(SubmitOrderActivity.this, error);
                     }
                 } else {
@@ -221,12 +228,7 @@ public class SubmitOrderActivity extends AppCompatActivity {
                             errorBody = response.errorBody().string();
                     } catch (Exception e) {
                     }
-                    Log.e(TAG,
-                            "Response Failed: " + response.code() + " " + response.message() + " Body: " + errorBody);
-                    ToastManager.showError(SubmitOrderActivity.this, "Failed: " + response.code() + " " + errorBody); // Show
-                                                                                                                      // code
-                                                                                                                      // to
-                                                                                                                      // user
+                    ToastManager.showError(SubmitOrderActivity.this, "Failed: " + response.code());
                 }
             }
 
@@ -242,7 +244,11 @@ public class SubmitOrderActivity extends AppCompatActivity {
     private void showQrCodeDialog(Order order) {
         currentOrderNumber = order.getOrderNumber();
         String userName = LaundryBuddyApp.getInstance().getUserName();
-        int totalItems = shirtsCount + pantsCount + towelsCount + bedsheetsCount;
+        // Recalculate total for QR
+        int totalItems = 0;
+        for (Map<String, Object> item : dynamicItems) {
+            totalItems += (int) item.get("quantity");
+        }
 
         // Generate QR code content
         String qrContent = QrCodeGenerator.buildOrderQrContent(
@@ -261,7 +267,7 @@ public class SubmitOrderActivity extends AppCompatActivity {
         ImageView qrCodeImage = dialogView.findViewById(R.id.qrCodeImage);
         MaterialButton downloadBtn = dialogView.findViewById(R.id.downloadQrButton);
         MaterialButton shareBtn = dialogView.findViewById(R.id.shareQrButton);
-        MaterialButton doneBtn = dialogView.findViewById(R.id.doneButton);
+        View doneBtn = dialogView.findViewById(R.id.doneButton);
 
         orderNumberText.setText("Order #" + currentOrderNumber);
         if (currentQrBitmap != null) {

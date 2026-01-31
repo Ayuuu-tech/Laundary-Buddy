@@ -79,6 +79,13 @@ public class Order {
         @SerializedName("category")
         private String category;
 
+        // Backend also uses these field names
+        @SerializedName("type")
+        private String type;
+
+        @SerializedName("count")
+        private int count;
+
         public String getName() {
             return name;
         }
@@ -101,6 +108,22 @@ public class Order {
 
         public void setCategory(String category) {
             this.category = category;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+        public void setCount(int count) {
+            this.count = count;
         }
     }
 
