@@ -18,6 +18,12 @@ public interface OrderDao {
     @Query("SELECT * FROM orders WHERE id = :id")
     Order getOrderById(String id);
 
+    @Query("SELECT * FROM orders WHERE userId = :userId ORDER BY createdAt DESC")
+    LiveData<List<Order>> getOrdersForUser(String userId);
+
+    @Query("DELETE FROM orders WHERE userId = :userId")
+    void clearOrdersForUser(String userId);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertOrders(List<Order> orders);
 

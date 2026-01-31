@@ -114,52 +114,52 @@ public class HomeFragment extends Fragment {
         binding.swipeRefresh.setOnRefreshListener(this::loadRecentOrders);
     }
 
+    private com.laundrybuddy.repositories.OrderRepository repository;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        repository = new com.laundrybuddy.repositories.OrderRepository(requireContext());
+    }
+
     private void loadRecentOrders() {
         binding.loadingProgress.setVisibility(View.VISIBLE);
         binding.emptyState.setVisibility(View.GONE);
 
-        ApiClient.getInstance().getOrderApi().getMyOrders().enqueue(new Callback<ApiResponse<List<Order>>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<List<Order>>> call, Response<ApiResponse<List<Order>>> response) {
-                binding.swipeRefresh.setRefreshing(false);
-                binding.loadingProgress.setVisibility(View.GONE);
+        String userId = app.getUserId();
+        if (userId == null) {
+            // User not logged in fully?
+            binding.loadingProgress.setVisibility(View.GONE);
+            return;
+        }
 
-                if (response.isSuccessful() && response.body() != null) {
-                    ApiResponse<List<Order>> apiResponse = response.body();
-                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
-                        recentOrders.clear();
-                        // Show only last 5 orders
-                        List<Order> orders = apiResponse.getData();
-                        int limit = Math.min(orders.size(), 5);
-                        for (int i = 0; i < limit; i++) {
-                            recentOrders.add(orders.get(i));
-                        }
-                        orderAdapter.notifyDataSetChanged();
+        repository.getMyOrders(userId).observe(getViewLifecycleOwner(), orders -> {
+            binding.swipeRefresh.setRefreshing(false);
+            binding.loadingProgress.setVisibility(View.GONE);
 
-                        if (recentOrders.isEmpty()) {
-                            binding.emptyState.setVisibility(View.VISIBLE);
-                            binding.recentOrdersRecycler.setVisibility(View.GONE);
-                        } else {
-                            binding.emptyState.setVisibility(View.GONE);
-                            binding.recentOrdersRecycler.setVisibility(View.VISIBLE);
-                        }
-                    }
-                } else {
-                    Log.e(TAG, "Failed to load orders");
+            if (orders != null && !orders.isEmpty()) {
+                recentOrders.clear();
+                // Show only last 5 orders
+                int limit = Math.min(orders.size(), 5);
+                for (int i = 0; i < limit; i++) {
+                    recentOrders.add(orders.get(i));
                 }
-            }
+                orderAdapter.notifyDataSetChanged();
 
-            @Override
-            public void onFailure(Call<ApiResponse<List<Order>>> call, Throwable t) {
-                binding.swipeRefresh.setRefreshing(false);
-                binding.loadingProgress.setVisibility(View.GONE);
-                Log.e(TAG, "Error loading orders", t);
-
-                if (getContext() != null) {
-                    Toast.makeText(getContext(), getString(R.string.error_network), Toast.LENGTH_SHORT).show();
+                binding.emptyState.setVisibility(View.GONE);
+                binding.recentOrdersRecycler.setVisibility(View.VISIBLE);
+            } else {
+                if (recentOrders.isEmpty()) {
+                    binding.emptyState.setVisibility(View.VISIBLE);
+                    binding.recentOrdersRecycler.setVisibility(View.GONE);
                 }
             }
         });
+
+        // Trigger manual refresh via repository if needed
+        // Note: repository.getMyOrders calls refresh if network available.
+        // If called from SwipeRefresh:
+        binding.swipeRefresh.setOnRefreshListener(() -> repository.refreshMyOrders(userId));
     }
 
     @Override

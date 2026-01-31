@@ -45,6 +45,19 @@ public class ApiClient {
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .cookieJar(new JavaNetCookieJar(cookieManager))
                 .addInterceptor(loggingInterceptor)
+                .addInterceptor(chain -> {
+                    okhttp3.Request original = chain.request();
+                    String token = com.laundrybuddy.LaundryBuddyApp.getInstance().getAuthToken();
+
+                    if (token != null && !token.isEmpty()) {
+                        okhttp3.Request request = original.newBuilder()
+                                .header("Authorization", "Bearer " + token)
+                                .method(original.method(), original.body())
+                                .build();
+                        return chain.proceed(request);
+                    }
+                    return chain.proceed(original);
+                })
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "825393795787",
+    "project_id": "laundry-buddy-ee34d",
+    "storage_bucket": "laundry-buddy-ee34d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:825393795787:android:a90d8f5cdbdeea084f014e",
+        "android_client_info": {
+          "package_name": "com.laundrybuddy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfVZWZo7HyUVY3ks_OG9bwAr_wTf7Hda0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

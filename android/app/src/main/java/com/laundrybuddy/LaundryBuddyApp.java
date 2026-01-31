@@ -68,6 +68,7 @@ public class LaundryBuddyApp extends Application {
                 .remove("user_name")
                 .remove("user_email")
                 .remove("user_role")
+                .remove("session_active") // Fix: Remove session_active
                 .apply();
     }
 

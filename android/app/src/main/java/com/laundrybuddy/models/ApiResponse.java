@@ -22,6 +22,12 @@ public class ApiResponse<T> {
     @SerializedName("user")
     private User user;
 
+    @SerializedName("token")
+    private String token;
+
+    @SerializedName("refreshToken")
+    private String refreshToken;
+
     public boolean isSuccess() {
         return success;
     }
@@ -60,5 +66,13 @@ public class ApiResponse<T> {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
     }
 }

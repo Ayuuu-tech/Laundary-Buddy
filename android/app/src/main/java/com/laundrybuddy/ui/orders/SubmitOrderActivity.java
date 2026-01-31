@@ -182,6 +182,15 @@ public class SubmitOrderActivity extends AppCompatActivity {
         body.put("items", items);
         body.put("totalItems", total);
 
+        // Add required fields
+        body.put("serviceType", "Wash & Fold"); // Default service
+        body.put("pickupDate", "Today");
+        body.put("pickupTime", "Anytime");
+        body.put("deliveryDate", "Tomorrow");
+        body.put("totalAmount", total * 10); // Est calculation
+        // Address/Phone should come from Profile, but backend might take them here too
+        // if new.
+
         String instructions = binding.instructionsInput.getText().toString().trim();
         if (!instructions.isEmpty()) {
             body.put("specialInstructions", instructions);
@@ -200,18 +209,32 @@ public class SubmitOrderActivity extends AppCompatActivity {
                     } else {
                         String error = apiResponse.getMessage() != null ? apiResponse.getMessage()
                                 : "Failed to submit order";
+                        Log.e(TAG, "API Error: " + error);
+                        if (apiResponse.getError() != null)
+                            Log.e(TAG, "API Error Details: " + apiResponse.getError());
                         ToastManager.showError(SubmitOrderActivity.this, error);
                     }
                 } else {
-                    ToastManager.showError(SubmitOrderActivity.this, "Failed to submit order");
+                    String errorBody = "";
+                    try {
+                        if (response.errorBody() != null)
+                            errorBody = response.errorBody().string();
+                    } catch (Exception e) {
+                    }
+                    Log.e(TAG,
+                            "Response Failed: " + response.code() + " " + response.message() + " Body: " + errorBody);
+                    ToastManager.showError(SubmitOrderActivity.this, "Failed: " + response.code() + " " + errorBody); // Show
+                                                                                                                      // code
+                                                                                                                      // to
+                                                                                                                      // user
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<Order>> call, Throwable t) {
                 setLoading(false);
-                Log.e(TAG, "Failed to submit order", t);
-                ToastManager.showError(SubmitOrderActivity.this, getString(R.string.error_network));
+                Log.e(TAG, "Network Failed", t);
+                ToastManager.showError(SubmitOrderActivity.this, "Network Error: " + t.getMessage());
             }
         });
     }

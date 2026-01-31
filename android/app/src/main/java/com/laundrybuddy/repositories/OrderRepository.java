@@ -46,6 +46,51 @@ public class OrderRepository {
         return orderDao.getAllOrders();
     }
 
+    public LiveData<List<Order>> getMyOrders(String userId) {
+        if (NetworkUtils.isNetworkAvailable(context)) {
+            refreshMyOrders(userId);
+        }
+        return orderDao.getOrdersForUser(userId);
+    }
+
+    public void refreshMyOrders(String userId) {
+        if (!NetworkUtils.isNetworkAvailable(context)) {
+            return;
+        }
+
+        Call<ApiResponse<List<Order>>> call = orderApi.getMyOrders();
+
+        call.enqueue(new Callback<ApiResponse<List<Order>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<List<Order>>> call, Response<ApiResponse<List<Order>>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                    List<Order> orders = response.body().getData();
+                    // Ensure userId is set on orders if backend doesn't send it explicitly (it
+                    // should, but safety first)
+                    // Actually, modifying orders here is good practice before insert.
+                    for (Order o : orders) {
+                        if (o.getUserId() == null)
+                            o.setUserId(userId);
+                    }
+
+                    executor.execute(() -> {
+                        // Clear old data for simple sync? Or assume upsert is enough?
+                        // For full consistency, clear user's orders first.
+                        orderDao.clearOrdersForUser(userId);
+                        orderDao.insertOrders(orders);
+                    });
+                } else {
+                    Log.e(TAG, "Failed to refresh my orders: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<List<Order>>> call, Throwable t) {
+                Log.e(TAG, "Failed to refresh my orders", t);
+            }
+        });
+    }
+
     public void refreshOrders() {
         if (!NetworkUtils.isNetworkAvailable(context)) {
             return;

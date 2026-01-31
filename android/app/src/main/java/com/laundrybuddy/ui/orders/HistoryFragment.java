@@ -336,41 +336,49 @@ public class HistoryFragment extends Fragment {
         binding.swipeRefresh.setOnRefreshListener(this::loadOrders);
     }
 
+    private com.laundrybuddy.repositories.OrderRepository repository;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        repository = new com.laundrybuddy.repositories.OrderRepository(requireContext());
+    }
+
     private void loadOrders() {
         binding.loadingProgress.setVisibility(View.VISIBLE);
         binding.emptyState.setVisibility(View.GONE);
         binding.resultsCount.setVisibility(View.GONE);
 
-        ApiClient.getInstance().getOrderApi().getMyOrders().enqueue(new Callback<ApiResponse<List<Order>>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<List<Order>>> call, Response<ApiResponse<List<Order>>> response) {
-                binding.swipeRefresh.setRefreshing(false);
-                binding.loadingProgress.setVisibility(View.GONE);
+        String userId = com.laundrybuddy.LaundryBuddyApp.getInstance().getUserId();
+        if (userId == null) {
+            showEmptyState("Please login to view history");
+            binding.loadingProgress.setVisibility(View.GONE);
+            return;
+        }
 
-                if (response.isSuccessful() && response.body() != null) {
-                    ApiResponse<List<Order>> apiResponse = response.body();
-                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
-                        allOrders.clear();
-                        allOrders.addAll(apiResponse.getData());
-                        applyFilters();
-                    }
-                } else {
-                    showEmptyState("No orders found");
+        repository.getMyOrders(userId).observe(getViewLifecycleOwner(), orders -> {
+            binding.swipeRefresh.setRefreshing(false);
+            binding.loadingProgress.setVisibility(View.GONE);
+
+            if (orders != null && !orders.isEmpty()) {
+                allOrders.clear();
+                allOrders.addAll(orders);
+                applyFilters();
+            } else {
+                // If API failed but we have no local data, repository might return empty list
+                // or null
+                // If network is on, repository tried to fetch.
+                // If network off, we just show empty if db empty.
+                if (allOrders.isEmpty()) {
+                    showEmptyState("No orders yet");
                 }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<List<Order>>> call, Throwable t) {
-                binding.swipeRefresh.setRefreshing(false);
-                binding.loadingProgress.setVisibility(View.GONE);
-                Log.e(TAG, "Failed to load orders", t);
-
-                if (getContext() != null) {
-                    ToastManager.showError(requireContext(), getString(R.string.error_network));
-                }
-                showEmptyState("Failed to load orders");
             }
         });
+
+        // Trigger manual refresh via repository if needed, but repository.getMyOrders
+        // calls refresh if network available.
+        // If swipe refresh, force refresh
+        binding.swipeRefresh.setOnRefreshListener(() -> repository.refreshMyOrders(userId));
     }
 
     private void applyFilters() {

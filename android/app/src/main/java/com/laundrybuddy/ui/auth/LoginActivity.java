@@ -146,6 +146,9 @@ public class LoginActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse<User> apiResponse = response.body();
                     if (apiResponse.isSuccess()) {
+                        if (apiResponse.getToken() != null) {
+                            app.saveAuthToken(apiResponse.getToken());
+                        }
                         User user = apiResponse.getUser() != null ? apiResponse.getUser() : apiResponse.getData();
                         if (user != null) {
                             handleLoginSuccess(user);
@@ -214,6 +217,9 @@ public class LoginActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse<User> apiResponse = response.body();
                     if (apiResponse.isSuccess()) {
+                        if (apiResponse.getToken() != null) {
+                            app.saveAuthToken(apiResponse.getToken());
+                        }
                         User user = apiResponse.getUser() != null ? apiResponse.getUser() : apiResponse.getData();
                         if (user != null) {
                             handleLoginSuccess(user);
