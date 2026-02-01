@@ -59,23 +59,66 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketView
         }
 
         void bind(SupportTicket ticket, OnTicketClickListener listener) {
-            binding.subject.setText(ticket.getSubject());
-            binding.description.setText(ticket.getDescription());
+            String category = ticket.getCategory();
+            binding.categoryText.setText(category != null && !category.isEmpty() ? category : "Support Ticket");
 
-            // Status
             String status = ticket.getStatus();
-            binding.statusChip.setText(status != null ? status : "Open");
+            binding.statusText.setText(status != null ? status : "pending");
 
-            int statusColor = ticket.isOpen()
-                    ? ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_pending)
-                    : ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_delivered);
-            binding.statusChip.setChipBackgroundColor(ColorStateList.valueOf(statusColor));
+            String orderNum = ticket.getOrderNumber();
+            String date = ticket.getCreatedAt();
+            // Simple date formatting
+            if (date != null && date.length() >= 10) {
+                date = date.substring(0, 10);
+            }
+            String info = "Order #" + (orderNum != null ? orderNum : "N/A");
+            if (date != null)
+                info += " - " + date;
+
+            binding.orderInfoText.setText(info);
+
+            binding.itemDescription.setText(ticket.getSubject());
+            binding.issueDescription.setText(ticket.getDescription());
+
+            // Apply dynamic status color
+            int statusColor = getStatusColor(status);
+            binding.statusText.setTextColor(statusColor);
+
+            // Update card stroke color based on status
+            if (binding.getRoot() instanceof com.google.android.material.card.MaterialCardView) {
+                ((com.google.android.material.card.MaterialCardView) binding.getRoot())
+                        .setStrokeColor(statusColor);
+            }
 
             binding.getRoot().setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onTicketClick(ticket);
                 }
             });
+        }
+
+        private int getStatusColor(String status) {
+            if (status == null)
+                return 0xFF757575; // Grey
+            switch (status.toLowerCase()) {
+                case "open":
+                case "pending":
+                case "new":
+                    return 0xFFE67E22; // Orange
+                case "in progress":
+                case "in-progress":
+                case "processing":
+                    return 0xFF2196F3; // Blue
+                case "resolved":
+                case "closed":
+                case "completed":
+                    return 0xFF27AE60; // Green
+                case "rejected":
+                case "cancelled":
+                    return 0xFFE74C3C; // Red
+                default:
+                    return 0xFFE67E22; // Orange default
+            }
         }
     }
 }

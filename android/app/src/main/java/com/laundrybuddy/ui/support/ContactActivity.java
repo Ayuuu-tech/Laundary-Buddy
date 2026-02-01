@@ -15,6 +15,7 @@ import com.laundrybuddy.api.ApiClient;
 import com.laundrybuddy.databinding.ActivityContactBinding;
 import com.laundrybuddy.models.ApiResponse;
 import com.laundrybuddy.models.ContactMessage;
+import com.laundrybuddy.models.User;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,13 +40,60 @@ public class ContactActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         prefillUserInfo();
+        fetchUserInfoFromServer();
         setupClickListeners();
     }
 
     private void prefillUserInfo() {
         LaundryBuddyApp app = LaundryBuddyApp.getInstance();
-        binding.nameInput.setText(app.getUserName());
-        binding.emailInput.setText(app.getUserEmail());
+        String name = app.getUserName();
+        String email = app.getUserEmail();
+
+        Log.d(TAG, "Prefilling user info: " + name + ", " + email);
+
+        if (name != null && !name.isEmpty()) {
+            binding.nameInput.setText(name);
+            binding.nameInput.setEnabled(false);
+            binding.nameLayout.setEnabled(false);
+        }
+
+        if (email != null && !email.isEmpty()) {
+            binding.emailInput.setText(email);
+            binding.emailInput.setEnabled(false);
+            binding.emailLayout.setEnabled(false);
+        }
+    }
+
+    private void fetchUserInfoFromServer() {
+        ApiClient.getInstance().getAuthApi().getCurrentUser().enqueue(new Callback<ApiResponse<User>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    User user = response.body().getUser() != null ? response.body().getUser()
+                            : response.body().getData();
+                    if (user != null) {
+                        // Save locally too
+                        LaundryBuddyApp.getInstance().saveUserInfo(user.getId(), user.getName(), user.getEmail(),
+                                user.getRole());
+
+                        // Update UI if empty
+                        if (TextUtils.isEmpty(binding.nameInput.getText())) {
+                            binding.nameInput.setText(user.getName());
+                            binding.nameInput.setEnabled(false);
+                        }
+                        if (TextUtils.isEmpty(binding.emailInput.getText())) {
+                            binding.emailInput.setText(user.getEmail());
+                            binding.emailInput.setEnabled(false);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                Log.e(TAG, "Failed to fetch user info from server", t);
+            }
+        });
     }
 
     private void setupClickListeners() {

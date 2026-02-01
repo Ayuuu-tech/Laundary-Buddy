@@ -10,7 +10,7 @@ import androidx.room.TypeConverters;
 import com.laundrybuddy.models.Order;
 import com.laundrybuddy.models.SupportTicket;
 
-@Database(entities = { Order.class, SupportTicket.class }, version = 1, exportSchema = false)
+@Database(entities = { Order.class, SupportTicket.class }, version = 2, exportSchema = false)
 @TypeConverters({ Converters.class })
 public abstract class AppDatabase extends RoomDatabase {
 

@@ -69,8 +69,10 @@ public class HapticFeedback {
             if (vibrator != null && vibrator.hasVibrator()) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     vibrator.vibrate(VibrationEffect.createPredefined(effect));
-                } else {
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     vibrator.vibrate(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE));
+                } else {
+                    vibrator.vibrate(duration);
                 }
             }
         } catch (Exception ignored) {
@@ -93,7 +95,11 @@ public class HapticFeedback {
             }
 
             if (vibrator != null && vibrator.hasVibrator()) {
-                vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1));
+                } else {
+                    vibrator.vibrate(pattern, -1);
+                }
             }
         } catch (Exception ignored) {
             // Haptic not available

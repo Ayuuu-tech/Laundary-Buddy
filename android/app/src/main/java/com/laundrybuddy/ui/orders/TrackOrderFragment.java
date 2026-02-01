@@ -44,6 +44,13 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import androidx.work.Data;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+import java.util.concurrent.TimeUnit;
+import com.laundrybuddy.workers.OrderTrackingWorker;
+
 /**
  * Fragment for tracking order status with visual timeline and recent
  * submissions
@@ -174,6 +181,10 @@ public class TrackOrderFragment extends Fragment {
                     @Override
                     public void onResponse(Call<ApiResponse<List<Order>>> call,
                             Response<ApiResponse<List<Order>>> response) {
+                        // Check if fragment is still attached
+                        if (binding == null)
+                            return;
+
                         if (response.isSuccessful() && response.body() != null) {
                             ApiResponse<List<Order>> apiResponse = response.body();
                             if (apiResponse.isSuccess() && apiResponse.getData() != null) {
@@ -187,10 +198,8 @@ public class TrackOrderFragment extends Fragment {
                                 recentOrderAdapter.notifyDataSetChanged();
 
                                 if (!recentOrders.isEmpty()) {
-                                    if (binding.submissionsHeader != null)
-                                        binding.submissionsHeader.setVisibility(View.VISIBLE);
-                                    if (binding.recentOrdersRecycler != null)
-                                        binding.recentOrdersRecycler.setVisibility(View.VISIBLE);
+                                    binding.submissionsHeader.setVisibility(View.VISIBLE);
+                                    binding.recentOrdersRecycler.setVisibility(View.VISIBLE);
                                 }
                             }
                         }
@@ -323,6 +332,10 @@ public class TrackOrderFragment extends Fragment {
 
         binding.statusHeadline.setText(displayStatus + " - Estimated Completion: " + est);
 
+        // Apply status color to headline
+        int statusColor = getStatusColor(status);
+        binding.statusHeadline.setTextColor(statusColor);
+
         // 2. Grey Card Details
         binding.detailOrderNumber.setText("ORD" + tracking.getOrderNumber()); // Match format
 
@@ -380,6 +393,9 @@ public class TrackOrderFragment extends Fragment {
         }
         binding.orderProgressBar.setProgress(progress);
 
+        // Apply status color to progress bar
+        binding.orderProgressBar.setIndicatorColor(statusColor);
+
         setupQrLogic(tracking);
         setupNotifyButton(tracking);
 
@@ -392,12 +408,15 @@ public class TrackOrderFragment extends Fragment {
 
             if (isReady) {
                 binding.btnNotify.setVisibility(View.GONE);
+                stopTrackingWorker(tracking.getOrderNumber()); // Stop if ready
             } else {
                 binding.btnNotify.setVisibility(View.VISIBLE);
                 if (tracking.isNotifyWhenReady()) {
                     binding.btnNotify.setText("Notification Enabled");
                     binding.btnNotify.setEnabled(false);
                     binding.btnNotify.setAlpha(0.6f);
+                    // Ensure worker is running if enabled
+                    startTrackingWorker(tracking.getOrderNumber());
                 } else {
                     binding.btnNotify.setText("Notify Me When Ready");
                     binding.btnNotify.setEnabled(true);
@@ -419,9 +438,16 @@ public class TrackOrderFragment extends Fragment {
                             String message = response.body().getMessage();
                             ToastManager.showSuccess(requireContext(),
                                     message != null ? message : "Notification updated");
-                            // Refresh display
+
+                            // Handle Worker Start/Stop
                             if (response.body().getData() != null) {
-                                displayOrder(response.body().getData());
+                                Tracking t = response.body().getData();
+                                if (t.isNotifyWhenReady()) {
+                                    startTrackingWorker(t.getOrderNumber());
+                                } else {
+                                    stopTrackingWorker(t.getOrderNumber());
+                                }
+                                displayOrder(t);
                             }
                         } else {
                             ToastManager.showError(requireContext(), "Failed to update notification");
@@ -434,6 +460,27 @@ public class TrackOrderFragment extends Fragment {
                         ToastManager.showError(requireContext(), getString(R.string.error_network));
                     }
                 });
+    }
+
+    private void startTrackingWorker(String orderNumber) {
+        Data inputData = new Data.Builder()
+                .putString(OrderTrackingWorker.KEY_ORDER_NUMBER, orderNumber)
+                .build();
+
+        PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
+                OrderTrackingWorker.class, 15, TimeUnit.MINUTES)
+                .setInputData(inputData)
+                .addTag("track_" + orderNumber)
+                .build();
+
+        WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork(
+                "track_" + orderNumber,
+                ExistingPeriodicWorkPolicy.KEEP,
+                request);
+    }
+
+    private void stopTrackingWorker(String orderNumber) {
+        WorkManager.getInstance(requireContext()).cancelUniqueWork("track_" + orderNumber);
     }
 
     // Timeline logic removed
@@ -476,26 +523,30 @@ public class TrackOrderFragment extends Fragment {
 
     private int getStatusColor(String status) {
         if (status == null)
-            return ContextCompat.getColor(requireContext(), R.color.text_hint);
+            return 0xFF757575; // Grey
         switch (status.toLowerCase()) {
             case "pending":
-                return ContextCompat.getColor(requireContext(), R.color.status_pending);
+            case "submitted":
+                return 0xFF2196F3; // Blue
             case "received":
-                return ContextCompat.getColor(requireContext(), R.color.status_received);
+                return 0xFFE67E22; // Orange
             case "washing":
-                return ContextCompat.getColor(requireContext(), R.color.status_washing);
+                return 0xFF9C27B0; // Purple
             case "drying":
-                return ContextCompat.getColor(requireContext(), R.color.status_drying);
+                return 0xFF673AB7; // Deep Purple
             case "folding":
-                return ContextCompat.getColor(requireContext(), R.color.status_folding);
+                return 0xFFE91E63; // Pink
             case "ready":
-                return ContextCompat.getColor(requireContext(), R.color.status_ready);
+            case "ready for pickup":
+            case "ready-for-pickup":
+                return 0xFFF39C12; // Amber/Gold
             case "delivered":
-                return ContextCompat.getColor(requireContext(), R.color.status_delivered);
+            case "completed":
+                return 0xFF27AE60; // Green
             case "cancelled":
-                return ContextCompat.getColor(requireContext(), R.color.status_cancelled);
+                return 0xFFE74C3C; // Red
             default:
-                return ContextCompat.getColor(requireContext(), R.color.text_hint);
+                return 0xFF2196F3; // Blue
         }
     }
 

@@ -1,114 +1,118 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    style="@style/CardStyle"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp"
     android:clickable="true"
     android:focusable="true">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="wrap_content">
 
-        <!-- Header Row -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <!-- Blue Bar -->
+        <View
+            android:id="@+id/accentBar"
+            android:layout_width="4dp"
+            android:layout_height="0dp"
+            android:background="#2196F3"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <!-- Content Container -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:padding="16dp"
+            app:layout_constraintStart_toEndOf="@id/accentBar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <!-- Order Number -->
+            <!-- Order Index -->
             <TextView
                 android:id="@+id/orderNumber"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textColor="@color/text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <!-- Status Chip -->
-            <com.google.android.material.chip.Chip
-                android:id="@+id/statusChip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="12sp"
-                app:chipMinHeight="28dp" />
-
-        </LinearLayout>
-
-        <!-- Items Count -->
-        <TextView
-            android:id="@+id/itemsCount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp" />
-
-        <!-- Date Row -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+                android:text="ORD123456"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <!-- Date -->
             <TextView
                 android:id="@+id/orderDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="31/01/2026"
+                android:textSize="12sp"
+                android:textColor="#9E9E9E"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/orderNumber"
+                app:layout_constraintBottom_toBottomOf="@id/orderNumber" />
+
+            <!-- Items Summary -->
+            <TextView
+                android:id="@+id/itemsSummary"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textColor="@color/text_hint"
-                android:textSize="12sp" />
+                android:text="2 Shirts, 1 Pant"
+                android:textSize="14sp"
+                android:textColor="#757575"
+                android:layout_marginTop="8dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/orderNumber" />
 
-            <!-- Rating Display (for rated orders) -->
-            <LinearLayout
+            <!-- Status Text -->
+            <TextView
+                android:id="@+id/statusText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Submitted"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#2196F3"
+                android:layout_marginTop="12dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/itemsSummary" />
+
+            <!-- Rate Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/rateButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rate Order"
+                android:textColor="#FF9800"
+                app:strokeColor="#FF9800"
+                app:strokeWidth="1dp"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/statusText"
+                app:layout_constraintTop_toTopOf="@id/statusText" />
+
+            <!-- Rating Display -->
+             <TextView
                 android:id="@+id/ratingDisplay"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:visibility="gone">
+                android:text="★ 5.0"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#FF9800"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/statusText"
+                app:layout_constraintTop_toTopOf="@id/statusText"/>
 
-                <ImageView
-                    android:layout_width="14dp"
-                    android:layout_height="14dp"
-                    android:src="@android:drawable/btn_star_big_on"
-                    android:contentDescription="Rating" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <TextView
-                    android:id="@+id/ratingValue"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="2dp"
-                    android:textColor="@color/warning"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <!-- Rate Button (for delivered unrated orders) -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/rateButton"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="⭐ Rate this order"
-            android:textColor="@color/primary"
-            android:visibility="gone"
-            app:icon="@android:drawable/btn_star"
-            app:iconTint="@color/primary" />
-
-    </LinearLayout>
-
-</com.google.android.material.card.MaterialCardView>
-
+</androidx.cardview.widget.CardView>

@@ -4,7 +4,7 @@
     android:id="@+id/swipeRefresh"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@android:color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -12,45 +12,124 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Search Bar -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/searchLayout"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your Past Orders"
+            android:textColor="@android:color/black"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Total Orders Card -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:hint="Search orders..."
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp"
-            app:startIconDrawable="@android:drawable/ic_menu_search"
-            app:endIconMode="clear_text">
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp"
+            app:strokeColor="#E0E0E0"
+            app:strokeWidth="1dp">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/searchInput"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text"
-                android:imeOptions="actionSearch"
-                android:maxLines="1" />
+                android:orientation="vertical"
+                android:padding="24dp">
 
-        </com.google.android.material.textfield.TextInputLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Live Order Status"
+                    android:textColor="#757575"
+                    android:textSize="14sp" />
 
-        <!-- Filter Row: Status Chips + Sort Button -->
+                <TextView
+                    android:id="@+id/liveStatusText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Checking..."
+                    android:textColor="@android:color/black"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+
+        <!-- Controls Row: Search + Sort + Export -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
+            android:layout_marginBottom="12dp">
 
-            <HorizontalScrollView
+            <!-- Search -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/searchLayout"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:scrollbars="none">
+                android:hint="Search orders"
+                android:layout_marginEnd="8dp"
+                app:startIconDrawable="@android:drawable/ic_menu_search"
+                app:boxStrokeColor="#E0E0E0"
+                app:boxCornerRadiusTopStart="8dp"
+                app:boxCornerRadiusTopEnd="8dp"
+                app:boxCornerRadiusBottomStart="8dp"
+                app:boxCornerRadiusBottomEnd="8dp">
 
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/searchInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:textSize="14sp"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+             <!-- Sort Button -->
+             <com.google.android.material.button.MaterialButton
+                android:id="@+id/sortButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="56dp"
+                android:text="Sort"
+                android:layout_marginEnd="4dp"
+                app:icon="@android:drawable/ic_menu_sort_by_size"
+                app:strokeColor="#E0E0E0"
+                app:cornerRadius="8dp"/>
+
+            <!-- Export Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/exportButton"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="56dp"
+                android:text="Export"
+                android:backgroundTint="#6C5CE7"
+                app:icon="@android:drawable/ic_menu_share"
+                app:cornerRadius="8dp"/>
+
+        </LinearLayout>
+
+        <!-- Filter Chips Row (Scrollable) -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <!-- Using a single ChipGroup for simplified UI as requested -->
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/filterChipGroup"
                     android:layout_width="wrap_content"
@@ -59,128 +138,75 @@
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipAll"
+                        style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="All"
+                        android:text="All Time"
                         android:checked="true"
-                        style="@style/Widget.Material3.Chip.Filter" />
+                        app:chipBackgroundColor="@android:color/black"
+                        android:textColor="@android:color/white" />
 
+                    <!-- Date Chips included here for layout Match -->
                     <com.google.android.material.chip.Chip
-                        android:id="@+id/chipPending"
+                        android:id="@+id/chipThisWeek"
+                        style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Pending"
-                        style="@style/Widget.Material3.Chip.Filter" />
+                        android:text="This Week" />
 
                     <com.google.android.material.chip.Chip
-                        android:id="@+id/chipInProgress"
+                        android:id="@+id/chipThisMonth"
+                        style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="In Progress"
-                        style="@style/Widget.Material3.Chip.Filter" />
+                        android:text="This Month" />
 
                     <com.google.android.material.chip.Chip
-                        android:id="@+id/chipReady"
+                        android:id="@+id/chipCompleted"
+                         style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Ready"
-                        style="@style/Widget.Material3.Chip.Filter" />
+                        android:text="Completed" />
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipDelivered"
+                     <com.google.android.material.chip.Chip
+                        android:id="@+id/chipCancelled"
+                         style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Delivered"
-                        style="@style/Widget.Material3.Chip.Filter" />
+                        android:text="Cancelled" />
 
                 </com.google.android.material.chip.ChipGroup>
+                
+                <!-- Hidden Date Chips Group to maintain logic or we merge logic in Java -->
+                <!-- Ideally I'd merge logic in Java, but for speed I'll map these IDs to logic -->
+                <com.google.android.material.chip.ChipGroup
+                     android:id="@+id/dateChipGroup"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:visibility="gone"> 
+                     <!-- Reusing existing logic by hiding this and programmatically toggling? -->
+                     <!-- No, better to update Java to use the new visible chips -->
+                </com.google.android.material.chip.ChipGroup>
 
-            </HorizontalScrollView>
-
-            <!-- Sort Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/sortButton"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:contentDescription="Sort"
-                app:icon="@android:drawable/ic_menu_sort_by_size"
-                app:iconTint="@color/text_secondary" />
-
-            <!-- Export Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/exportButton"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:contentDescription="Export"
-                app:icon="@android:drawable/ic_menu_share"
-                app:iconTint="@color/text_secondary" />
-
-        </LinearLayout>
-
-        <!-- Date Filter Chips -->
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="none"
-            android:layout_marginBottom="16dp">
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/dateChipGroup"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:singleSelection="true">
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipDateAll"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="All Time"
-                    android:checked="true"
-                    style="@style/Widget.Material3.Chip.Suggestion" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipToday"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Today"
-                    style="@style/Widget.Material3.Chip.Suggestion" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipThisWeek"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="This Week"
-                    style="@style/Widget.Material3.Chip.Suggestion" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipThisMonth"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="This Month"
-                    style="@style/Widget.Material3.Chip.Suggestion" />
-
-            </com.google.android.material.chip.ChipGroup>
-
+            </LinearLayout>
         </HorizontalScrollView>
 
-        <!-- Results Count -->
+        <!-- Results Count (Hidden, used total card instead) -->
         <TextView
-            android:id="@+id/resultsCount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp"
-            android:visibility="gone" />
+             android:id="@+id/resultsCount"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:visibility="gone"/>
 
         <!-- Orders List -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/ordersRecycler"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:clipToPadding="false"
+            android:paddingBottom="80dp"/>
 
         <!-- Empty State -->
         <LinearLayout
@@ -192,33 +218,20 @@
             android:gravity="center"
             android:visibility="gone">
 
-            <ImageView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:src="@android:drawable/ic_menu_recent_history"
-                android:alpha="0.3"
-                android:contentDescription="No history" />
-
             <TextView
                 android:id="@+id/emptyStateText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:text="@string/no_orders"
-                android:textColor="@color/text_secondary"
-                android:textSize="16sp"
-                android:gravity="center" />
-
+                android:textColor="@color/text_secondary" />
         </LinearLayout>
 
-        <!-- Loading -->
         <ProgressBar
             android:id="@+id/loadingProgress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:visibility="gone"
-            android:indeterminateTint="@color/primary" />
+            android:visibility="gone" />
 
     </LinearLayout>
 

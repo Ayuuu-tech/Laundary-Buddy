@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    style="@style/CardStyle"
-    android:layout_width="match_parent"
+    android:layout_width="280dp"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="12dp"
-    android:clickable="true"
-    android:focusable="true">
+    android:layout_marginEnd="16dp"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="#E0E0E0"
+    app:cardBackgroundColor="@android:color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,41 +17,67 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Header: Category + Status -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
 
             <TextView
-                android:id="@+id/subject"
+                android:id="@+id/categoryText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:text="Damage"
                 android:textColor="@color/text_primary"
                 android:textSize="16sp"
-                android:textStyle="bold"
-                android:maxLines="1"
-                android:ellipsize="end" />
+                android:textStyle="bold" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/statusChip"
+            <TextView
+                android:id="@+id/statusText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="11sp"
-                android:textColor="@color/text_on_primary"
-                app:chipMinHeight="24dp" />
-
+                android:text="pending"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#FF9800"
+                android:background="@drawable/bg_status_chip_light"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="2dp" />
         </LinearLayout>
 
+        <!-- Order & Date -->
         <TextView
-            android:id="@+id/description"
+            android:id="@+id/orderInfoText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp"
-            android:maxLines="2"
+            android:text="Order #ORD123456 - 23/12/2026"
+            android:textSize="11sp"
+            android:textColor="#757575"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Item Description -->
+        <TextView
+            android:id="@+id/itemDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="blue jeans"
+            android:textSize="13sp"
+            android:textColor="#424242"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp" />
+
+        <!-- Issue Description -->
+        <TextView
+            android:id="@+id/issueDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="torn a lot"
+            android:textSize="13sp"
+            android:textColor="#616161"
+            android:maxLines="3"
             android:ellipsize="end" />
 
     </LinearLayout>

@@ -20,16 +20,18 @@ import retrofit2.http.Path;
 public interface SupportApi {
 
     // Support Tickets
-    @POST("support/tickets")
+    // Support Tickets
+    @POST("support/report")
     Call<ApiResponse<SupportTicket>> createTicket(@Body Map<String, Object> body);
 
-    @GET("support/tickets")
+    @GET("support/my-tickets")
     Call<ApiResponse<List<SupportTicket>>> getMyTickets();
 
-    @GET("support/tickets/{id}")
-    Call<ApiResponse<SupportTicket>> getTicketById(@Path("id") String ticketId);
+    // Not present in backend file viewed
+    // @GET("support/tickets/{id}")
+    // Call<ApiResponse<SupportTicket>> getTicketById(@Path("id") String ticketId);
 
-    @PUT("support/tickets/{id}")
+    @PUT("support/update-ticket/{id}")
     Call<ApiResponse<SupportTicket>> updateTicket(
             @Path("id") String ticketId,
             @Body Map<String, Object> body);
@@ -39,7 +41,7 @@ public interface SupportApi {
     Call<ApiResponse<ContactMessage>> sendContactMessage(@Body Map<String, Object> body);
 
     // Admin endpoints
-    @GET("support/tickets/all")
+    @GET("support/all-tickets")
     Call<ApiResponse<List<SupportTicket>>> getAllTickets();
 
     @GET("contact/messages")

@@ -32,7 +32,6 @@ router.post('/verify-reset-otp', authController.verifyOTPAndResetPassword);
 
 // Protected routes (with session timeout check)
 router.get('/me', sessionTimeoutMiddleware, authMiddleware, authController.getCurrentUser);
-router.put('/profile', sessionTimeoutMiddleware, authMiddleware, authController.updateProfile);
 router.put('/change-password', sessionTimeoutMiddleware, authMiddleware, authController.changePassword);
 
 module.exports = router;

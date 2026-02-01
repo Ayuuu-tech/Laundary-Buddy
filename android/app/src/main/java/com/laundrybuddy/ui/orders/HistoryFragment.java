@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.PopupMenu;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,6 +25,7 @@ import com.laundrybuddy.api.ApiClient;
 import com.laundrybuddy.databinding.FragmentHistoryBinding;
 import com.laundrybuddy.models.ApiResponse;
 import com.laundrybuddy.models.Order;
+import com.laundrybuddy.models.User;
 import com.laundrybuddy.utils.ToastManager;
 
 import java.text.ParseException;
@@ -92,8 +94,7 @@ public class HistoryFragment extends Fragment {
 
         setupRecyclerView();
         setupSearch();
-        setupStatusFilterChips();
-        setupDateFilterChips();
+        setupFilters(); // Replaces setupStatusFilterChips and setupDateFilterChips
         setupSortButton();
         setupExportButton();
         setupSwipeRefresh();
@@ -106,103 +107,93 @@ public class HistoryFragment extends Fragment {
             showQrCodeDialog(order);
         });
 
-        // Set up rating click listener
-        orderAdapter.setRateClickListener(order -> showRatingDialog(order));
+        // Handle rating click
+        orderAdapter.setRateClickListener(this::showRatingDialog);
 
         binding.ordersRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.ordersRecycler.setAdapter(orderAdapter);
     }
 
     private void showRatingDialog(Order order) {
-        View dialogView = LayoutInflater.from(requireContext())
-                .inflate(R.layout.dialog_rating, null);
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(requireContext());
+        View view = getLayoutInflater().inflate(R.layout.dialog_rate_order, null);
+        builder.setView(view);
 
-        // Get dialog views
-        TextView orderNumberText = dialogView.findViewById(R.id.orderNumberText);
-        RatingBar ratingBar = dialogView.findViewById(R.id.ratingBar);
-        TextView ratingHint = dialogView.findViewById(R.id.ratingHint);
-        TextInputEditText feedbackInput = dialogView.findViewById(R.id.feedbackInput);
-        com.google.android.material.chip.Chip chipFast = dialogView.findViewById(R.id.chipFast);
-        com.google.android.material.chip.Chip chipClean = dialogView.findViewById(R.id.chipClean);
-        com.google.android.material.chip.Chip chipFriendly = dialogView.findViewById(R.id.chipFriendly);
-        com.google.android.material.chip.Chip chipValue = dialogView.findViewById(R.id.chipValue);
-        com.google.android.material.button.MaterialButton cancelButton = dialogView.findViewById(R.id.cancelButton);
-        com.google.android.material.button.MaterialButton submitButton = dialogView.findViewById(R.id.submitButton);
+        android.app.AlertDialog dialog = builder.create();
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
-        orderNumberText.setText("Order #" + order.getOrderNumber());
-
-        // Rating hint updates based on rating
-        String[] hints = { "Tap to rate", "Poor", "Fair", "Good", "Very Good", "Excellent" };
-        ratingBar.setOnRatingBarChangeListener((bar, rating, fromUser) -> {
-            int index = Math.min((int) rating, hints.length - 1);
-            ratingHint.setText(hints[index]);
-        });
-
-        // Quick feedback chips append to feedback
-        View.OnClickListener chipListener = v -> {
-            com.google.android.material.chip.Chip chip = (com.google.android.material.chip.Chip) v;
-            String current = feedbackInput.getText() != null ? feedbackInput.getText().toString() : "";
-            String chipText = chip.getText().toString();
-            if (!current.contains(chipText)) {
-                if (!current.isEmpty() && !current.endsWith(". ") && !current.endsWith(".")) {
-                    current += ". ";
-                }
-                feedbackInput.setText(current + chipText);
-                feedbackInput.setSelection(feedbackInput.getText().length());
-            }
-        };
-        chipFast.setOnClickListener(chipListener);
-        chipClean.setOnClickListener(chipListener);
-        chipFriendly.setOnClickListener(chipListener);
-        chipValue.setOnClickListener(chipListener);
-
-        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
-                .setView(dialogView)
-                .setCancelable(true)
-                .create();
+        android.widget.RatingBar ratingBar = view.findViewById(R.id.ratingBar);
+        com.google.android.material.textfield.TextInputEditText commentInput = view.findViewById(R.id.commentInput);
+        View cancelButton = view.findViewById(R.id.cancelButton);
+        View submitButton = view.findViewById(R.id.submitButton);
 
         cancelButton.setOnClickListener(v -> dialog.dismiss());
 
         submitButton.setOnClickListener(v -> {
             float rating = ratingBar.getRating();
+            String comment = commentInput.getText().toString().trim();
+
             if (rating < 1) {
-                ToastManager.showError(requireContext(), "Please select a rating");
+                Toast.makeText(getContext(), "Please select a rating", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            String feedback = feedbackInput.getText() != null ? feedbackInput.getText().toString().trim() : "";
-            submitRating(order, (int) rating, feedback, dialog);
+            submitRating(order, (int) rating, comment, dialog);
         });
 
         dialog.show();
     }
 
-    private void submitRating(Order order, int rating, String feedback, AlertDialog dialog) {
+    private void submitRating(Order order, int rating, String comment, android.app.AlertDialog dialog) {
+        Map<String, Object> feedback = new HashMap<>();
+        feedback.put("rating", rating);
+        feedback.put("comment", comment);
+
+        // Use ISO 8601 format for date
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                java.util.Locale.US);
+        sdf.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+        feedback.put("submittedAt", sdf.format(new java.util.Date()));
+
         Map<String, Object> body = new HashMap<>();
-        body.put("rating", rating);
         body.put("feedback", feedback);
 
-        ApiClient.getInstance().getOrderApi().rateOrder(order.getId(), body)
+        binding.loadingProgress.setVisibility(View.VISIBLE);
+
+        ApiClient.getInstance().getOrderApi().updateOrder(order.getId(), body)
                 .enqueue(new Callback<ApiResponse<Order>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<Order>> call, Response<ApiResponse<Order>> response) {
-                        dialog.dismiss();
-                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                            ToastManager.showSuccess(requireContext(), "Thank you for your rating!");
-                            // Update local order and refresh
-                            order.setRating(rating);
-                            order.setFeedback(feedback);
-                            orderAdapter.notifyDataSetChanged();
+                        binding.loadingProgress.setVisibility(View.GONE);
+                        Log.d("RateOrder", "Response Code: " + response.code());
+                        if (response.isSuccessful() && response.body() != null) {
+                            if (response.body().isSuccess()) {
+                                Toast.makeText(getContext(), "Thank you for your feedback!", Toast.LENGTH_SHORT).show();
+                                dialog.dismiss();
+                                // Update local order and refresh
+                                loadOrders();
+                            } else {
+                                Toast.makeText(getContext(), "Failed: " + response.body().getMessage(),
+                                        Toast.LENGTH_SHORT).show();
+                            }
                         } else {
-                            ToastManager.showError(requireContext(), "Failed to submit rating");
+                            try {
+                                String errorBody = response.errorBody() != null ? response.errorBody().string()
+                                        : "Unknown error";
+                                Log.e("RateOrder", "Error Body: " + errorBody);
+                                Toast.makeText(getContext(), "Failed to submit rating (Code " + response.code() + ")",
+                                        Toast.LENGTH_SHORT).show();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ApiResponse<Order>> call, Throwable t) {
-                        dialog.dismiss();
-                        Log.e(TAG, "Rating submission failed", t);
-                        ToastManager.showError(requireContext(), getString(R.string.error_network));
+                        binding.loadingProgress.setVisibility(View.GONE);
+                        Log.e("RateOrder", "Network Error", t);
+                        Toast.makeText(getContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -225,34 +216,24 @@ public class HistoryFragment extends Fragment {
         });
     }
 
-    private void setupStatusFilterChips() {
+    private void setupFilters() {
         binding.filterChipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
-            if (checkedIds.contains(R.id.chipAll)) {
-                currentStatusFilter = "all";
-            } else if (checkedIds.contains(R.id.chipPending)) {
-                currentStatusFilter = "pending";
-            } else if (checkedIds.contains(R.id.chipInProgress)) {
-                currentStatusFilter = "inprogress";
-            } else if (checkedIds.contains(R.id.chipReady)) {
-                currentStatusFilter = "ready";
-            } else if (checkedIds.contains(R.id.chipDelivered)) {
-                currentStatusFilter = "delivered";
-            }
-            applyFilters();
-        });
-    }
+            // Reset filters first
+            currentStatusFilter = "all";
+            currentDateFilter = "all";
 
-    private void setupDateFilterChips() {
-        binding.dateChipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
-            if (checkedIds.contains(R.id.chipDateAll)) {
-                currentDateFilter = "all";
-            } else if (checkedIds.contains(R.id.chipToday)) {
-                currentDateFilter = "today";
+            if (checkedIds.contains(R.id.chipAll)) {
+                // Default
             } else if (checkedIds.contains(R.id.chipThisWeek)) {
                 currentDateFilter = "week";
             } else if (checkedIds.contains(R.id.chipThisMonth)) {
                 currentDateFilter = "month";
+            } else if (checkedIds.contains(R.id.chipCompleted)) {
+                currentStatusFilter = "delivered";
+            } else if (checkedIds.contains(R.id.chipCancelled)) {
+                currentStatusFilter = "cancelled";
             }
+
             applyFilters();
         });
     }
@@ -363,15 +344,108 @@ public class HistoryFragment extends Fragment {
     private void loadOrders() {
         binding.loadingProgress.setVisibility(View.VISIBLE);
         binding.emptyState.setVisibility(View.GONE);
-        binding.resultsCount.setVisibility(View.GONE);
 
         String userId = com.laundrybuddy.LaundryBuddyApp.getInstance().getUserId();
-        if (userId == null) {
-            showEmptyState("Please login to view history");
-            binding.loadingProgress.setVisibility(View.GONE);
+        String token = com.laundrybuddy.LaundryBuddyApp.getInstance().getAuthToken();
+
+        Log.d(TAG, "loadOrders - userId: " + userId + ", hasToken: " + (token != null));
+
+        // If user ID exists, load orders directly
+        if (userId != null && !userId.isEmpty()) {
+            fetchOrders(userId);
             return;
         }
 
+        // If no userId but we have a token, try to extract userId from JWT token
+        if (token != null) {
+            Log.d(TAG, "No userId but have token, extracting from JWT...");
+            String extractedUserId = extractUserIdFromToken(token);
+            if (extractedUserId != null) {
+                Log.d(TAG, "Extracted userId from token: " + extractedUserId);
+                // Save it for future use
+                com.laundrybuddy.LaundryBuddyApp.getInstance().saveUserInfo(extractedUserId, "", "", "student");
+                fetchOrders(extractedUserId);
+                return;
+            }
+
+            // If extraction failed, try API call as last resort
+            Log.d(TAG, "Could not extract from token, trying API...");
+            fetchCurrentUserAndLoadOrders();
+            return;
+        }
+
+        // No userId and no token - user needs to login
+        showEmptyState("Please login to view history");
+        binding.loadingProgress.setVisibility(View.GONE);
+    }
+
+    /**
+     * Extract userId from JWT token payload
+     */
+    private String extractUserIdFromToken(String token) {
+        if (token == null)
+            return null;
+        try {
+            // JWT has 3 parts: header.payload.signature
+            String[] parts = token.split("\\.");
+            if (parts.length < 2)
+                return null;
+
+            // Decode payload (base64)
+            String payload = new String(android.util.Base64.decode(parts[1], android.util.Base64.URL_SAFE));
+            Log.d(TAG, "JWT payload: " + payload);
+
+            // Parse JSON to extract id
+            org.json.JSONObject json = new org.json.JSONObject(payload);
+            if (json.has("id")) {
+                return json.getString("id");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to extract userId from token", e);
+        }
+        return null;
+    }
+
+    private void fetchCurrentUserAndLoadOrders() {
+        ApiClient.getInstance().getAuthApi().getCurrentUser().enqueue(new Callback<ApiResponse<User>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                Log.d(TAG, "getCurrentUser response code: " + response.code());
+
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    User user = response.body().getUser() != null ? response.body().getUser()
+                            : response.body().getData();
+                    if (user != null && user.getId() != null) {
+                        Log.d(TAG, "Got user: " + user.getId());
+                        // Save recovered user info
+                        com.laundrybuddy.LaundryBuddyApp.getInstance().saveUserInfo(
+                                user.getId(), user.getName(), user.getEmail(), user.getRole());
+                        // Load orders with the userId
+                        fetchOrders(user.getId());
+                    } else {
+                        Log.e(TAG, "User or userId is null in response");
+                        showEmptyState("Could not load profile. Please try again.");
+                        binding.loadingProgress.setVisibility(View.GONE);
+                    }
+                } else {
+                    Log.e(TAG, "getCurrentUser failed: " + response.code());
+                    // Don't logout - just show error
+                    showEmptyState("Could not verify session. Please try again.");
+                    binding.loadingProgress.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                Log.e(TAG, "getCurrentUser network error", t);
+                // Network error - don't logout, just show error
+                showEmptyState("Network error. Please check connection.");
+                binding.loadingProgress.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private void fetchOrders(String userId) {
         repository.getMyOrders(userId).observe(getViewLifecycleOwner(), orders -> {
             binding.swipeRefresh.setRefreshing(false);
             binding.loadingProgress.setVisibility(View.GONE);
@@ -379,22 +453,19 @@ public class HistoryFragment extends Fragment {
             if (orders != null && !orders.isEmpty()) {
                 allOrders.clear();
                 allOrders.addAll(orders);
+                // Ensure active orders are top? Or assume sorted.
+                // Re-sort by date desc to be sure for header logic
+                Collections.sort(allOrders, (o1, o2) -> compareOrderDates(o2.getCreatedAt(), o1.getCreatedAt()));
+
                 applyFilters();
+                updateLiveOrderHeader();
             } else {
-                // If API failed but we have no local data, repository might return empty list
-                // or null
-                // If network is on, repository tried to fetch.
-                // If network off, we just show empty if db empty.
                 if (allOrders.isEmpty()) {
                     showEmptyState("No orders yet");
+                    binding.liveStatusText.setText("None");
                 }
             }
         });
-
-        // Trigger manual refresh via repository if needed, but repository.getMyOrders
-        // calls refresh if network available.
-        // If swipe refresh, force refresh
-        binding.swipeRefresh.setOnRefreshListener(() -> repository.refreshMyOrders(userId));
     }
 
     private void applyFilters() {
@@ -421,8 +492,9 @@ public class HistoryFragment extends Fragment {
 
         orderAdapter.notifyDataSetChanged();
 
-        // Update UI
-        updateResultsCount();
+        // UI update
+        // updateResultsCount(); // Removed in favor of Live Status Header which is
+        // static per load
 
         if (filteredOrders.isEmpty()) {
             showEmptyState(getEmptyMessage());
@@ -551,6 +623,32 @@ public class HistoryFragment extends Fragment {
         }
     }
 
+    private int getStatusColor(String status) {
+        if (status == null)
+            return 0xFF757575;
+        switch (status.toLowerCase()) {
+            case "pending":
+            case "submitted":
+                return 0xFF2196F3;
+            case "received":
+            case "washing":
+            case "drying":
+            case "folding":
+                return 0xFFE67E22;
+            case "ready":
+            case "ready for pickup":
+            case "ready-for-pickup":
+                return 0xFFF39C12;
+            case "delivered":
+            case "completed":
+                return 0xFF27AE60;
+            case "cancelled":
+                return 0xFFE74C3C;
+            default:
+                return 0xFF2196F3;
+        }
+    }
+
     private boolean isSameDay(Calendar cal1, Calendar cal2) {
         return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
                 cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR);
@@ -574,12 +672,30 @@ public class HistoryFragment extends Fragment {
                 "folding".equalsIgnoreCase(status);
     }
 
-    private void updateResultsCount() {
-        if (!allOrders.isEmpty()) {
-            binding.resultsCount.setVisibility(View.VISIBLE);
-            binding.resultsCount.setText(filteredOrders.size() + " of " + allOrders.size() + " orders");
+    private void updateLiveOrderHeader() {
+        if (allOrders == null || allOrders.isEmpty()) {
+            binding.liveStatusText.setText("None");
+            return;
+        }
+
+        Order liveOrder = null;
+        for (Order order : allOrders) {
+            String status = order.getStatus();
+            if (status != null &&
+                    !"delivered".equalsIgnoreCase(status) &&
+                    !"completed".equalsIgnoreCase(status) &&
+                    !"cancelled".equalsIgnoreCase(status)) {
+                liveOrder = order;
+                break;
+            }
+        }
+
+        if (liveOrder != null) {
+            binding.liveStatusText.setText(liveOrder.getStatusDisplay());
+            binding.liveStatusText.setTextColor(getStatusColor(liveOrder.getStatus()));
         } else {
-            binding.resultsCount.setVisibility(View.GONE);
+            binding.liveStatusText.setText("All Completed");
+            binding.liveStatusText.setTextColor(0xFF757575); // Grey
         }
     }
 
@@ -622,7 +738,7 @@ public class HistoryFragment extends Fragment {
         ImageView qrCodeImage = dialogView.findViewById(R.id.qrCodeImage);
         MaterialButton downloadBtn = dialogView.findViewById(R.id.downloadQrButton);
         MaterialButton shareBtn = dialogView.findViewById(R.id.shareQrButton);
-        MaterialButton doneBtn = dialogView.findViewById(R.id.doneButton);
+        android.widget.ImageButton doneBtn = dialogView.findViewById(R.id.doneButton);
 
         orderNumberText.setText("Order #" + currentOrderNumber);
         if (currentQrBitmap != null) {

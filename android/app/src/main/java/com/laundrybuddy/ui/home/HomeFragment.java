@@ -16,6 +16,7 @@ import com.laundrybuddy.LaundryBuddyApp;
 import com.laundrybuddy.R;
 import com.laundrybuddy.databinding.FragmentHomeBinding;
 import com.laundrybuddy.ui.orders.SubmitOrderActivity;
+import com.laundrybuddy.ui.support.ContactActivity;
 
 /**
  * Redesigned Home Fragment matching modern UI
@@ -55,12 +56,12 @@ public class HomeFragment extends Fragment {
         binding.cardQuickHistory.setOnClickListener(v -> navigateToTab(R.id.nav_history));
 
         binding.cardQuickSupport.setOnClickListener(v -> {
-            // If support tab exists or fragment
-            Toast.makeText(getContext(), "Support Chat coming soon", Toast.LENGTH_SHORT).show();
+            // Navigate to support tab
+            navigateToTab(R.id.nav_support);
         });
 
         binding.cardQuickContact.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Contact details coming soon", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(getActivity(), ContactActivity.class));
         });
 
         // Extra Features

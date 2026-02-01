@@ -73,33 +73,63 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         }
 
         void bind(Order order, OnOrderClickListener clickListener, OnRateClickListener rateListener) {
-            // Order number
-            binding.orderNumber.setText("#" + order.getOrderNumber());
-
-            // Items count
-            String itemsText = order.getTotalItems() + " items";
-            binding.itemsCount.setText(itemsText);
-
-            // Status chip
-            binding.statusChip.setText(order.getStatusDisplay());
-            binding.statusChip.setChipBackgroundColor(ColorStateList.valueOf(
-                    getStatusColor(order.getStatus())));
-            binding.statusChip.setTextColor(ContextCompat.getColor(
-                    binding.getRoot().getContext(), R.color.text_on_primary));
+            // Order Number
+            String orderNum = order.getOrderNumber();
+            if (orderNum == null || orderNum.isEmpty()) {
+                orderNum = "ORD" + order.getId().substring(0, 8).toUpperCase();
+            }
+            binding.orderNumber.setText(orderNum);
 
             // Date
             binding.orderDate.setText(formatDate(order.getCreatedAt()));
 
-            // Rating display logic
-            if (order.isDelivered()) {
+            // Items Summary
+            if (order.getItems() != null && !order.getItems().isEmpty()) {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < order.getItems().size(); i++) {
+                    Order.OrderItem item = order.getItems().get(i);
+                    if (i > 0)
+                        sb.append(", ");
+                    int qty = item.getQuantity() > 0 ? item.getQuantity() : item.getCount();
+                    String name = item.getName();
+                    if (name == null || "null".equals(name) || name.isEmpty()) {
+                        name = item.getType();
+                        if (name == null || name.isEmpty()) {
+                            name = item.getCategory();
+                        }
+                        if (name == null || name.isEmpty()) {
+                            name = "Clothes";
+                        }
+                    }
+                    sb.append(qty).append(" ").append(name);
+                }
+                binding.itemsSummary.setText(sb.toString());
+            } else {
+                binding.itemsSummary.setText(order.getTotalItems() + " items");
+            }
+
+            // Status
+            String status = order.getStatusDisplay();
+            binding.statusText.setText(status);
+
+            // Set Colors
+            int color = getStatusColor(order.getStatus());
+            binding.statusText.setTextColor(color);
+            binding.accentBar.setBackgroundColor(color);
+
+            // Rating / Feedback Logic
+            binding.rateButton.setVisibility(View.GONE);
+            binding.ratingDisplay.setVisibility(View.GONE);
+
+            // If order is completed/delivered or received (logic depends on business rules,
+            // usually 'delivered')
+            if (order.isDelivered() || "completed".equalsIgnoreCase(order.getStatus())) {
                 if (order.isRated()) {
-                    // Show rating value
+                    // Already rated, show rating
                     binding.ratingDisplay.setVisibility(View.VISIBLE);
-                    binding.ratingValue.setText(String.valueOf(order.getRating()));
-                    binding.rateButton.setVisibility(View.GONE);
+                    binding.ratingDisplay.setText("★ " + order.getRating());
                 } else {
-                    // Show rate button
-                    binding.ratingDisplay.setVisibility(View.GONE);
+                    // Not rated, show option to rate
                     binding.rateButton.setVisibility(View.VISIBLE);
                     binding.rateButton.setOnClickListener(v -> {
                         if (rateListener != null) {
@@ -107,13 +137,9 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                         }
                     });
                 }
-            } else {
-                // Hide rating UI for non-delivered orders
-                binding.ratingDisplay.setVisibility(View.GONE);
-                binding.rateButton.setVisibility(View.GONE);
             }
 
-            // Click listener
+            // Click listener for whole card
             binding.getRoot().setOnClickListener(v -> {
                 if (clickListener != null) {
                     clickListener.onOrderClick(order);
@@ -123,29 +149,31 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
         private int getStatusColor(String status) {
             if (status == null)
-                return ContextCompat.getColor(binding.getRoot().getContext(), R.color.text_hint);
-
+                return 0xFF757575;
             switch (status.toLowerCase()) {
                 case "pending":
-                    return ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_pending);
+                case "submitted":
+                    return 0xFF2196F3; // Blue
                 case "received":
-                    return ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_received);
                 case "washing":
-                    return ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_washing);
                 case "drying":
-                    return ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_drying);
                 case "folding":
-                    return ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_folding);
+                    return 0xFFE67E22; // Orange
                 case "ready":
-                    return ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_ready);
+                case "ready for pickup":
+                case "ready-for-pickup":
+                    return 0xFFF39C12; // Orange/Yellow
                 case "delivered":
-                    return ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_delivered);
+                case "completed":
+                    return 0xFF27AE60; // Green
                 case "cancelled":
-                    return ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_cancelled);
+                    return 0xFFE74C3C; // Red
                 default:
-                    return ContextCompat.getColor(binding.getRoot().getContext(), R.color.text_hint);
+                    return 0xFF2196F3;
             }
         }
+
+        // Removed getStatusBgColor as it is no longer used
 
         private String formatDate(String isoDate) {
             if (isoDate == null)

@@ -72,9 +72,11 @@ public class RecentOrderAdapter extends RecyclerView.Adapter<RecentOrderAdapter.
             // Status Text
             String status = getStatusDisplay(order.getStatus());
             binding.statusText.setText(status);
-            // Optional: Set color if needed, but XML has default blue.
-            // We can keep dynamic color if desired.
-            binding.statusText.setTextColor(getStatusColor(order.getStatus()));
+
+            // Apply status color to both text and accent bar
+            int statusColor = getStatusColor(order.getStatus());
+            binding.statusText.setTextColor(statusColor);
+            binding.accentBar.setBackgroundColor(statusColor);
 
             binding.orderDate.setText(formatDate(order.getCreatedAt()));
 
@@ -159,9 +161,32 @@ public class RecentOrderAdapter extends RecyclerView.Adapter<RecentOrderAdapter.
         }
 
         private int getStatusColor(String status) {
-            // Return Blue for active, Green for done?
-            // Mockup uses Blue for "Submitted".
-            return ContextCompat.getColor(binding.getRoot().getContext(), R.color.primary);
+            if (status == null)
+                return 0xFF757575; // Grey
+            switch (status.toLowerCase()) {
+                case "pending":
+                case "submitted":
+                    return 0xFF2196F3; // Blue
+                case "received":
+                    return 0xFFE67E22; // Orange
+                case "washing":
+                    return 0xFF9C27B0; // Purple
+                case "drying":
+                    return 0xFF673AB7; // Deep Purple
+                case "folding":
+                    return 0xFFE91E63; // Pink
+                case "ready":
+                case "ready for pickup":
+                case "ready-for-pickup":
+                    return 0xFFF39C12; // Amber/Gold
+                case "delivered":
+                case "completed":
+                    return 0xFF27AE60; // Green
+                case "cancelled":
+                    return 0xFFE74C3C; // Red
+                default:
+                    return 0xFF2196F3; // Blue
+            }
         }
 
         private String formatDate(String dateString) {

@@ -20,6 +20,7 @@ import com.laundrybuddy.ui.orders.SubmitOrderActivity;
 import com.laundrybuddy.ui.orders.TrackOrderFragment;
 import com.laundrybuddy.ui.profile.ProfileFragment;
 import com.laundrybuddy.ui.support.SupportFragment;
+import com.laundrybuddy.utils.SessionManager;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -78,15 +79,26 @@ public class MainActivity extends AppCompatActivity {
 
             if (id == R.id.nav_home) {
                 fragment = new HomeFragment();
+                binding.fabSubmitOrder.show();
             } else if (id == R.id.nav_track) {
                 fragment = new TrackOrderFragment();
+                binding.fabSubmitOrder.show();
             } else if (id == R.id.nav_history) {
                 fragment = new HistoryFragment();
+                binding.fabSubmitOrder.hide(); // Hide FAB on History
             } else if (id == R.id.nav_profile) {
                 fragment = new ProfileFragment();
+                binding.fabSubmitOrder.hide(); // Hide FAB on Profile
+            } else if (id == R.id.nav_support) {
+                fragment = new SupportFragment();
+                binding.fabSubmitOrder.hide();
             }
 
             if (fragment != null) {
+                // Update session activity when user navigates
+                if (SessionManager.getInstance() != null) {
+                    SessionManager.getInstance().updateLastActivity();
+                }
                 loadFragment(fragment);
                 return true;
             }

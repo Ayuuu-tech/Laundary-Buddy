@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/bg_dialog_rounded">
+
+    <TextView
+        android:id="@+id/dialogTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ticket Details"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#212121"
+        android:layout_marginBottom="16dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="12dp">
+        
+        <TextView
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:text="Status: "
+             android:textStyle="bold"
+             android:textColor="#757575"/>
+             
+        <TextView
+             android:id="@+id/dialogStatus"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:text="Pending"
+             android:textColor="#FF9800"
+             android:textStyle="bold"/>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Category"
+        android:textSize="12sp"
+        android:textColor="#757575" />
+    <TextView
+        android:id="@+id/dialogCategory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Missing Clothes"
+        android:textSize="16sp"
+        android:textColor="#212121"
+        android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Order Number"
+        android:textSize="12sp"
+        android:textColor="#757575" />
+    <TextView
+        android:id="@+id/dialogOrderNumber"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="#ORD..."
+        android:textSize="16sp"
+        android:textColor="#212121"
+        android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Description"
+        android:textSize="12sp"
+        android:textColor="#757575" />
+    <TextView
+        android:id="@+id/dialogDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="..."
+        android:textSize="16sp"
+        android:textColor="#212121"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Admin Response Section -->
+    <LinearLayout
+        android:id="@+id/responseContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#F5F5F5"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone">
+        
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Admin Response"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#424242"
+            android:layout_marginBottom="4dp"/>
+            
+        <TextView
+             android:id="@+id/dialogResponse"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:text="..."
+             android:textColor="#212121"/>
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnClose"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Close"
+        style="@style/Widget.Material3.Button.TonalButton"/>
+
+</LinearLayout>

@@ -59,14 +59,67 @@ public class Order {
     @SerializedName("estimatedDelivery")
     private String estimatedDelivery;
 
-    @SerializedName("rating")
-    private Integer rating;
+    // Removed root 'rating' field as it's not in backend schema at root level
+    // @SerializedName("rating")
+    // private Integer rating;
 
     @SerializedName("feedback")
-    private String feedback;
+    private Feedback feedback;
 
     @SerializedName("isPriority")
     private Boolean isPriority;
+
+    public static class Feedback {
+        @SerializedName("rating")
+        private Integer rating;
+
+        @SerializedName("comment")
+        private String comment;
+
+        @SerializedName("submittedAt")
+        private String submittedAt;
+
+        public Integer getRating() {
+            return rating;
+        }
+
+        public void setRating(Integer rating) {
+            this.rating = rating;
+        }
+
+        public String getComment() {
+            return comment;
+        }
+
+        public void setComment(String comment) {
+            this.comment = comment;
+        }
+    }
+
+    public Integer getRating() {
+        if (feedback != null)
+            return feedback.rating;
+        return 0;
+    }
+
+    public void setRating(Integer rating) {
+        // This is tricky. If we set rating, we should update feedback object
+        if (feedback == null)
+            feedback = new Feedback();
+        feedback.rating = rating;
+    }
+
+    public Feedback getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(Feedback feedback) {
+        this.feedback = feedback;
+    }
+
+    public boolean isRated() {
+        return feedback != null && feedback.rating != null && feedback.rating > 0;
+    }
 
     // Nested OrderItem class
     public static class OrderItem {
@@ -185,7 +238,24 @@ public class Order {
     }
 
     public int getTotalItems() {
-        return totalItems;
+        // If totalItems is set, use it
+        if (totalItems > 0) {
+            return totalItems;
+        }
+        // Otherwise calculate from items list
+        if (items != null && !items.isEmpty()) {
+            int total = 0;
+            for (OrderItem item : items) {
+                // Try quantity first, then count
+                if (item.getQuantity() > 0) {
+                    total += item.getQuantity();
+                } else if (item.getCount() > 0) {
+                    total += item.getCount();
+                }
+            }
+            return total > 0 ? total : items.size();
+        }
+        return 0;
     }
 
     public void setTotalItems(int totalItems) {
@@ -258,28 +328,8 @@ public class Order {
         }
     }
 
-    public Integer getRating() {
-        return rating;
-    }
-
-    public void setRating(Integer rating) {
-        this.rating = rating;
-    }
-
-    public String getFeedback() {
-        return feedback;
-    }
-
-    public void setFeedback(String feedback) {
-        this.feedback = feedback;
-    }
-
-    public boolean isRated() {
-        return rating != null && rating > 0;
-    }
-
     public boolean isDelivered() {
-        return "delivered".equalsIgnoreCase(status);
+        return "delivered".equalsIgnoreCase(status) || "completed".equalsIgnoreCase(status);
     }
 
     public Boolean getIsPriority() {

@@ -11,7 +11,7 @@ const {
 // Request OTP for Signup
 exports.requestSignupOTP = async (req, res) => {
   try {
-    const { name, email, password, phone, address } = req.body;
+    const { name, email, password, phone, address, hostelRoom } = req.body;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email.toLowerCase())) {
       return res.status(400).json({ success: false, message: 'Please provide a valid email address' });
@@ -28,7 +28,7 @@ exports.requestSignupOTP = async (req, res) => {
     let tempUser = await User.findOne({ email: email.toLowerCase(), signupOTP: { $exists: true } });
     if (!tempUser) {
       const hashedPassword = await bcrypt.hash(password, 10);
-      tempUser = new User({ name, email: email.toLowerCase(), password: hashedPassword, phone, address });
+      tempUser = new User({ name, email: email.toLowerCase(), password: hashedPassword, phone, address, hostelRoom });
     } else {
       tempUser.name = name;
       tempUser.password = await bcrypt.hash(password, 10);
@@ -109,6 +109,7 @@ exports.verifySignupOTP = async (req, res) => {
       email: user.email,
       phone: user.phone,
       address: user.address,
+      hostelRoom: user.hostelRoom,
       isAdmin: user.isAdmin || false
     };
     req.session.save((err) => {
@@ -311,7 +312,7 @@ exports.requestPasswordResetOTP = async (req, res) => {
 // Register User
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, phone, address } = req.body;
+    const { name, email, password, phone, address, hostelRoom } = req.body;
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -341,6 +342,7 @@ exports.register = async (req, res) => {
       password: hashedPassword,
       phone,
       address,
+      hostelRoom,
     });
 
     // Create session
@@ -351,6 +353,7 @@ exports.register = async (req, res) => {
       email: created.email,
       phone: created.phone,
       address: created.address,
+      hostelRoom: created.hostelRoom,
       isAdmin: created.isAdmin || false
     };
 
@@ -547,6 +550,7 @@ exports.getCurrentUser = async (req, res) => {
         email: user.email,
         phone: user.phone,
         address: user.address,
+        hostelRoom: user.hostelRoom,
         profilePhoto: user.profilePhoto,
         isAdmin: user.isAdmin || false
       }
@@ -563,11 +567,12 @@ exports.getCurrentUser = async (req, res) => {
 // Update Profile
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, phone, address, profilePhoto } = req.body;
+    const { name, phone, address, hostelRoom, profilePhoto } = req.body;
     const updateFields = {};
     if (name !== undefined) updateFields.name = name;
     if (phone !== undefined) updateFields.phone = phone;
     if (address !== undefined) updateFields.address = address;
+    if (hostelRoom !== undefined) updateFields.hostelRoom = hostelRoom;
     if (profilePhoto !== undefined) {
       // Limit profile photo size (approx 3MB for Base64)
       if (profilePhoto.length > 3 * 1024 * 1024) {
@@ -655,6 +660,7 @@ exports.updateProfile = async (req, res) => {
         email: updatedUser.email,
         phone: updatedUser.phone,
         address: updatedUser.address,
+        hostelRoom: updatedUser.hostelRoom,
         profilePhoto: updatedUser.profilePhoto
       }
     });
@@ -700,6 +706,78 @@ exports.changePassword = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error changing password',
+      error: error.message
+    });
+  }
+};
+
+// Upload Profile Photo (Multipart)
+exports.uploadProfilePhoto = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No photo uploaded'
+      });
+    }
+
+    const userId = req.user.id;
+    let profilePhotoUrl = '';
+
+    // Check if Cloudinary is configured
+    if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+      const cloudinary = require('../config/cloudinary');
+      try {
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: 'laundry-buddy/profiles',
+          resource_type: 'image',
+          transformation: [
+            { width: 500, height: 500, crop: 'limit' },
+            { quality: 'auto' }
+          ]
+        });
+        profilePhotoUrl = result.secure_url;
+
+        // Optionally delete the local file after uploading to Cloudinary
+        const fs = require('fs');
+        fs.unlinkSync(req.file.path);
+      } catch (uploadErr) {
+        console.error('Cloudinary upload failed:', uploadErr);
+        // Fallback to local file if upload failed
+        profilePhotoUrl = `/uploads/profiles/${req.file.filename}`;
+      }
+    } else {
+      // Use local storage path
+      profilePhotoUrl = `/uploads/profiles/${req.file.filename}`;
+    }
+
+    // Update user in database
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { profilePhoto: profilePhotoUrl },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Profile photo updated successfully',
+      user: {
+        id: user._id,
+        profilePhoto: user.profilePhoto
+      }
+    });
+  } catch (error) {
+    console.error('Profile photo upload error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error uploading profile photo',
       error: error.message
     });
   }

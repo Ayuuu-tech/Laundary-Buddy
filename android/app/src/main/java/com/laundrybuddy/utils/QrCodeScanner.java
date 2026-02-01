@@ -102,6 +102,7 @@ public class QrCodeScanner {
         }, ContextCompat.getMainExecutor(context));
     }
 
+    @androidx.annotation.OptIn(markerClass = androidx.camera.core.ExperimentalGetImage.class)
     private void bindPreview(PreviewView previewView) {
         if (cameraProvider == null)
             return;

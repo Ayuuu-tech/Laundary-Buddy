@@ -26,4 +26,20 @@ public class Converters {
         Gson gson = new Gson();
         return gson.toJson(list);
     }
+
+    @TypeConverter
+    public static Order.Feedback fromFeedbackString(String value) {
+        if (value == null) {
+            return null;
+        }
+        return new Gson().fromJson(value, Order.Feedback.class);
+    }
+
+    @TypeConverter
+    public static String fromFeedback(Order.Feedback feedback) {
+        if (feedback == null) {
+            return null;
+        }
+        return new Gson().toJson(feedback);
+    }
 }

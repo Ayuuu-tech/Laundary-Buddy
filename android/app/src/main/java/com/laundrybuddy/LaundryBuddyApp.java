@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 
 import com.laundrybuddy.api.ApiClient;
 import com.laundrybuddy.db.AppDatabase;
+import com.laundrybuddy.utils.SessionManager;
 import com.laundrybuddy.utils.ThemeManager;
 
 /**
@@ -34,6 +35,9 @@ public class LaundryBuddyApp extends Application {
 
         // Initialize Database
         database = AppDatabase.getDatabase(this);
+
+        // Initialize Session Manager for auto-logout
+        SessionManager.init(this);
     }
 
     public AppDatabase getDatabase() {

@@ -29,10 +29,10 @@ public class SupportTicket {
     @SerializedName("subject")
     private String subject;
 
-    @SerializedName("description")
+    @SerializedName(value = "description", alternate = { "details", "items" })
     private String description;
 
-    @SerializedName("category")
+    @SerializedName(value = "category", alternate = { "type" })
     private String category;
 
     @SerializedName("priority")

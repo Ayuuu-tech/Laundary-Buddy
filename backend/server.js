@@ -178,7 +178,7 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/support', require('./routes/support'));
 app.use('/api/contact', require('./routes/contact'));
 app.use('/api/notifications', require('./routes/notifications'));
-app.use('/api/user', require('./routes/user'));
+app.use('/api/users', require('./routes/user'));
 
 // Health check route (before error handlers)
 setupHealthCheck(app);

@@ -47,16 +47,17 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityLoginBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
 
         app = LaundryBuddyApp.getInstance();
 
-        // Check if already logged in
+        // Check if already logged in - Redirect immediately before UI setup
         if (app.isLoggedIn()) {
             navigateToHome();
             return;
         }
+
+        binding = ActivityLoginBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         setupGoogleSignIn();
         setupClickListeners();
@@ -143,20 +144,41 @@ public class LoginActivity extends AppCompatActivity {
             public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
                 setLoading(false);
 
+                Log.d(TAG, "Login response code: " + response.code());
+
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse<User> apiResponse = response.body();
+                    Log.d(TAG, "Login success: " + apiResponse.isSuccess());
+
                     if (apiResponse.isSuccess()) {
                         if (apiResponse.getToken() != null) {
+                            Log.d(TAG, "Got token, saving...");
                             app.saveAuthToken(apiResponse.getToken());
+
+                            // Extract userId from JWT token as backup
+                            String userId = extractUserIdFromToken(apiResponse.getToken());
+                            if (userId != null) {
+                                Log.d(TAG, "Extracted userId from token: " + userId);
+                            }
                         }
                         User user = apiResponse.getUser() != null ? apiResponse.getUser() : apiResponse.getData();
                         if (user != null) {
+                            Log.d(TAG, "Got user - id: " + user.getId() + ", name: " + user.getName());
                             handleLoginSuccess(user);
                             String tokenStatus = (apiResponse.getToken() != null) ? "Token RX" : "Token NULL";
                             Toast.makeText(LoginActivity.this, "Login OK. " + tokenStatus, Toast.LENGTH_LONG).show();
                         } else {
-                            Toast.makeText(LoginActivity.this, getString(R.string.error_login_failed),
-                                    Toast.LENGTH_SHORT).show();
+                            // User object is null, try to extract from token
+                            String userId = extractUserIdFromToken(apiResponse.getToken());
+                            if (userId != null) {
+                                Log.d(TAG, "User null but extracting from token: " + userId);
+                                app.saveUserInfo(userId, "", "", "student");
+                                app.setSessionActive(true);
+                                navigateToHome();
+                            } else {
+                                Toast.makeText(LoginActivity.this, getString(R.string.error_login_failed),
+                                        Toast.LENGTH_SHORT).show();
+                            }
                         }
                     } else {
                         String error = apiResponse.getMessage() != null ? apiResponse.getMessage()
@@ -164,6 +186,7 @@ public class LoginActivity extends AppCompatActivity {
                         Toast.makeText(LoginActivity.this, error, Toast.LENGTH_SHORT).show();
                     }
                 } else {
+                    Log.e(TAG, "Login failed with code: " + response.code());
                     Toast.makeText(LoginActivity.this, getString(R.string.error_login_failed), Toast.LENGTH_SHORT)
                             .show();
                 }
@@ -247,6 +270,7 @@ public class LoginActivity extends AppCompatActivity {
         // Save user info
         app.setSessionActive(true);
         app.saveUserInfo(user.getId(), user.getName(), user.getEmail(), user.getRole());
+        Log.d(TAG, "Saved user info - id: " + user.getId());
 
         Toast.makeText(this, getString(R.string.login_success), Toast.LENGTH_SHORT).show();
 
@@ -256,6 +280,33 @@ public class LoginActivity extends AppCompatActivity {
         } else {
             navigateToHome();
         }
+    }
+
+    /**
+     * Extract userId from JWT token payload
+     */
+    private String extractUserIdFromToken(String token) {
+        if (token == null)
+            return null;
+        try {
+            // JWT has 3 parts: header.payload.signature
+            String[] parts = token.split("\\.");
+            if (parts.length < 2)
+                return null;
+
+            // Decode payload (base64)
+            String payload = new String(android.util.Base64.decode(parts[1], android.util.Base64.URL_SAFE));
+            Log.d(TAG, "JWT payload: " + payload);
+
+            // Parse JSON to extract id
+            org.json.JSONObject json = new org.json.JSONObject(payload);
+            if (json.has("id")) {
+                return json.getString("id");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to extract userId from token", e);
+        }
+        return null;
     }
 
     private void navigateToHome() {

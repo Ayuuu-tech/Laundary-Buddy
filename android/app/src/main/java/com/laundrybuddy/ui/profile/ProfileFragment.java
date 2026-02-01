@@ -98,8 +98,22 @@ public class ProfileFragment extends Fragment {
     private void loadProfilePhoto() {
         String profilePhotoUrl = app.getPrefs().getString("profile_photo", null);
         if (profilePhotoUrl != null && !profilePhotoUrl.isEmpty()) {
-            String baseUrl = ApiClient.getBaseUrl().replace("/api/", "");
-            String fullUrl = baseUrl + profilePhotoUrl;
+            String fullUrl;
+            if (profilePhotoUrl.startsWith("http")) {
+                fullUrl = profilePhotoUrl;
+            } else {
+                String baseUrl = ApiClient.getBaseUrl().replace("/api", "");
+                // Ensure baseUrl doesn't end with slash if profilePhotoUrl starts with one
+                if (baseUrl.endsWith("/") && profilePhotoUrl.startsWith("/")) {
+                    fullUrl = baseUrl + profilePhotoUrl.substring(1);
+                } else if (!baseUrl.endsWith("/") && !profilePhotoUrl.startsWith("/")) {
+                    fullUrl = baseUrl + "/" + profilePhotoUrl;
+                } else {
+                    fullUrl = baseUrl + profilePhotoUrl;
+                }
+            }
+
+            Log.d(TAG, "Loading profile photo: " + fullUrl);
 
             Glide.with(this)
                     .load(fullUrl)
@@ -117,6 +131,9 @@ public class ProfileFragment extends Fragment {
                     @Override
                     public void onResponse(Call<ApiResponse<List<Order>>> call,
                             Response<ApiResponse<List<Order>>> response) {
+                        if (binding == null)
+                            return;
+
                         if (response.isSuccessful() && response.body() != null) {
                             ApiResponse<List<Order>> apiResponse = response.body();
                             if (apiResponse.isSuccess() && apiResponse.getData() != null) {
