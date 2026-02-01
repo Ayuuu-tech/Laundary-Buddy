@@ -464,6 +464,7 @@ exports.login = async (req, res) => {
       email: user.email,
       phone: user.phone,
       address: user.address,
+      hostelRoom: user.hostelRoom,
       profilePhoto: user.profilePhoto,
       isAdmin: user.isAdmin || false
     };

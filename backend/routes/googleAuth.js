@@ -60,6 +60,7 @@ router.post('/google', async (req, res) => {
         email: user.email,
         phone: user.phone,
         address: user.address,
+        hostelRoom: user.hostelRoom,
         profilePhoto: picture || user.profilePhoto,
         isAdmin: user.isAdmin || false
       };
@@ -99,6 +100,7 @@ router.post('/google', async (req, res) => {
       email: newUser.email,
       phone: newUser.phone,
       address: newUser.address,
+      hostelRoom: newUser.hostelRoom,
       profilePhoto: picture,
       isAdmin: newUser.isAdmin || false
     };

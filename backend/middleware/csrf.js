@@ -87,7 +87,8 @@ function validateCSRFToken(req, res, next) {
     '/api/tracking',            // Protected by session auth
     '/api/support',             // Protected by session auth
     '/api/contact',             // Public contact form
-    '/api/user',                // Protected by session auth
+    '/api/user',                // Protected by session auth (singular fallback)
+    '/api/users',               // Protected by session auth (plural)
   ];
 
   if (skipRoutes.some(route => req.path.startsWith(route))) {

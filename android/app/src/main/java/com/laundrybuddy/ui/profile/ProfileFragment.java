@@ -295,16 +295,27 @@ public class ProfileFragment extends Fragment {
                     .enqueue(new Callback<ApiResponse<User>>() {
                         @Override
                         public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                            Log.d(TAG, "Upload response: " + response.code() + " " + response.message());
                             if (response.isSuccessful() && response.body() != null) {
                                 ApiResponse<User> apiResponse = response.body();
+                                Log.d(TAG, "Upload success: " + apiResponse.isSuccess() + ", msg: "
+                                        + apiResponse.getMessage());
                                 if (apiResponse.isSuccess()) {
                                     User user = apiResponse.getData();
+                                    if (user == null) {
+                                        user = apiResponse.getUser();
+                                    }
+
                                     if (user != null && user.getProfilePhoto() != null) {
+                                        Log.d(TAG, "New photo URL: " + user.getProfilePhoto());
                                         app.getPrefs().edit()
                                                 .putString("profile_photo", user.getProfilePhoto())
                                                 .apply();
                                         loadProfilePhoto();
                                         ToastManager.showSuccess(requireContext(), "Profile photo updated!");
+                                    } else {
+                                        Log.w(TAG, "User or photo URL null in response");
+                                        ToastManager.showError(requireContext(), "Response missing photo data");
                                     }
                                 } else {
                                     ToastManager.showError(requireContext(),
@@ -312,6 +323,12 @@ public class ProfileFragment extends Fragment {
                                                     : "Upload failed");
                                 }
                             } else {
+                                try {
+                                    String errorBody = response.errorBody() != null ? response.errorBody().string()
+                                            : "Unknown error";
+                                    Log.e(TAG, "Upload failed: " + errorBody);
+                                } catch (Exception e) {
+                                }
                                 ToastManager.showError(requireContext(), "Failed to upload photo");
                             }
                         }
