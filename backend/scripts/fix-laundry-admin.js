@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // Script to fix laundry staff admin status
 // Run with: node backend/scripts/fix-laundry-admin.js
 
@@ -12,7 +13,7 @@ async function fixLaundryAdmin() {
 
     // Find all potential staff/laundry accounts and make them admin
     const staffEmails = [
-      'laundry@bmu.edu.in',
+      'laundry@bmu.edu.in'
       // Add any other staff emails here
     ];
 
@@ -33,7 +34,7 @@ async function fixLaundryAdmin() {
 
     // Also check if the currently logged in staff user needs fixing
     // Find users who logged in from laundry dashboard (you may need to identify them differently)
-    const recentUsers = await User.find({ 
+    const recentUsers = await User.find({
       $or: [
         { email: { $regex: 'laundry', $options: 'i' } },
         { name: { $regex: 'laundry', $options: 'i' } },
@@ -47,7 +48,7 @@ async function fixLaundryAdmin() {
       if (!user.isAdmin) {
         user.isAdmin = true;
         await user.save();
-        console.log(`     ✅ Updated to admin`);
+        console.log('     ✅ Updated to admin');
       }
     }
 
