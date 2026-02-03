@@ -89,6 +89,7 @@ function validateCSRFToken(req, res, next) {
     '/api/contact',             // Public contact form
     '/api/user',                // Protected by session auth (singular fallback)
     '/api/users',               // Protected by session auth (plural)
+    '/api/admin',               // Protected by admin middleware + JWT auth
   ];
 
   if (skipRoutes.some(route => req.path.startsWith(route))) {
