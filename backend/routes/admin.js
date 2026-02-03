@@ -180,4 +180,82 @@ router.get('/orders', authMiddleware, isAdmin, async (req, res) => {
   }
 });
 
+// Update order status (admin only)
+router.put('/orders/:id/status', authMiddleware, isAdmin, async (req, res) => {
+  try {
+    const { status } = req.body;
+    
+    if (!status) {
+      return res.status(400).json({
+        success: false,
+        message: 'Status is required'
+      });
+    }
+
+    const validStatuses = ['pending', 'submitted', 'received', 'washing', 'drying', 'folding', 'ready', 'ready-for-pickup', 'delivered', 'completed', 'cancelled'];
+    if (!validStatuses.includes(status.toLowerCase())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status value'
+      });
+    }
+
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    const previousStatus = order.status;
+    order.status = status.toLowerCase();
+    order.updatedAt = new Date();
+    await order.save();
+
+    // Update tracking if exists
+    const Tracking = require('../models/Tracking');
+    const tracking = await Tracking.findOne({ order: order._id });
+    if (tracking) {
+      tracking.status = status.toLowerCase();
+      tracking.timeline.push({
+        status: status.toLowerCase(),
+        timestamp: new Date(),
+        note: `Status updated by staff from ${previousStatus} to ${status}`
+      });
+      await tracking.save();
+    }
+
+    // Send push notification to user
+    if (status !== previousStatus) {
+      const notificationController = require('../controllers/notificationController');
+      try {
+        await notificationController.sendNotificationToUser(order.user, {
+          title: 'Order Status Updated',
+          body: `Your order #${order.orderNumber} status is now: ${status}`,
+          url: `/track.html?id=${order._id}`
+        });
+      } catch (notifyErr) {
+        console.error('Failed to send push notification:', notifyErr);
+      }
+    }
+
+    // Populate user info for response
+    await order.populate('user', 'name email phone address');
+
+    res.json({
+      success: true,
+      message: 'Order status updated successfully',
+      order
+    });
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating order status',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
