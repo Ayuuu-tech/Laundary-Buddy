@@ -76,6 +76,7 @@ public class LaundryBuddyApp extends Application {
                 .remove("user_name")
                 .remove("user_email")
                 .remove("user_role")
+                .remove("is_admin")
                 .remove("hostel_room")
                 .remove("phone")
                 .remove("profile_photo")
@@ -100,6 +101,7 @@ public class LaundryBuddyApp extends Application {
                 .putString("user_name", user.getName())
                 .putString("user_email", user.getEmail())
                 .putString("user_role", user.getRole())
+                .putBoolean("is_admin", user.isAdmin() || user.isStaff())
                 .putString("hostel_room", user.getHostelRoom())
                 .putString("phone", user.getPhone())
                 .putString("profile_photo", user.getProfilePhoto())
@@ -120,6 +122,10 @@ public class LaundryBuddyApp extends Application {
 
     public String getUserRole() {
         return sharedPreferences.getString("user_role", "student");
+    }
+
+    public boolean isUserStaff() {
+        return sharedPreferences.getBoolean("is_admin", false);
     }
 
     public boolean isLoggedIn() {

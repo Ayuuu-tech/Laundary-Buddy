@@ -188,8 +188,9 @@ public class SubmitOrderActivity extends AppCompatActivity {
 
         // Add required fields
         body.put("serviceType", "Wash & Fold"); // Default service
-        // Format dates as ISO8601 (yyyy-MM-dd)
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US);
+        // Format dates as proper ISO8601 (yyyy-MM-dd'T'HH:mm:ss.SSS'Z')
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US);
+        sdf.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
         java.util.Calendar calendar = java.util.Calendar.getInstance();
         String today = sdf.format(calendar.getTime());
 
@@ -213,6 +214,10 @@ public class SubmitOrderActivity extends AppCompatActivity {
             body.put("specialInstructions", instructions);
         }
 
+        Log.d(TAG, "Submitting order: " + new com.google.gson.Gson().toJson(body));
+        String token = appInstance.getAuthToken();
+        Log.d(TAG, "Auth token present: " + (token != null && !token.isEmpty()));
+
         ApiClient.getInstance().getOrderApi().createOrder(body).enqueue(new Callback<ApiResponse<Order>>() {
             @Override
             public void onResponse(Call<ApiResponse<Order>> call, Response<ApiResponse<Order>> response) {
@@ -231,11 +236,24 @@ public class SubmitOrderActivity extends AppCompatActivity {
                 } else {
                     String errorBody = "";
                     try {
-                        if (response.errorBody() != null)
+                        if (response.errorBody() != null) {
                             errorBody = response.errorBody().string();
+                            Log.e(TAG, "Error " + response.code() + ": " + errorBody);
+                        }
                     } catch (Exception e) {
+                        Log.e(TAG, "Error reading body", e);
                     }
-                    ToastManager.showError(SubmitOrderActivity.this, "Failed: " + response.code());
+                    // Try to extract message from error body
+                    String msg = "Failed: " + response.code();
+                    if (!errorBody.isEmpty()) {
+                        try {
+                            org.json.JSONObject json = new org.json.JSONObject(errorBody);
+                            if (json.has("message")) {
+                                msg = json.getString("message");
+                            }
+                        } catch (Exception ignored) {}
+                    }
+                    ToastManager.showError(SubmitOrderActivity.this, msg);
                 }
             }
 

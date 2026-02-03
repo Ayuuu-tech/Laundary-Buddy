@@ -42,9 +42,19 @@ public class Tracking {
     @SerializedName("order")
     private com.google.gson.JsonElement orderElement;
 
+    // Cached Gson instance with UserFieldAdapter for proper Order parsing
+    private static final com.google.gson.Gson orderGson = new com.google.gson.GsonBuilder()
+            .registerTypeAdapter(Order.PopulatedUser.class, new UserFieldAdapter())
+            .create();
+
     public Order getOrder() {
         if (orderElement != null && orderElement.isJsonObject()) {
-            return new com.google.gson.Gson().fromJson(orderElement, Order.class);
+            try {
+                return orderGson.fromJson(orderElement, Order.class);
+            } catch (Exception e) {
+                android.util.Log.e("Tracking", "Error parsing order", e);
+                return null;
+            }
         }
         return null;
     }

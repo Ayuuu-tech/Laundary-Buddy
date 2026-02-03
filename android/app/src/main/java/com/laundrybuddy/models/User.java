@@ -28,6 +28,9 @@ public class User {
     @SerializedName("role")
     private String role;
 
+    @SerializedName("isAdmin")
+    private Boolean isAdminFlag;
+
     @SerializedName("isVerified")
     private boolean isVerified;
 
@@ -119,10 +122,18 @@ public class User {
     }
 
     public boolean isAdmin() {
+        // Check isAdminFlag from backend first, then fall back to role-based check
+        if (isAdminFlag != null && isAdminFlag) {
+            return true;
+        }
         return "admin".equalsIgnoreCase(role) || "laundry".equalsIgnoreCase(role);
     }
 
     public boolean isStaff() {
+        // Staff is same as admin in this system
+        if (isAdminFlag != null && isAdminFlag) {
+            return true;
+        }
         return "laundry".equalsIgnoreCase(role) || "staff".equalsIgnoreCase(role);
     }
 }

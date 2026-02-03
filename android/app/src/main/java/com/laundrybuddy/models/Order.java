@@ -38,6 +38,12 @@ public class Order {
     @SerializedName("hostelRoom")
     private String hostelRoom;
 
+    // Populated user object from backend (when using .populate('user'))
+    // Ignored by Room - only used for JSON parsing
+    @Ignore
+    @SerializedName("user")
+    private PopulatedUser user;
+
     @SerializedName("items")
     private List<OrderItem> items;
 
@@ -93,6 +99,44 @@ public class Order {
 
         public void setComment(String comment) {
             this.comment = comment;
+        }
+    }
+
+    // Nested PopulatedUser class for backend .populate('user') response
+    public static class PopulatedUser {
+        @SerializedName("_id")
+        private String id;
+
+        @SerializedName("name")
+        private String name;
+
+        @SerializedName("email")
+        private String email;
+
+        @SerializedName("phone")
+        private String phone;
+
+        @SerializedName("address")
+        private String address;
+
+        public String getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public String getPhone() {
+            return phone;
+        }
+
+        public String getAddress() {
+            return address;
         }
     }
 
@@ -189,6 +233,22 @@ public class Order {
         this.id = id;
     }
 
+    public PopulatedUser getUser() {
+        return user;
+    }
+
+    public void setUser(PopulatedUser user) {
+        this.user = user;
+    }
+
+    // Get user phone from populated user
+    public String getUserPhone() {
+        if (user != null && user.getPhone() != null) {
+            return user.getPhone();
+        }
+        return null;
+    }
+
     public String getOrderNumber() {
         return orderNumber;
     }
@@ -198,7 +258,15 @@ public class Order {
     }
 
     public String getUserId() {
-        return userId;
+        // First try direct field
+        if (userId != null && !userId.isEmpty()) {
+            return userId;
+        }
+        // Then try populated user object
+        if (user != null && user.getId() != null) {
+            return user.getId();
+        }
+        return null;
     }
 
     public void setUserId(String userId) {
@@ -206,7 +274,15 @@ public class Order {
     }
 
     public String getUserName() {
-        return userName;
+        // First try direct field
+        if (userName != null && !userName.isEmpty()) {
+            return userName;
+        }
+        // Then try populated user object
+        if (user != null && user.getName() != null) {
+            return user.getName();
+        }
+        return null;
     }
 
     public void setUserName(String userName) {
@@ -214,7 +290,15 @@ public class Order {
     }
 
     public String getUserEmail() {
-        return userEmail;
+        // First try direct field
+        if (userEmail != null && !userEmail.isEmpty()) {
+            return userEmail;
+        }
+        // Then try populated user object
+        if (user != null && user.getEmail() != null) {
+            return user.getEmail();
+        }
+        return null;
     }
 
     public void setUserEmail(String userEmail) {
@@ -222,7 +306,15 @@ public class Order {
     }
 
     public String getHostelRoom() {
-        return hostelRoom;
+        // First try direct field
+        if (hostelRoom != null && !hostelRoom.isEmpty()) {
+            return hostelRoom;
+        }
+        // Then try populated user's address (which contains room info)
+        if (user != null && user.getAddress() != null) {
+            return user.getAddress();
+        }
+        return null;
     }
 
     public void setHostelRoom(String hostelRoom) {

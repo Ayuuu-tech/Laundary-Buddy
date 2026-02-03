@@ -52,7 +52,12 @@ public class LoginActivity extends AppCompatActivity {
 
         // Check if already logged in - Redirect immediately before UI setup
         if (app.isLoggedIn()) {
-            navigateToHome();
+            // Check if user is staff - redirect to staff dashboard
+            if (app.isUserStaff()) {
+                navigateToStaffDashboard();
+            } else {
+                navigateToHome();
+            }
             return;
         }
 
@@ -92,8 +97,11 @@ public class LoginActivity extends AppCompatActivity {
 
         // Staff login
         binding.staffLoginText.setOnClickListener(v -> {
-            // Show staff login dialog or navigate to staff login
-            Toast.makeText(this, "Staff login - use your staff credentials", Toast.LENGTH_SHORT).show();
+            // Pre-fill staff email for convenience
+            binding.emailInput.setText("laundry@bmu.edu.in");
+            binding.passwordInput.setText("");
+            binding.passwordInput.requestFocus();
+            Toast.makeText(this, "Enter staff password to login", Toast.LENGTH_SHORT).show();
         });
     }
 

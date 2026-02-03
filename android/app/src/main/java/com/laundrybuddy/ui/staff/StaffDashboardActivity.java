@@ -2,10 +2,11 @@ package com.laundrybuddy.ui.staff;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -27,12 +28,16 @@ import com.laundrybuddy.ui.auth.LoginActivity;
 import com.laundrybuddy.ui.scanner.QrScannerActivity;
 import com.laundrybuddy.ui.support.TicketAdapter;
 import com.laundrybuddy.utils.ToastManager;
-
 import com.laundrybuddy.repositories.OrderRepository;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import retrofit2.Call;
@@ -40,8 +45,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
- * Staff Dashboard Activity for managing orders and tickets with QR scanning and
- * bulk operations
+ * Staff Dashboard Activity for managing orders and tickets with QR scanning,
+ * search, filtering, and bulk operations
  */
 public class StaffDashboardActivity extends AppCompatActivity {
 
@@ -53,6 +58,7 @@ public class StaffDashboardActivity extends AppCompatActivity {
     private TicketAdapter ticketAdapter;
     private List<Order> orders = new ArrayList<>();
     private List<Order> allOrders = new ArrayList<>();
+    private List<Order> filteredOrders = new ArrayList<>();
     private List<SupportTicket> tickets = new ArrayList<>();
     private int currentTab = 0;
 
@@ -60,6 +66,11 @@ public class StaffDashboardActivity extends AppCompatActivity {
     private int currentPage = 1;
     private int pageSize = 10;
     private int totalPages = 1;
+
+    // Filter state
+    private String currentSearchQuery = "";
+    private String currentStatusFilter = "";
+    private String currentTimeFilter = "";
 
     private final String[] STATUS_OPTIONS = {
             "pending", "received", "washing", "drying", "folding", "ready", "delivered", "cancelled"
@@ -69,12 +80,20 @@ public class StaffDashboardActivity extends AppCompatActivity {
             "Pending", "Received", "Washing", "Drying", "Folding", "Ready", "Delivered", "Cancelled"
     };
 
+    private final String[] STATUS_FILTER_OPTIONS = { "", "pending", "received", "washing", "drying", "folding", "ready",
+            "delivered", "cancelled" };
+    private final String[] STATUS_FILTER_DISPLAY = { "All Status", "Pending", "Received", "Washing", "Drying",
+            "Folding", "Ready", "Delivered", "Cancelled" };
+
+    private final String[] TIME_FILTER_OPTIONS = { "", "today", "yesterday", "week", "month" };
+    private final String[] TIME_FILTER_DISPLAY = { "All Time", "Today", "Yesterday", "This Week", "This Month" };
+
     // QR Scanner launcher
     private final ActivityResultLauncher<Intent> qrScannerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    String scannedCode = result.getData().getStringExtra("scanned_code");
+                if (result.getResultCode() == QrScannerActivity.RESULT_SCANNED && result.getData() != null) {
+                    String scannedCode = result.getData().getStringExtra(QrScannerActivity.EXTRA_SCANNED_CONTENT);
                     if (scannedCode != null && !scannedCode.isEmpty()) {
                         handleScannedOrder(scannedCode);
                     }
@@ -93,12 +112,11 @@ public class StaffDashboardActivity extends AppCompatActivity {
             if (newOrders != null) {
                 allOrders.addAll(newOrders);
             }
-            updatePagedOrders();
-            updatePaginationUI();
+            applyFilters();
 
             if (binding != null && binding.swipeRefresh != null) {
                 binding.swipeRefresh.setRefreshing(false);
-                if (allOrders.isEmpty()) {
+                if (filteredOrders.isEmpty()) {
                     showEmptyState("No orders found");
                 } else {
                     binding.emptyState.setVisibility(View.GONE);
@@ -114,6 +132,8 @@ public class StaffDashboardActivity extends AppCompatActivity {
         setupFab();
         setupBulkActions();
         setupPagination();
+        setupSearch();
+        setupFilters();
 
         loadOrders();
     }
@@ -142,7 +162,18 @@ public class StaffDashboardActivity extends AppCompatActivity {
                     orderAdapter.toggleSelection(order);
                     updateBulkActionBar();
                 },
-                (order, isPriority) -> updateOrderPriority(order, isPriority));
+                (order, isPriority) -> updateOrderPriority(order, isPriority),
+                new StaffOrderAdapter.OnQuickActionListener() {
+                    @Override
+                    public void onMarkComplete(Order order) {
+                        updateOrderStatus(order, "delivered");
+                    }
+
+                    @Override
+                    public void onStatusChange(Order order, String newStatus) {
+                        updateOrderStatus(order, newStatus);
+                    }
+                });
 
         ticketAdapter = new TicketAdapter(tickets, ticket -> {
             showTicketDetailDialog(ticket);
@@ -151,32 +182,207 @@ public class StaffDashboardActivity extends AppCompatActivity {
         binding.recyclerView.setAdapter(orderAdapter);
     }
 
+    private void setupSearch() {
+        binding.searchInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                currentSearchQuery = s.toString().trim().toLowerCase();
+                applyFilters();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+    }
+
+    private void setupFilters() {
+        // Status filter spinner
+        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, STATUS_FILTER_DISPLAY);
+        statusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.statusFilter.setAdapter(statusAdapter);
+
+        binding.statusFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                currentStatusFilter = STATUS_FILTER_OPTIONS[position];
+                applyFilters();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+
+        // Time filter spinner
+        ArrayAdapter<String> timeAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, TIME_FILTER_DISPLAY);
+        timeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.timeFilter.setAdapter(timeAdapter);
+
+        binding.timeFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                currentTimeFilter = TIME_FILTER_OPTIONS[position];
+                applyFilters();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+
+        // Scan QR button
+        binding.scanQrBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(this, QrScannerActivity.class);
+            qrScannerLauncher.launch(intent);
+        });
+
+        // Refresh button
+        binding.refreshBtn.setOnClickListener(v -> loadOrders());
+    }
+
+    private void applyFilters() {
+        filteredOrders.clear();
+
+        for (Order order : allOrders) {
+            // Apply status filter
+            if (!currentStatusFilter.isEmpty() && !currentStatusFilter.equalsIgnoreCase(order.getStatus())) {
+                continue;
+            }
+
+            // Apply time filter
+            if (!currentTimeFilter.isEmpty() && !matchesTimeFilter(order, currentTimeFilter)) {
+                continue;
+            }
+
+            // Apply search query
+            if (!currentSearchQuery.isEmpty()) {
+                boolean matches = false;
+
+                String orderNum = order.getOrderNumber();
+                if (orderNum != null && orderNum.toLowerCase().contains(currentSearchQuery)) {
+                    matches = true;
+                }
+
+                String hostelRoom = order.getHostelRoom();
+                if (hostelRoom != null && hostelRoom.toLowerCase().contains(currentSearchQuery)) {
+                    matches = true;
+                }
+
+                String userName = order.getUserName();
+                if (userName != null && userName.toLowerCase().contains(currentSearchQuery)) {
+                    matches = true;
+                }
+
+                if (!matches) {
+                    continue;
+                }
+            }
+
+            filteredOrders.add(order);
+        }
+
+        // Reset to page 1 after filter
+        currentPage = 1;
+        updatePagedOrders();
+        updateStats();
+    }
+
+    private boolean matchesTimeFilter(Order order, String timeFilter) {
+        String createdAt = order.getCreatedAt();
+        if (createdAt == null)
+            return false;
+
+        try {
+            SimpleDateFormat[] formats = {
+                    new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()),
+                    new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()),
+                    new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            };
+
+            Date date = null;
+            for (SimpleDateFormat fmt : formats) {
+                try {
+                    date = fmt.parse(createdAt);
+                    if (date != null)
+                        break;
+                } catch (ParseException ignored) {
+                }
+            }
+
+            if (date == null)
+                return false;
+
+            Calendar orderCal = Calendar.getInstance();
+            orderCal.setTime(date);
+
+            Calendar now = Calendar.getInstance();
+
+            switch (timeFilter) {
+                case "today":
+                    return isSameDay(orderCal, now);
+
+                case "yesterday":
+                    Calendar yesterday = Calendar.getInstance();
+                    yesterday.add(Calendar.DAY_OF_YEAR, -1);
+                    return isSameDay(orderCal, yesterday);
+
+                case "week":
+                    Calendar weekAgo = Calendar.getInstance();
+                    weekAgo.add(Calendar.DAY_OF_YEAR, -7);
+                    return orderCal.after(weekAgo);
+
+                case "month":
+                    Calendar monthAgo = Calendar.getInstance();
+                    monthAgo.add(Calendar.MONTH, -1);
+                    return orderCal.after(monthAgo);
+
+                default:
+                    return true;
+            }
+        } catch (Exception e) {
+            return true;
+        }
+    }
+
+    private boolean isSameDay(Calendar cal1, Calendar cal2) {
+        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+                cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR);
+    }
+
     private void setupTabs() {
-        binding.tabLayout
-                .addOnTabSelectedListener(new com.google.android.material.tabs.TabLayout.OnTabSelectedListener() {
-                    @Override
-                    public void onTabSelected(com.google.android.material.tabs.TabLayout.Tab tab) {
-                        currentTab = tab.getPosition();
-                        exitSelectionMode();
-                        if (currentTab == 0) {
-                            binding.recyclerView.setAdapter(orderAdapter);
-                            binding.scanFab.setVisibility(View.VISIBLE);
-                            loadOrders();
-                        } else {
-                            binding.recyclerView.setAdapter(ticketAdapter);
-                            binding.scanFab.setVisibility(View.GONE);
-                            loadTickets();
-                        }
-                    }
+        binding.tabLayout.addOnTabSelectedListener(new com.google.android.material.tabs.TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(com.google.android.material.tabs.TabLayout.Tab tab) {
+                currentTab = tab.getPosition();
+                exitSelectionMode();
+                if (currentTab == 0) {
+                    binding.recyclerView.setAdapter(orderAdapter);
+                    binding.scanFab.setVisibility(View.VISIBLE);
+                    binding.searchLayout.setVisibility(View.VISIBLE);
+                    loadOrders();
+                } else {
+                    binding.recyclerView.setAdapter(ticketAdapter);
+                    binding.scanFab.setVisibility(View.GONE);
+                    binding.searchLayout.setVisibility(View.GONE);
+                    loadTickets();
+                }
+            }
 
-                    @Override
-                    public void onTabUnselected(com.google.android.material.tabs.TabLayout.Tab tab) {
-                    }
+            @Override
+            public void onTabUnselected(com.google.android.material.tabs.TabLayout.Tab tab) {
+            }
 
-                    @Override
-                    public void onTabReselected(com.google.android.material.tabs.TabLayout.Tab tab) {
-                    }
-                });
+            @Override
+            public void onTabReselected(com.google.android.material.tabs.TabLayout.Tab tab) {
+            }
+        });
     }
 
     private void setupSwipeRefresh() {
@@ -226,11 +432,11 @@ public class StaffDashboardActivity extends AppCompatActivity {
 
     private void updatePagedOrders() {
         int startIndex = (currentPage - 1) * pageSize;
-        int endIndex = Math.min(startIndex + pageSize, allOrders.size());
+        int endIndex = Math.min(startIndex + pageSize, filteredOrders.size());
 
         orders.clear();
-        if (startIndex < allOrders.size()) {
-            orders.addAll(allOrders.subList(startIndex, endIndex));
+        if (startIndex < filteredOrders.size()) {
+            orders.addAll(filteredOrders.subList(startIndex, endIndex));
         }
         orderAdapter.notifyDataSetChanged();
         updatePaginationUI();
@@ -240,11 +446,11 @@ public class StaffDashboardActivity extends AppCompatActivity {
     }
 
     private void updatePaginationUI() {
-        totalPages = (int) Math.ceil((double) allOrders.size() / pageSize);
+        totalPages = (int) Math.ceil((double) filteredOrders.size() / pageSize);
         if (totalPages == 0)
             totalPages = 1;
 
-        binding.pageIndicator.setText("Page " + currentPage + " of " + totalPages);
+        binding.pageIndicator.setText("Page " + currentPage + " of " + totalPages + " (" + filteredOrders.size() + " orders)");
         binding.prevPageBtn.setEnabled(currentPage > 1);
         binding.nextPageBtn.setEnabled(currentPage < totalPages);
 
@@ -254,7 +460,7 @@ public class StaffDashboardActivity extends AppCompatActivity {
 
     private void toggleSelectionMode() {
         if (currentTab != 0)
-            return; // Only for orders tab
+            return;
         if (orderAdapter.isSelectionMode()) {
             exitSelectionMode();
         } else {
@@ -279,8 +485,7 @@ public class StaffDashboardActivity extends AppCompatActivity {
     }
 
     private void handleScannedOrder(String orderNumber) {
-        // Find order by number
-        for (Order order : orders) {
+        for (Order order : filteredOrders) {
             if (orderNumber.equals(order.getOrderNumber())) {
                 showOrderStatusDialog(order);
                 return;
@@ -327,7 +532,8 @@ public class StaffDashboardActivity extends AppCompatActivity {
         Map<String, Object> body = new HashMap<>();
         body.put("status", newStatus);
 
-        ApiClient.getInstance().getOrderApi().updateOrderStatus(order.getId(), body)
+        // Use AdminApi for staff to update any order's status
+        ApiClient.getInstance().getAdminApi().updateOrderStatus(order.getId(), body)
                 .enqueue(new Callback<ApiResponse<Order>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<Order>> call, Response<ApiResponse<Order>> response) {
@@ -335,7 +541,12 @@ public class StaffDashboardActivity extends AppCompatActivity {
                             ToastManager.showSuccess(StaffDashboardActivity.this, "Status updated!");
                             loadOrders();
                         } else {
-                            ToastManager.showError(StaffDashboardActivity.this, "Update failed");
+                            String errorMsg = "Update failed";
+                            if (response.body() != null && response.body().getMessage() != null) {
+                                errorMsg = response.body().getMessage();
+                            }
+                            ToastManager.showError(StaffDashboardActivity.this, errorMsg);
+                            Log.e(TAG, "Status update failed: " + errorMsg);
                         }
                     }
 
@@ -356,7 +567,8 @@ public class StaffDashboardActivity extends AppCompatActivity {
             Map<String, Object> body = new HashMap<>();
             body.put("status", newStatus);
 
-            ApiClient.getInstance().getOrderApi().updateOrderStatus(order.getId(), body)
+            // Use AdminApi for staff bulk updates
+            ApiClient.getInstance().getAdminApi().updateOrderStatus(order.getId(), body)
                     .enqueue(new Callback<ApiResponse<Order>>() {
                         @Override
                         public void onResponse(Call<ApiResponse<Order>> call, Response<ApiResponse<Order>> response) {
@@ -393,7 +605,6 @@ public class StaffDashboardActivity extends AppCompatActivity {
         if (repository != null) {
             repository.refreshOrders();
         } else {
-            // Fallback or retry init
             repository = new OrderRepository(this);
             repository.refreshOrders();
         }
@@ -442,24 +653,22 @@ public class StaffDashboardActivity extends AppCompatActivity {
     }
 
     private void updateStats() {
-        int pending = 0;
+        int total = allOrders.size();
         int inProgress = 0;
-        int delivered = 0;
+        int completed = 0;
 
-        for (Order order : orders) {
+        for (Order order : allOrders) {
             String status = order.getStatus();
-            if ("pending".equalsIgnoreCase(status)) {
-                pending++;
-            } else if ("delivered".equalsIgnoreCase(status)) {
-                delivered++;
-            } else if (!"cancelled".equalsIgnoreCase(status)) {
+            if ("delivered".equalsIgnoreCase(status) || "completed".equalsIgnoreCase(status)) {
+                completed++;
+            } else if (!"cancelled".equalsIgnoreCase(status) && !"pending".equalsIgnoreCase(status)) {
                 inProgress++;
             }
         }
 
-        binding.pendingCount.setText(String.valueOf(pending));
+        binding.totalOrdersCount.setText(String.valueOf(total));
         binding.inProgressCount.setText(String.valueOf(inProgress));
-        binding.deliveredCount.setText(String.valueOf(delivered));
+        binding.completedCount.setText(String.valueOf(completed));
     }
 
     private void showEmptyState(String message) {
@@ -471,7 +680,6 @@ public class StaffDashboardActivity extends AppCompatActivity {
     private void showTicketDetailDialog(SupportTicket ticket) {
         DialogStaffTicketDetailBinding dialogBinding = DialogStaffTicketDetailBinding.inflate(getLayoutInflater());
 
-        // Populate fields
         dialogBinding.ticketSubject.setText(ticket.getSubject());
         String userInfo = "From: " + (ticket.getUserName() != null ? ticket.getUserName() : "User");
         if (ticket.getUserEmail() != null) {
@@ -480,7 +688,6 @@ public class StaffDashboardActivity extends AppCompatActivity {
         dialogBinding.ticketUser.setText(userInfo);
         dialogBinding.ticketDescription.setText(ticket.getDescription());
 
-        // Setup status spinner
         String[] statusOptions = { "open", "in_progress", "resolved", "closed" };
         String[] statusDisplay = { "Open", "In Progress", "Resolved", "Closed" };
 
@@ -498,13 +705,12 @@ public class StaffDashboardActivity extends AppCompatActivity {
         }
         dialogBinding.statusSpinner.setSelection(currentIndex);
 
-        // Show previous response if exists
         if (ticket.getResponse() != null && !ticket.getResponse().isEmpty()) {
             dialogBinding.previousResponseContainer.setVisibility(View.VISIBLE);
             dialogBinding.previousResponse.setText(ticket.getResponse());
         }
 
-        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setTitle("Ticket Details")
                 .setView(dialogBinding.getRoot())
                 .setPositiveButton("Update", (dialog, which) -> {
@@ -512,7 +718,6 @@ public class StaffDashboardActivity extends AppCompatActivity {
                     String response = dialogBinding.responseInput.getText() != null
                             ? dialogBinding.responseInput.getText().toString().trim()
                             : "";
-
                     updateTicketStatus(ticket, newStatus, response);
                 })
                 .setNegativeButton("Cancel", null)
@@ -555,9 +760,7 @@ public class StaffDashboardActivity extends AppCompatActivity {
                 .enqueue(new Callback<ApiResponse<Order>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<Order>> call, Response<ApiResponse<Order>> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            // Success - UI already updated by adapter
-                        } else {
+                        if (!response.isSuccessful() || response.body() == null) {
                             ToastManager.showError(StaffDashboardActivity.this, "Failed to update priority");
                         }
                     }

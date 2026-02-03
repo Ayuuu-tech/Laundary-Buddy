@@ -6,12 +6,15 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.core.Camera;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -24,6 +27,8 @@ import com.laundrybuddy.utils.QrCodeScanner;
 import com.laundrybuddy.utils.ToastManager;
 
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * QR Code Scanner Activity
@@ -37,6 +42,7 @@ public class QrScannerActivity extends AppCompatActivity implements QrCodeScanne
 
     private ActivityQrScannerBinding binding;
     private QrCodeScanner qrScanner;
+    private boolean torchEnabled = false;
 
     private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -57,8 +63,17 @@ public class QrScannerActivity extends AppCompatActivity implements QrCodeScanne
 
         qrScanner = new QrCodeScanner(this, this);
 
+        setupCameraSpinner();
         setupClickListeners();
         checkCameraPermission();
+    }
+
+    private void setupCameraSpinner() {
+        // Set up camera selection spinner
+        String[] cameras = {"Back Camera", "Front Camera"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, 
+            android.R.layout.simple_spinner_dropdown_item, cameras);
+        binding.cameraSpinner.setAdapter(adapter);
     }
 
     private void setupClickListeners() {
@@ -68,6 +83,64 @@ public class QrScannerActivity extends AppCompatActivity implements QrCodeScanne
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             galleryLauncher.launch(intent);
         });
+
+        // Torch button
+        binding.torchButton.setOnClickListener(v -> {
+            torchEnabled = !torchEnabled;
+            if (qrScanner != null) {
+                qrScanner.setTorch(torchEnabled);
+            }
+            binding.torchButton.setText(torchEnabled ? "Torch On" : "Torch");
+        });
+
+        // Retry button
+        binding.retryButton.setOnClickListener(v -> {
+            if (qrScanner != null) {
+                qrScanner.stopScanning();
+                startScanning();
+            }
+            updateStatus("⚠️ Scanning... Hold QR steady, ensure good lighting");
+        });
+
+        // Find Order button (manual entry)
+        binding.findOrderButton.setOnClickListener(v -> {
+            String input = binding.manualTokenInput.getText().toString().trim();
+            if (input.isEmpty()) {
+                binding.manualError.setVisibility(View.VISIBLE);
+                binding.manualError.setText("Please enter a token");
+                return;
+            }
+            
+            String token = extractToken(input);
+            if (token == null || token.isEmpty()) {
+                binding.manualError.setVisibility(View.VISIBLE);
+                binding.manualError.setText("Invalid token format. Example: LB-20251025-1234");
+                return;
+            }
+            
+            binding.manualError.setVisibility(View.GONE);
+            onQrCodeScanned(token);
+        });
+    }
+
+    private String extractToken(String input) {
+        // Try to extract token from URL or raw text
+        // Pattern: LB-YYYYMMDD-#### or LB-YYYY-####
+        Pattern pattern = Pattern.compile("(LB-(?:\\d{4}-\\d{4}|\\d{8}-\\d{4}))", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(input);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        
+        // Try to extract from URL with ?token= parameter
+        if (input.contains("token=")) {
+            int start = input.indexOf("token=") + 6;
+            int end = input.indexOf("&", start);
+            if (end == -1) end = input.length();
+            return input.substring(start, end);
+        }
+        
+        return input; // Return as-is for direct token input
     }
 
     private void checkCameraPermission() {

@@ -11,97 +11,217 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="12dp"
-        android:gravity="center_vertical">
+        android:orientation="vertical"
+        android:padding="12dp">
 
-        <!-- Selection Checkbox -->
-        <com.google.android.material.checkbox.MaterialCheckBox
-            android:id="@+id/selectionCheckbox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:visibility="gone" />
-
-        <!-- Priority Icon -->
-        <ImageView
-            android:id="@+id/priorityIcon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginEnd="8dp"
-            android:src="@android:drawable/star_big_off"
-            android:contentDescription="Priority"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?android:attr/selectableItemBackgroundBorderless" />
-
-        <!-- Order Details -->
+        <!-- Top Row: Checkbox, Order Info, Status -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-            <!-- Header Row -->
-            <LinearLayout
-                android:layout_width="match_parent"
+            <!-- Selection Checkbox -->
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/selectionCheckbox"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:layout_marginEnd="8dp"
+                android:visibility="gone" />
 
-                <!-- Order Number -->
+            <!-- Priority Icon -->
+            <ImageView
+                android:id="@+id/priorityIcon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="8dp"
+                android:src="@android:drawable/star_big_off"
+                android:contentDescription="Priority"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackgroundBorderless" />
+
+            <!-- Order Number -->
+            <TextView
+                android:id="@+id/orderNumber"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:ellipsize="middle"
+                android:singleLine="true" />
+
+            <!-- Status Chip -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/statusChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                app:chipMinHeight="24dp"
+                app:chipCornerRadius="12dp" />
+
+        </LinearLayout>
+
+        <!-- Middle Row: Room & User Info -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@android:drawable/ic_menu_myplaces"
+                android:layout_marginEnd="6dp"
+                app:tint="@color/text_hint" />
+
+            <TextView
+                android:id="@+id/roomInfo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Room / Hostel"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:ellipsize="end"
+                android:singleLine="true" />
+
+            <TextView
+                android:id="@+id/itemsCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 items"
+                android:textColor="@color/primary"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_chip_outline"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp" />
+
+        </LinearLayout>
+
+        <!-- User Name Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@android:drawable/ic_menu_myplaces"
+                android:layout_marginEnd="6dp"
+                app:tint="@color/text_hint"
+                android:visibility="invisible" />
+
+            <TextView
+                android:id="@+id/userName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="User Name"
+                android:textColor="@color/text_hint"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:background="@color/divider" />
+
+        <!-- Bottom Row: Dates and Actions -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- Submitted Date -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
                 <TextView
-                    android:id="@+id/orderNumber"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textColor="@color/text_primary"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
-
-                <!-- Status Chip -->
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/statusChip"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="11sp"
-                    app:chipMinHeight="26dp" />
+                    android:text="Submitted"
+                    android:textColor="@color/text_hint"
+                    android:textSize="10sp" />
+
+                <TextView
+                    android:id="@+id/submittedDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Jan 01, 00:00"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
 
             </LinearLayout>
 
-            <!-- User Info -->
-            <TextView
-                android:id="@+id/userInfo"
+            <!-- ETA -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ETA"
+                    android:textColor="@color/text_hint"
+                    android:textSize="10sp" />
+
+                <TextView
+                    android:id="@+id/etaDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Jan 02, 18:00"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+
+            </LinearLayout>
+
+            <!-- Quick Actions -->
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp" />
-
-            <!-- Bottom Row -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
-                <!-- Items Count -->
-                <TextView
-                    android:id="@+id/itemsCount"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textColor="@color/text_hint"
-                    android:textSize="12sp" />
+                <!-- Mark Complete Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/markCompleteBtn"
+                    style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:contentDescription="Mark Complete"
+                    app:icon="@android:drawable/checkbox_on_background"
+                    app:iconSize="18dp"
+                    app:iconTint="@color/status_delivered" />
 
-                <!-- Date -->
-                <TextView
-                    android:id="@+id/orderDate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/text_hint"
-                    android:textSize="12sp" />
+                <!-- More Options -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/moreOptionsBtn"
+                    style="@style/Widget.Material3.Button.IconButton"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:contentDescription="More Options"
+                    app:icon="@android:drawable/ic_menu_more"
+                    app:iconSize="18dp" />
 
             </LinearLayout>
 

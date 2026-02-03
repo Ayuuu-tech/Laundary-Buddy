@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/action_pending"
+        android:title="📋 Pending" />
+
+    <item
+        android:id="@+id/action_received"
+        android:title="📥 Received" />
+
+    <item
+        android:id="@+id/action_washing"
+        android:title="🧼 Washing" />
+
+    <item
+        android:id="@+id/action_drying"
+        android:title="☀️ Drying" />
+
+    <item
+        android:id="@+id/action_folding"
+        android:title="👕 Folding" />
+
+    <item
+        android:id="@+id/action_ready"
+        android:title="✅ Ready for Pickup" />
+
+    <item
+        android:id="@+id/action_delivered"
+        android:title="🚚 Delivered" />
+
+</menu>

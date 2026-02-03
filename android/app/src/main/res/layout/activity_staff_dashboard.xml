@@ -14,7 +14,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/primary"
-            app:title="@string/staff_dashboard"
+            app:title="Laundry Staff Dashboard"
             app:titleTextColor="@color/text_on_primary"
             app:navigationIcon="@android:drawable/ic_menu_revert"
             app:navigationIconTint="@color/text_on_primary"
@@ -26,117 +26,281 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp"
+        android:padding="12dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <!-- Search and Filter Bar -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/CardStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <!-- Search Input -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/searchLayout"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Search by hostel, student, or room"
+                    app:startIconDrawable="@android:drawable/ic_menu_search"
+                    app:boxCornerRadiusBottomEnd="8dp"
+                    app:boxCornerRadiusBottomStart="8dp"
+                    app:boxCornerRadiusTopEnd="8dp"
+                    app:boxCornerRadiusTopStart="8dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/searchInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:imeOptions="actionSearch"
+                        android:inputType="text"
+                        android:maxLines="1" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Filter Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <!-- Status Filter -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/statusFilterLayout"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:hint="Status">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/statusFilter"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none"
+                            android:text="All Status" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Time Filter -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/timeFilterLayout"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:hint="Time">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/timeFilter"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none"
+                            android:text="All Time" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </LinearLayout>
+
+                <!-- Action Buttons Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal"
+                    android:gravity="end">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/scanQrBtn"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Scan QR"
+                        app:icon="@android:drawable/ic_menu_camera" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/refreshBtn"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="Refresh"
+                        app:icon="@android:drawable/stat_notify_sync" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Stats Cards -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="12dp">
 
+            <!-- Total Orders -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/CardStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="6dp"
+                android:layout_marginEnd="4dp"
+                app:cardBackgroundColor="@color/primary">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="12dp">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@android:drawable/ic_menu_agenda"
+                        android:layout_marginEnd="8dp"
+                        app:tint="@color/text_on_primary"
+                        android:contentDescription="Total" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/totalOrdersCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textColor="@color/text_on_primary"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Total Orders"
+                            android:textColor="@color/text_on_primary"
+                            android:textSize="10sp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- In Progress -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/CardStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
                 app:cardBackgroundColor="@color/status_pending">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
                     android:padding="12dp">
 
-                    <TextView
-                        android:id="@+id/pendingCount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textColor="@color/text_on_primary"
-                        android:textSize="24sp"
-                        android:textStyle="bold" />
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@android:drawable/ic_popup_sync"
+                        android:layout_marginEnd="8dp"
+                        app:tint="@color/text_on_primary"
+                        android:contentDescription="In Progress" />
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Pending"
-                        android:textColor="@color/text_on_primary"
-                        android:textSize="11sp" />
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/inProgressCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textColor="@color/text_on_primary"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="In Progress"
+                            android:textColor="@color/text_on_primary"
+                            android:textSize="10sp" />
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Completed -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/CardStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="6dp"
-                android:layout_marginEnd="6dp"
-                app:cardBackgroundColor="@color/secondary">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="12dp">
-
-                    <TextView
-                        android:id="@+id/inProgressCount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textColor="@color/text_on_primary"
-                        android:textSize="24sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="In Progress"
-                        android:textColor="@color/text_on_primary"
-                        android:textSize="11sp" />
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                style="@style/CardStyle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="4dp"
                 app:cardBackgroundColor="@color/status_delivered">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
                     android:padding="12dp">
 
-                    <TextView
-                        android:id="@+id/deliveredCount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textColor="@color/text_on_primary"
-                        android:textSize="24sp"
-                        android:textStyle="bold" />
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@android:drawable/ic_menu_send"
+                        android:layout_marginEnd="8dp"
+                        app:tint="@color/text_on_primary"
+                        android:contentDescription="Completed" />
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Delivered"
-                        android:textColor="@color/text_on_primary"
-                        android:textSize="11sp" />
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/completedCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textColor="@color/text_on_primary"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Completed"
+                            android:textColor="@color/text_on_primary"
+                            android:textSize="10sp" />
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
@@ -144,16 +308,29 @@
 
         </LinearLayout>
 
+        <!-- Section Title -->
+        <TextView
+            android:id="@+id/sectionTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Today's Batches"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
         <!-- Tab Layout -->
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="8dp"
             app:tabMode="fixed"
             app:tabGravity="fill"
             app:tabSelectedTextColor="@color/primary"
-            app:tabTextColor="@color/text_hint">
+            app:tabTextColor="@color/text_hint"
+            app:tabBackground="@color/surface"
+            app:tabIndicatorColor="@color/primary">
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
@@ -163,7 +340,7 @@
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tickets" />
+                android:text="Support Tickets" />
 
         </com.google.android.material.tabs.TabLayout>
 
@@ -190,17 +367,18 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
-            android:padding="8dp"
-            android:visibility="gone">
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:background="@color/surface">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/prevPageBtn"
-                style="@style/Widget.Material3.Button.TextButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="36dp"
                 android:text="Previous"
-                android:enabled="false"
-                app:icon="@android:drawable/ic_media_previous" />
+                android:textSize="12sp"
+                android:enabled="false" />
 
             <TextView
                 android:id="@+id/pageIndicator"
@@ -208,19 +386,18 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
-                android:text="Page 1 of 1"
+                android:text="Page 1 of 1 (0 orders)"
                 android:textColor="@color/text_secondary"
-                android:textSize="14sp" />
+                android:textSize="12sp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/nextPageBtn"
-                style="@style/Widget.Material3.Button.TextButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="36dp"
                 android:text="Next"
-                android:enabled="false"
-                app:icon="@android:drawable/ic_media_next"
-                app:iconGravity="end" />
+                android:textSize="12sp"
+                android:enabled="false" />
 
         </LinearLayout>
 
@@ -325,4 +502,3 @@
         app:tint="@color/text_on_primary" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-

@@ -42,8 +42,7 @@
         <activity
             android:name=".ui.auth.SignupActivity"
             android:exported="false"
-            android:parentActivityName=".ui.auth.LoginActivity"
-            android:theme="@style/Theme.LaundryBuddy.NoActionBar" />
+            android:theme="@style/Theme.LaundryBuddy" />
 
         <!-- Main Activity with Bottom Navigation -->
         <activity

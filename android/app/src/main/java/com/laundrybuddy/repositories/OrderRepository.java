@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.laundrybuddy.LaundryBuddyApp;
 import com.laundrybuddy.api.ApiClient;
+import com.laundrybuddy.api.AdminApi;
 import com.laundrybuddy.api.OrderApi;
 import com.laundrybuddy.db.AppDatabase;
 import com.laundrybuddy.db.OrderDao;
@@ -26,6 +27,7 @@ import retrofit2.Response;
 public class OrderRepository {
     private static final String TAG = "OrderRepository";
     private OrderApi orderApi;
+    private AdminApi adminApi;
     private OrderDao orderDao;
     private Context context;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -33,6 +35,7 @@ public class OrderRepository {
     public OrderRepository(Context context) {
         this.context = context;
         this.orderApi = ApiClient.getInstance().getOrderApi();
+        this.adminApi = ApiClient.getInstance().getAdminApi();
         AppDatabase db = LaundryBuddyApp.getInstance().getDatabase();
         if (db != null) {
             this.orderDao = db.orderDao();
@@ -96,21 +99,25 @@ public class OrderRepository {
             return;
         }
 
-        // Assuming admin/staff endpoint, otherwise use getMyOrders for students
-        // Here assuming Staff context for now as per dashboard
-        Call<ApiResponse<List<Order>>> call = orderApi.getAllOrders();
+        // Use admin endpoint to get ALL orders for staff dashboard
+        Call<ApiResponse<List<Order>>> call = adminApi.getAllOrders();
 
         call.enqueue(new Callback<ApiResponse<List<Order>>>() {
             @Override
             public void onResponse(Call<ApiResponse<List<Order>>> call, Response<ApiResponse<List<Order>>> response) {
-                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                if (response.isSuccessful() && response.body() != null) {
                     List<Order> orders = response.body().getData();
-                    executor.execute(() -> {
-                        orderDao.clearAll();
-                        orderDao.insertOrders(orders);
-                    });
+                    if (orders != null) {
+                        executor.execute(() -> {
+                            orderDao.clearAll();
+                            orderDao.insertOrders(orders);
+                        });
+                        Log.d(TAG, "Loaded " + orders.size() + " orders from admin endpoint");
+                    } else {
+                        Log.e(TAG, "No orders in response");
+                    }
                 } else {
-                    Log.e(TAG, "Failed to refresh orders: " + response.message());
+                    Log.e(TAG, "Failed to refresh orders: " + response.code() + " - " + response.message());
                 }
             }
 

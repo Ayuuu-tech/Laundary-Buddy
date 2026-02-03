@@ -8,6 +8,7 @@ import android.util.Log;
 import android.util.Size;
 
 import androidx.annotation.NonNull;
+import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageProxy;
@@ -40,6 +41,7 @@ public class QrCodeScanner {
     private final Context context;
     private final LifecycleOwner lifecycleOwner;
     private ProcessCameraProvider cameraProvider;
+    private Camera camera;
     private final ExecutorService cameraExecutor;
     private BarcodeScanner barcodeScanner;
     private QrScanCallback callback;
@@ -128,12 +130,21 @@ public class QrCodeScanner {
                 .build();
 
         try {
-            cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview, imageAnalysis);
+            camera = cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview, imageAnalysis);
         } catch (Exception e) {
             Log.e(TAG, "Error binding camera", e);
             if (callback != null) {
                 callback.onError("Failed to bind camera: " + e.getMessage());
             }
+        }
+    }
+
+    /**
+     * Toggle torch/flashlight
+     */
+    public void setTorch(boolean enabled) {
+        if (camera != null && camera.getCameraInfo().hasFlashUnit()) {
+            camera.getCameraControl().enableTorch(enabled);
         }
     }
 

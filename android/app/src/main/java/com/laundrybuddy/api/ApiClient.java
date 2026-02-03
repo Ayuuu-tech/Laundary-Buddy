@@ -29,6 +29,7 @@ public class ApiClient {
     private final OrderApi orderApi;
     private final TrackingApi trackingApi;
     private final SupportApi supportApi;
+    private final AdminApi adminApi;
 
     private ApiClient(Context context) {
         // Cookie manager for session handling
@@ -64,11 +65,17 @@ public class ApiClient {
                 .writeTimeout(30, TimeUnit.SECONDS)
                 .build();
 
+        // Custom Gson with UserFieldAdapter to handle user field as String or Object
+        com.google.gson.Gson gson = new com.google.gson.GsonBuilder()
+                .registerTypeAdapter(com.laundrybuddy.models.Order.PopulatedUser.class,
+                        new com.laundrybuddy.models.UserFieldAdapter())
+                .create();
+
         // Retrofit instance
         retrofit = new Retrofit.Builder()
                 .baseUrl(BuildConfig.API_BASE_URL + "/")
                 .client(okHttpClient)
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
 
         // Create API interfaces
@@ -76,6 +83,7 @@ public class ApiClient {
         orderApi = retrofit.create(OrderApi.class);
         trackingApi = retrofit.create(TrackingApi.class);
         supportApi = retrofit.create(SupportApi.class);
+        adminApi = retrofit.create(AdminApi.class);
 
         Log.d(TAG, "API Client initialized with base URL: " + BuildConfig.API_BASE_URL);
     }
@@ -108,6 +116,10 @@ public class ApiClient {
 
     public SupportApi getSupportApi() {
         return supportApi;
+    }
+
+    public AdminApi getAdminApi() {
+        return adminApi;
     }
 
     public Retrofit getRetrofit() {
