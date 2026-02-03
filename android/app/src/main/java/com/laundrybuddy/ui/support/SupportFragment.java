@@ -72,7 +72,9 @@ public class SupportFragment extends Fragment {
     }
 
     private void showTicketDetails(com.laundrybuddy.models.SupportTicket ticket) {
-        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(requireContext());
+        if (!isAdded() || getContext() == null) return;
+        
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getContext());
         View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_ticket_detail, null);
         builder.setView(view);
 
@@ -148,6 +150,8 @@ public class SupportFragment extends Fragment {
     }
 
     private void exportData() {
+        if (!isAdded() || getContext() == null) return;
+        
         if (orderList == null || orderList.isEmpty()) {
             Toast.makeText(getContext(), "No data to export", Toast.LENGTH_SHORT).show();
             // Trigger load just in case
@@ -156,7 +160,7 @@ public class SupportFragment extends Fragment {
         }
 
         try {
-            java.io.File file = new java.io.File(requireContext().getExternalFilesDir(null), "laundry_history.csv");
+            java.io.File file = new java.io.File(getContext().getExternalFilesDir(null), "laundry_history.csv");
             java.io.FileWriter writer = new java.io.FileWriter(file);
             writer.append("Order Number,Status,Item Count,Date\n");
 
@@ -170,8 +174,8 @@ public class SupportFragment extends Fragment {
             writer.close();
 
             // Share Intent
-            android.net.Uri uri = androidx.core.content.FileProvider.getUriForFile(requireContext(),
-                    requireContext().getPackageName() + ".fileprovider", file);
+            android.net.Uri uri = androidx.core.content.FileProvider.getUriForFile(getContext(),
+                    getContext().getPackageName() + ".fileprovider", file);
 
             android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_SEND);
             intent.setType("text/csv");
@@ -233,7 +237,9 @@ public class SupportFragment extends Fragment {
                 "Pending Orders: " + pendingOrders + "\n\n" +
                 "Status: " + (pendingOrders > 0 ? "Active" : "All Clear");
 
-        new MaterialAlertDialogBuilder(requireContext())
+        if (!isAdded() || getContext() == null) return;
+        
+        new MaterialAlertDialogBuilder(getContext())
                 .setTitle("Monthly Report")
                 .setMessage(report)
                 .setPositiveButton("OK", null)
@@ -298,8 +304,10 @@ public class SupportFragment extends Fragment {
                     Toast.LENGTH_LONG).show();
         }
 
+        if (!isAdded() || getContext() == null) return;
+        
         android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(
-                requireContext(), android.R.layout.simple_dropdown_item_1line, orderDisplays);
+                getContext(), android.R.layout.simple_dropdown_item_1line, orderDisplays);
 
         ((android.widget.AutoCompleteTextView) binding.orderSelector).setAdapter(adapter);
         ((android.widget.AutoCompleteTextView) binding.orderSelector)

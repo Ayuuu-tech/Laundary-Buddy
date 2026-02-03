@@ -46,6 +46,8 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupClickListeners() {
+        if (binding == null) return;
+        
         // Hero Buttons
         binding.btnHeroSubmit.setOnClickListener(v -> openSubmitOrder());
         binding.btnHeroTrack.setOnClickListener(v -> navigateToTab(R.id.nav_track));
@@ -61,36 +63,49 @@ public class HomeFragment extends Fragment {
         });
 
         binding.cardQuickContact.setOnClickListener(v -> {
-            startActivity(new Intent(getActivity(), ContactActivity.class));
+            if (getActivity() != null) {
+                startActivity(new Intent(getActivity(), ContactActivity.class));
+            }
         });
 
         // Extra Features
         binding.cardExtraSchedule.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Scheduling feature coming soon", Toast.LENGTH_SHORT).show();
+            if (getContext() != null) {
+                Toast.makeText(getContext(), "Scheduling feature coming soon", Toast.LENGTH_SHORT).show();
+            }
         });
 
         binding.cardExtraNotif.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "You will receive notifications here", Toast.LENGTH_SHORT).show();
+            if (getContext() != null) {
+                Toast.makeText(getContext(), "You will receive notifications here", Toast.LENGTH_SHORT).show();
+            }
         });
 
         binding.cardExtraQr.setOnClickListener(v -> {
             // QR is in History
             navigateToTab(R.id.nav_history);
-            Toast.makeText(getContext(), "Tap an order to view QR", Toast.LENGTH_LONG).show();
+            if (getContext() != null) {
+                Toast.makeText(getContext(), "Tap an order to view QR", Toast.LENGTH_LONG).show();
+            }
         });
     }
 
-    private void openSubmitOrder() {
-        startActivity(new Intent(getActivity(), SubmitOrderActivity.class));
-    }
-
     private void navigateToTab(int tabId) {
-        if (getActivity() != null) {
+        if (!isAdded() || getActivity() == null) return;
+        
+        try {
             BottomNavigationView nav = getActivity().findViewById(R.id.bottomNavigation);
             if (nav != null) {
                 nav.setSelectedItemId(tabId);
             }
+        } catch (Exception e) {
+            // Fragment may have been detached
         }
+    }
+    
+    private void openSubmitOrder() {
+        if (!isAdded() || getActivity() == null) return;
+        startActivity(new Intent(getActivity(), SubmitOrderActivity.class));
     }
 
     @Override

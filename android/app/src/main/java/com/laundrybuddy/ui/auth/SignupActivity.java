@@ -195,7 +195,7 @@ public class SignupActivity extends AppCompatActivity {
     private void handleSignupSuccess(User user) {
         // Save user info
         app.setSessionActive(true);
-        app.saveUserInfo(user.getId(), user.getName(), user.getEmail(), user.getRole());
+        app.saveFullUserInfo(user);
 
         Toast.makeText(this, getString(R.string.signup_success), Toast.LENGTH_SHORT).show();
 

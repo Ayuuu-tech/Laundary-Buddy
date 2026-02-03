@@ -571,6 +571,20 @@ public class StaffDashboardActivity extends AppCompatActivity {
     }
 
     private void logout() {
+        ApiClient.getInstance().getAuthApi().logout().enqueue(new Callback<ApiResponse<Void>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                performLogout();
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                performLogout();
+            }
+        });
+    }
+
+    private void performLogout() {
         LaundryBuddyApp.getInstance().clearAuth();
         Intent intent = new Intent(this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

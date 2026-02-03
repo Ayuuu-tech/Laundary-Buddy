@@ -83,16 +83,41 @@ public class ProfileFragment extends Fragment {
         setupEditMode();
         loadProfilePhoto();
         loadOrderStatistics();
+        refreshUserInfo();
     }
 
     private void setupUserInfo() {
-        binding.userName.setText(app.getUserName());
-        binding.userEmail.setText(app.getUserEmail());
+        binding.userName.setText(app.getUserName() != null ? app.getUserName() : "User");
+        binding.userEmail.setText(app.getUserEmail() != null ? app.getUserEmail() : "Email");
 
         String hostelRoom = app.getPrefs().getString("hostel_room", null);
         String phone = app.getPrefs().getString("phone", null);
-        binding.hostelRoom.setText(hostelRoom != null ? hostelRoom : "Not set");
-        binding.phone.setText(phone != null ? phone : "Not set");
+        binding.hostelRoom.setText(hostelRoom != null && !hostelRoom.isEmpty() ? hostelRoom : "Not set");
+        binding.phone.setText(phone != null && !phone.isEmpty() ? phone : "Not set");
+    }
+
+    private void refreshUserInfo() {
+        ApiClient.getInstance().getAuthApi().getCurrentUser().enqueue(new Callback<ApiResponse<User>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                if (binding == null)
+                    return;
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    User user = response.body().getUser() != null ? response.body().getUser()
+                            : response.body().getData();
+                    if (user != null) {
+                        app.saveFullUserInfo(user);
+                        setupUserInfo();
+                        loadProfilePhoto();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                Log.e(TAG, "Failed to refresh user info", t);
+            }
+        });
     }
 
     private void loadProfilePhoto() {
@@ -221,11 +246,15 @@ public class ProfileFragment extends Fragment {
     }
 
     private void saveProfile() {
+        if (binding == null || !isAdded()) return;
+        
         String newHostelRoom = binding.hostelRoomEdit.getText().toString().trim();
         String newPhone = binding.phoneEdit.getText().toString().trim();
 
         if (newHostelRoom.isEmpty() || newPhone.isEmpty()) {
-            ToastManager.showWarning(requireContext(), "Please fill in all fields");
+            if (getContext() != null) {
+                ToastManager.showWarning(getContext(), "Please fill in all fields");
+            }
             return;
         }
 
@@ -238,6 +267,8 @@ public class ProfileFragment extends Fragment {
                 .enqueue(new Callback<ApiResponse<User>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                        if (binding == null || !isAdded()) return;
+                        
                         if (response.isSuccessful() && response.body() != null) {
                             ApiResponse<User> apiResponse = response.body();
                             if (apiResponse.isSuccess()) {
@@ -253,20 +284,30 @@ public class ProfileFragment extends Fragment {
 
                                 // Exit edit mode
                                 toggleEditMode();
-                                ToastManager.showSuccess(requireContext(), "Profile updated!");
+                                if (getContext() != null) {
+                                    ToastManager.showSuccess(getContext(), "Profile updated!");
+                                }
                             } else {
-                                ToastManager.showError(requireContext(),
-                                        apiResponse.getMessage() != null ? apiResponse.getMessage() : "Update failed");
+                                if (getContext() != null) {
+                                    ToastManager.showError(getContext(),
+                                            apiResponse.getMessage() != null ? apiResponse.getMessage() : "Update failed");
+                                }
                             }
                         } else {
-                            ToastManager.showError(requireContext(), "Failed to update profile");
+                            if (getContext() != null) {
+                                ToastManager.showError(getContext(), "Failed to update profile");
+                            }
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                        if (!isAdded()) return;
+                        
                         Log.e(TAG, "Profile update failed", t);
-                        ToastManager.showError(requireContext(), getString(R.string.error_network));
+                        if (getContext() != null) {
+                            ToastManager.showError(getContext(), getString(R.string.error_network));
+                        }
                     }
                 });
     }
@@ -276,15 +317,18 @@ public class ProfileFragment extends Fragment {
     }
 
     private void handleImageResult(Uri uri) {
-        if (uri == null)
-            return;
+        if (uri == null || !isAdded()) return;
 
-        ToastManager.showInfo(requireContext(), "Uploading photo...");
+        if (getContext() != null) {
+            ToastManager.showInfo(getContext(), "Uploading photo...");
+        }
 
         try {
             File file = getFileFromUri(uri);
             if (file == null) {
-                ToastManager.showError(requireContext(), "Failed to process image");
+                if (getContext() != null) {
+                    ToastManager.showError(getContext(), "Failed to process image");
+                }
                 return;
             }
 
@@ -295,6 +339,8 @@ public class ProfileFragment extends Fragment {
                     .enqueue(new Callback<ApiResponse<User>>() {
                         @Override
                         public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                            if (binding == null || !isAdded()) return;
+                            
                             Log.d(TAG, "Upload response: " + response.code() + " " + response.message());
                             if (response.isSuccessful() && response.body() != null) {
                                 ApiResponse<User> apiResponse = response.body();
@@ -312,15 +358,21 @@ public class ProfileFragment extends Fragment {
                                                 .putString("profile_photo", user.getProfilePhoto())
                                                 .apply();
                                         loadProfilePhoto();
-                                        ToastManager.showSuccess(requireContext(), "Profile photo updated!");
+                                        if (getContext() != null) {
+                                            ToastManager.showSuccess(getContext(), "Profile photo updated!");
+                                        }
                                     } else {
                                         Log.w(TAG, "User or photo URL null in response");
-                                        ToastManager.showError(requireContext(), "Response missing photo data");
+                                        if (getContext() != null) {
+                                            ToastManager.showError(getContext(), "Response missing photo data");
+                                        }
                                     }
                                 } else {
-                                    ToastManager.showError(requireContext(),
-                                            apiResponse.getMessage() != null ? apiResponse.getMessage()
-                                                    : "Upload failed");
+                                    if (getContext() != null) {
+                                        ToastManager.showError(getContext(),
+                                                apiResponse.getMessage() != null ? apiResponse.getMessage()
+                                                        : "Upload failed");
+                                    }
                                 }
                             } else {
                                 try {
@@ -329,28 +381,38 @@ public class ProfileFragment extends Fragment {
                                     Log.e(TAG, "Upload failed: " + errorBody);
                                 } catch (Exception e) {
                                 }
-                                ToastManager.showError(requireContext(), "Failed to upload photo");
+                                if (getContext() != null) {
+                                    ToastManager.showError(getContext(), "Failed to upload photo");
+                                }
                             }
                         }
 
                         @Override
                         public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                            if (!isAdded()) return;
+                            
                             Log.e(TAG, "Photo upload failed", t);
-                            ToastManager.showError(requireContext(), getString(R.string.error_network));
+                            if (getContext() != null) {
+                                ToastManager.showError(getContext(), getString(R.string.error_network));
+                            }
                         }
                     });
 
         } catch (Exception e) {
             Log.e(TAG, "Error processing image", e);
-            ToastManager.showError(requireContext(), "Failed to process image");
+            if (getContext() != null) {
+                ToastManager.showError(getContext(), "Failed to process image");
+            }
         }
     }
 
     private File getFileFromUri(Uri uri) {
+        if (getContext() == null) return null;
+        
         try {
-            ContentResolver contentResolver = requireContext().getContentResolver();
+            ContentResolver contentResolver = getContext().getContentResolver();
             String fileName = getFileName(uri);
-            File tempFile = new File(requireContext().getCacheDir(), fileName);
+            File tempFile = new File(getContext().getCacheDir(), fileName);
 
             InputStream inputStream = contentResolver.openInputStream(uri);
             if (inputStream != null) {
@@ -372,8 +434,10 @@ public class ProfileFragment extends Fragment {
 
     private String getFileName(Uri uri) {
         String result = "profile_photo.jpg";
+        if (getContext() == null) return result;
+        
         if (uri.getScheme().equals("content")) {
-            try (Cursor cursor = requireContext().getContentResolver().query(uri, null, null, null, null)) {
+            try (Cursor cursor = getContext().getContentResolver().query(uri, null, null, null, null)) {
                 if (cursor != null && cursor.moveToFirst()) {
                     int index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
                     if (index >= 0) {

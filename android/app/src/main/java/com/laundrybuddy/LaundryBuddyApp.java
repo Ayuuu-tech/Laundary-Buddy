@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 
 import com.laundrybuddy.api.ApiClient;
 import com.laundrybuddy.db.AppDatabase;
+import com.laundrybuddy.models.User;
 import com.laundrybuddy.utils.SessionManager;
 import com.laundrybuddy.utils.ThemeManager;
 
@@ -75,7 +76,10 @@ public class LaundryBuddyApp extends Application {
                 .remove("user_name")
                 .remove("user_email")
                 .remove("user_role")
-                .remove("session_active") // Fix: Remove session_active
+                .remove("hostel_room")
+                .remove("phone")
+                .remove("profile_photo")
+                .remove("session_active")
                 .apply();
     }
 
@@ -85,6 +89,20 @@ public class LaundryBuddyApp extends Application {
                 .putString("user_name", name)
                 .putString("user_email", email)
                 .putString("user_role", role)
+                .apply();
+    }
+
+    public void saveFullUserInfo(User user) {
+        if (user == null)
+            return;
+        sharedPreferences.edit()
+                .putString("user_id", user.getId())
+                .putString("user_name", user.getName())
+                .putString("user_email", user.getEmail())
+                .putString("user_role", user.getRole())
+                .putString("hostel_room", user.getHostelRoom())
+                .putString("phone", user.getPhone())
+                .putString("profile_photo", user.getProfilePhoto())
                 .apply();
     }
 

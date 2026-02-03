@@ -201,6 +201,13 @@ public class SubmitOrderActivity extends AppCompatActivity {
         body.put("deliveryDate", tomorrow);
         body.put("totalAmount", total * 10);
 
+        // Include profile info in order
+        LaundryBuddyApp appInstance = LaundryBuddyApp.getInstance();
+        String hostelRoom = appInstance.getPrefs().getString("hostel_room", "");
+        String phone = appInstance.getPrefs().getString("phone", "");
+        body.put("address", hostelRoom);
+        body.put("phone", phone);
+
         String instructions = binding.instructionsInput.getText().toString().trim();
         if (!instructions.isEmpty()) {
             body.put("specialInstructions", instructions);
@@ -251,10 +258,11 @@ public class SubmitOrderActivity extends AppCompatActivity {
         }
 
         // Generate QR code content
+        String hostelRoom = LaundryBuddyApp.getInstance().getPrefs().getString("hostel_room", "");
         String qrContent = QrCodeGenerator.buildOrderQrContent(
                 currentOrderNumber,
                 userName != null ? userName : "User",
-                "", // hostel room
+                hostelRoom,
                 totalItems,
                 order.getStatus());
 

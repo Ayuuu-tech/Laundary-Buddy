@@ -82,19 +82,25 @@ public class SessionManager implements Application.ActivityLifecycleCallbacks {
      * Check if session has timed out and logout if necessary.
      */
     private void checkSessionTimeout() {
-        if (!app.isLoggedIn()) {
-            return; // Not logged in, nothing to check
-        }
+        if (app == null) return;
+        
+        try {
+            if (!app.isLoggedIn()) {
+                return; // Not logged in, nothing to check
+            }
 
-        long currentTime = System.currentTimeMillis();
-        long elapsedTime = currentTime - lastActivityTime;
+            long currentTime = System.currentTimeMillis();
+            long elapsedTime = currentTime - lastActivityTime;
 
-        if (elapsedTime >= SESSION_TIMEOUT_MS) {
-            Log.d(TAG, "Session timeout! Elapsed: " + (elapsedTime / 1000) + "s");
-            performAutoLogout();
-        } else {
-            long remainingTime = (SESSION_TIMEOUT_MS - elapsedTime) / 1000;
-            Log.d(TAG, "Session active. Remaining: " + remainingTime + "s");
+            if (elapsedTime >= SESSION_TIMEOUT_MS) {
+                Log.d(TAG, "Session timeout! Elapsed: " + (elapsedTime / 1000) + "s");
+                performAutoLogout();
+            } else {
+                long remainingTime = (SESSION_TIMEOUT_MS - elapsedTime) / 1000;
+                Log.d(TAG, "Session active. Remaining: " + remainingTime + "s");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error checking session timeout", e);
         }
     }
 
@@ -104,21 +110,31 @@ public class SessionManager implements Application.ActivityLifecycleCallbacks {
     private void performAutoLogout() {
         Log.d(TAG, "Performing auto logout due to inactivity");
 
-        // Clear auth data
-        app.clearAuth();
+        try {
+            // Clear auth data
+            if (app != null) {
+                app.clearAuth();
+            }
 
-        // Show toast notification
-        if (currentActivity != null) {
-            handler.post(() -> {
-                ToastManager.showWarning(currentActivity,
-                        "Session expired due to inactivity. Please login again.");
+            // Show toast notification
+            if (currentActivity != null && !currentActivity.isFinishing() && !currentActivity.isDestroyed()) {
+                handler.post(() -> {
+                    try {
+                        ToastManager.showWarning(currentActivity,
+                                "Session expired due to inactivity. Please login again.");
 
-                // Navigate to login
-                Intent intent = new Intent(currentActivity, LoginActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                currentActivity.startActivity(intent);
-                currentActivity.finish();
-            });
+                        // Navigate to login
+                        Intent intent = new Intent(currentActivity, LoginActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        currentActivity.startActivity(intent);
+                        currentActivity.finish();
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error navigating to login", e);
+                    }
+                });
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error during auto logout", e);
         }
     }
 

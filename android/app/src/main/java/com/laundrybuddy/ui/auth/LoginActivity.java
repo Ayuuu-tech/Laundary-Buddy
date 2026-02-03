@@ -269,7 +269,7 @@ public class LoginActivity extends AppCompatActivity {
     private void handleLoginSuccess(User user) {
         // Save user info
         app.setSessionActive(true);
-        app.saveUserInfo(user.getId(), user.getName(), user.getEmail(), user.getRole());
+        app.saveFullUserInfo(user);
         Log.d(TAG, "Saved user info - id: " + user.getId());
 
         Toast.makeText(this, getString(R.string.login_success), Toast.LENGTH_SHORT).show();

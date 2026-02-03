@@ -132,7 +132,9 @@ public class TrackOrderFragment extends Fragment {
     private void setupQrScanner() {
         if (binding.scanButton != null) {
             binding.scanButton.setOnClickListener(v -> {
-                Intent intent = new Intent(requireContext(), QrScannerActivity.class);
+                if (!isAdded() || getContext() == null) return;
+                
+                Intent intent = new Intent(getContext(), QrScannerActivity.class);
                 scannerLauncher.launch(intent);
             });
         }
@@ -169,7 +171,9 @@ public class TrackOrderFragment extends Fragment {
                 if (orderToShow != null) {
                     showQrDialog(orderToShow);
                 } else {
-                    ToastManager.showWarning(requireContext(), "No orders available");
+                    if (getContext() != null) {
+                        ToastManager.showWarning(getContext(), "No orders available");
+                    }
                 }
             });
         }
@@ -230,6 +234,8 @@ public class TrackOrderFragment extends Fragment {
     }
 
     private void searchOrder(String query) {
+        if (binding == null) return;
+        
         binding.loadingProgress.setVisibility(View.VISIBLE);
         if (binding.orderDetailsLayout != null) {
             binding.orderDetailsLayout.setVisibility(View.GONE);
@@ -241,6 +247,9 @@ public class TrackOrderFragment extends Fragment {
                     @Override
                     public void onResponse(Call<ApiResponse<Tracking>> call,
                             Response<ApiResponse<Tracking>> response) {
+                        // Check if fragment is still attached
+                        if (binding == null || !isAdded()) return;
+                        
                         binding.loadingProgress.setVisibility(View.GONE);
 
                         if (response.isSuccessful() && response.body() != null) {
@@ -248,21 +257,27 @@ public class TrackOrderFragment extends Fragment {
                             if (apiResponse.isSuccess() && apiResponse.getData() != null) {
                                 displayOrder(apiResponse.getData());
                             } else {
-                                // binding.emptyState.setVisibility(View.VISIBLE);
-                                ToastManager.showWarning(requireContext(), "Order not found");
+                                if (getContext() != null) {
+                                    ToastManager.showWarning(getContext(), "Order not found");
+                                }
                             }
                         } else {
-                            // binding.emptyState.setVisibility(View.VISIBLE);
-                            ToastManager.showWarning(requireContext(), "Order not found");
+                            if (getContext() != null) {
+                                ToastManager.showWarning(getContext(), "Order not found");
+                            }
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ApiResponse<Tracking>> call, Throwable t) {
+                        // Check if fragment is still attached
+                        if (binding == null || !isAdded()) return;
+                        
                         binding.loadingProgress.setVisibility(View.GONE);
-                        // binding.emptyState.setVisibility(View.VISIBLE);
                         Log.e(TAG, "Search failed", t);
-                        ToastManager.showError(requireContext(), getString(R.string.error_network));
+                        if (getContext() != null) {
+                            ToastManager.showError(getContext(), getString(R.string.error_network));
+                        }
                     }
                 });
     }
@@ -283,38 +298,49 @@ public class TrackOrderFragment extends Fragment {
     }
 
     private void showQrDialog(Order order) {
-        // Build QR dialog inline since QrCodeDialog class is not available
-        String orderNumber = order.getOrderNumber();
-        int totalItems = order.getTotalItems();
-        String userName = com.laundrybuddy.LaundryBuddyApp.getInstance().getUserName();
+        if (!isAdded() || getContext() == null) return;
+        
+        try {
+            // Build QR dialog inline since QrCodeDialog class is not available
+            String orderNumber = order.getOrderNumber();
+            int totalItems = order.getTotalItems();
+            String userName = com.laundrybuddy.LaundryBuddyApp.getInstance().getUserName();
 
-        String qrContent = com.laundrybuddy.utils.QrCodeGenerator.buildOrderQrContent(
-                orderNumber,
-                userName != null ? userName : "User",
-                "",
-                totalItems,
-                order.getStatus());
+            String qrContent = com.laundrybuddy.utils.QrCodeGenerator.buildOrderQrContent(
+                    orderNumber,
+                    userName != null ? userName : "User",
+                    "",
+                    totalItems,
+                    order.getStatus());
 
-        android.graphics.Bitmap qrBitmap = com.laundrybuddy.utils.QrCodeGenerator.generateQrCode(qrContent, 400);
+            android.graphics.Bitmap qrBitmap = com.laundrybuddy.utils.QrCodeGenerator.generateQrCode(qrContent, 400);
 
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_qr_code, null);
-        TextView orderNumberText = dialogView.findViewById(R.id.orderNumberText);
-        ImageView qrCodeImage = dialogView.findViewById(R.id.qrCodeImage);
-        android.widget.ImageButton doneBtn = dialogView.findViewById(R.id.doneButton);
-        // We can hide download/share for now if not implemented here, or just stub them
+            View dialogView = getLayoutInflater().inflate(R.layout.dialog_qr_code, null);
+            TextView orderNumberText = dialogView.findViewById(R.id.orderNumberText);
+            ImageView qrCodeImage = dialogView.findViewById(R.id.qrCodeImage);
+            android.widget.ImageButton doneBtn = dialogView.findViewById(R.id.doneButton);
+            // We can hide download/share for now if not implemented here, or just stub them
 
-        orderNumberText.setText("Order #" + orderNumber);
-        if (qrBitmap != null) {
-            qrCodeImage.setImageBitmap(qrBitmap);
+            orderNumberText.setText("Order #" + orderNumber);
+            if (qrBitmap != null) {
+                qrCodeImage.setImageBitmap(qrBitmap);
+            }
+
+            if (!isAdded() || getContext() == null) return;
+            
+            AlertDialog dialog = new MaterialAlertDialogBuilder(getContext())
+                    .setView(dialogView)
+                    .setCancelable(true)
+                    .create();
+
+            doneBtn.setOnClickListener(v -> dialog.dismiss());
+            dialog.show();
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to show QR dialog", e);
+            if (getContext() != null) {
+                ToastManager.showError(getContext(), "Failed to generate QR code");
+            }
         }
-
-        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
-                .setView(dialogView)
-                .setCancelable(true)
-                .create();
-
-        doneBtn.setOnClickListener(v -> dialog.dismiss());
-        dialog.show();
     }
 
     private void displayOrder(Tracking tracking) {
@@ -428,16 +454,22 @@ public class TrackOrderFragment extends Fragment {
     }
 
     private void toggleNotification(String orderNumber) {
+        if (binding == null) return;
         binding.loadingProgress.setVisibility(View.VISIBLE);
         ApiClient.getInstance().getTrackingApi().toggleNotify(orderNumber)
                 .enqueue(new Callback<ApiResponse<Tracking>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<Tracking>> call, Response<ApiResponse<Tracking>> response) {
+                        // Check if fragment is still attached
+                        if (binding == null || !isAdded()) return;
+                        
                         binding.loadingProgress.setVisibility(View.GONE);
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                             String message = response.body().getMessage();
-                            ToastManager.showSuccess(requireContext(),
-                                    message != null ? message : "Notification updated");
+                            if (getContext() != null) {
+                                ToastManager.showSuccess(getContext(),
+                                        message != null ? message : "Notification updated");
+                            }
 
                             // Handle Worker Start/Stop
                             if (response.body().getData() != null) {
@@ -450,37 +482,56 @@ public class TrackOrderFragment extends Fragment {
                                 displayOrder(t);
                             }
                         } else {
-                            ToastManager.showError(requireContext(), "Failed to update notification");
+                            if (getContext() != null) {
+                                ToastManager.showError(getContext(), "Failed to update notification");
+                            }
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ApiResponse<Tracking>> call, Throwable t) {
+                        // Check if fragment is still attached
+                        if (binding == null || !isAdded()) return;
+                        
                         binding.loadingProgress.setVisibility(View.GONE);
-                        ToastManager.showError(requireContext(), getString(R.string.error_network));
+                        if (getContext() != null) {
+                            ToastManager.showError(getContext(), getString(R.string.error_network));
+                        }
                     }
                 });
     }
 
     private void startTrackingWorker(String orderNumber) {
-        Data inputData = new Data.Builder()
-                .putString(OrderTrackingWorker.KEY_ORDER_NUMBER, orderNumber)
-                .build();
+        if (getContext() == null || !isAdded()) return;
+        
+        try {
+            Data inputData = new Data.Builder()
+                    .putString(OrderTrackingWorker.KEY_ORDER_NUMBER, orderNumber)
+                    .build();
 
-        PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
-                OrderTrackingWorker.class, 15, TimeUnit.MINUTES)
-                .setInputData(inputData)
-                .addTag("track_" + orderNumber)
-                .build();
+            PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
+                    OrderTrackingWorker.class, 15, TimeUnit.MINUTES)
+                    .setInputData(inputData)
+                    .addTag("track_" + orderNumber)
+                    .build();
 
-        WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork(
-                "track_" + orderNumber,
-                ExistingPeriodicWorkPolicy.KEEP,
-                request);
+            WorkManager.getInstance(getContext()).enqueueUniquePeriodicWork(
+                    "track_" + orderNumber,
+                    ExistingPeriodicWorkPolicy.KEEP,
+                    request);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to start tracking worker", e);
+        }
     }
 
     private void stopTrackingWorker(String orderNumber) {
-        WorkManager.getInstance(requireContext()).cancelUniqueWork("track_" + orderNumber);
+        if (getContext() == null || !isAdded()) return;
+        
+        try {
+            WorkManager.getInstance(getContext()).cancelUniqueWork("track_" + orderNumber);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to stop tracking worker", e);
+        }
     }
 
     // Timeline logic removed

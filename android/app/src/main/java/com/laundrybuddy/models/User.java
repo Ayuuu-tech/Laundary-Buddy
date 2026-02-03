@@ -7,7 +7,7 @@ import com.google.gson.annotations.SerializedName;
  */
 public class User {
 
-    @SerializedName("_id")
+    @SerializedName(value = "_id", alternate = { "id" })
     private String id;
 
     @SerializedName("name")

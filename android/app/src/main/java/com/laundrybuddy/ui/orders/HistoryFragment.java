@@ -115,12 +115,16 @@ public class HistoryFragment extends Fragment {
     }
 
     private void showRatingDialog(Order order) {
-        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(requireContext());
+        if (!isAdded() || getContext() == null) return;
+        
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getContext());
         View view = getLayoutInflater().inflate(R.layout.dialog_rate_order, null);
         builder.setView(view);
 
         android.app.AlertDialog dialog = builder.create();
-        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
 
         android.widget.RatingBar ratingBar = view.findViewById(R.id.ratingBar);
         com.google.android.material.textfield.TextInputEditText commentInput = view.findViewById(R.id.commentInput);
@@ -134,7 +138,9 @@ public class HistoryFragment extends Fragment {
             String comment = commentInput.getText().toString().trim();
 
             if (rating < 1) {
-                Toast.makeText(getContext(), "Please select a rating", Toast.LENGTH_SHORT).show();
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "Please select a rating", Toast.LENGTH_SHORT).show();
+                }
                 return;
             }
 
@@ -243,7 +249,9 @@ public class HistoryFragment extends Fragment {
     }
 
     private void showSortMenu() {
-        PopupMenu popup = new PopupMenu(requireContext(), binding.sortButton);
+        if (!isAdded() || getContext() == null) return;
+        
+        PopupMenu popup = new PopupMenu(getContext(), binding.sortButton);
         popup.getMenu().add(0, 1, 0, "Newest First");
         popup.getMenu().add(0, 2, 1, "Oldest First");
         popup.getMenu().add(0, 3, 2, "By Status");
@@ -272,12 +280,14 @@ public class HistoryFragment extends Fragment {
     }
 
     private void showExportMenu() {
+        if (!isAdded() || getContext() == null) return;
+        
         if (filteredOrders.isEmpty()) {
-            ToastManager.showWarning(requireContext(), "No orders to export");
+            ToastManager.showWarning(getContext(), "No orders to export");
             return;
         }
 
-        PopupMenu popup = new PopupMenu(requireContext(), binding.exportButton);
+        PopupMenu popup = new PopupMenu(getContext(), binding.exportButton);
         popup.getMenu().add(0, 1, 0, "Export as CSV");
         popup.getMenu().add(0, 2, 1, "Export as JSON");
 
@@ -297,33 +307,41 @@ public class HistoryFragment extends Fragment {
     }
 
     private void exportToCsv() {
-        ToastManager.showInfo(requireContext(), "Generating CSV...");
-        ExportUtils.exportToCsv(requireContext(), filteredOrders, new ExportUtils.ExportCallback() {
+        if (!isAdded() || getContext() == null) return;
+        
+        ToastManager.showInfo(getContext(), "Generating CSV...");
+        ExportUtils.exportToCsv(getContext(), filteredOrders, new ExportUtils.ExportCallback() {
             @Override
             public void onSuccess(java.io.File file) {
-                ToastManager.showSuccess(requireContext(), "Export ready!");
-                ExportUtils.shareCsv(requireContext(), file);
+                if (!isAdded() || getContext() == null) return;
+                ToastManager.showSuccess(getContext(), "Export ready!");
+                ExportUtils.shareCsv(getContext(), file);
             }
 
             @Override
             public void onError(String message) {
-                ToastManager.showError(requireContext(), message);
+                if (!isAdded() || getContext() == null) return;
+                ToastManager.showError(getContext(), message);
             }
         });
     }
 
     private void exportToJson() {
-        ToastManager.showInfo(requireContext(), "Generating JSON...");
-        ExportUtils.exportToJson(requireContext(), filteredOrders, new ExportUtils.ExportCallback() {
+        if (!isAdded() || getContext() == null) return;
+        
+        ToastManager.showInfo(getContext(), "Generating JSON...");
+        ExportUtils.exportToJson(getContext(), filteredOrders, new ExportUtils.ExportCallback() {
             @Override
             public void onSuccess(java.io.File file) {
-                ToastManager.showSuccess(requireContext(), "Export ready!");
-                ExportUtils.shareJson(requireContext(), file);
+                if (!isAdded() || getContext() == null) return;
+                ToastManager.showSuccess(getContext(), "Export ready!");
+                ExportUtils.shareJson(getContext(), file);
             }
 
             @Override
             public void onError(String message) {
-                ToastManager.showError(requireContext(), message);
+                if (!isAdded() || getContext() == null) return;
+                ToastManager.showError(getContext(), message);
             }
         });
     }
@@ -338,7 +356,9 @@ public class HistoryFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        repository = new com.laundrybuddy.repositories.OrderRepository(requireContext());
+        if (getContext() != null) {
+            repository = new com.laundrybuddy.repositories.OrderRepository(getContext());
+        }
     }
 
     private void loadOrders() {
@@ -410,6 +430,8 @@ public class HistoryFragment extends Fragment {
         ApiClient.getInstance().getAuthApi().getCurrentUser().enqueue(new Callback<ApiResponse<User>>() {
             @Override
             public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                if (binding == null || !isAdded()) return;
+                
                 Log.d(TAG, "getCurrentUser response code: " + response.code());
 
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
@@ -437,6 +459,8 @@ public class HistoryFragment extends Fragment {
 
             @Override
             public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                if (binding == null || !isAdded()) return;
+                
                 Log.e(TAG, "getCurrentUser network error", t);
                 // Network error - don't logout, just show error
                 showEmptyState("Network error. Please check connection.");
@@ -731,8 +755,10 @@ public class HistoryFragment extends Fragment {
 
         currentQrBitmap = QrCodeGenerator.generateQrCode(qrContent, 400);
 
+        if (!isAdded() || getContext() == null) return;
+        
         // Inflate dialog view
-        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_qr_code, null);
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_qr_code, null);
 
         TextView orderNumberText = dialogView.findViewById(R.id.orderNumberText);
         ImageView qrCodeImage = dialogView.findViewById(R.id.qrCodeImage);
@@ -745,7 +771,7 @@ public class HistoryFragment extends Fragment {
             qrCodeImage.setImageBitmap(currentQrBitmap);
         }
 
-        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
+        AlertDialog dialog = new MaterialAlertDialogBuilder(getContext())
                 .setView(dialogView)
                 .setCancelable(true)
                 .create();
@@ -753,7 +779,9 @@ public class HistoryFragment extends Fragment {
         downloadBtn.setOnClickListener(v -> saveQrCode());
 
         shareBtn.setOnClickListener(v -> {
-            ToastManager.showInfo(requireContext(), "Share functionality coming soon");
+            if (getContext() != null) {
+                ToastManager.showInfo(getContext(), "Share functionality coming soon");
+            }
         });
 
         doneBtn.setOnClickListener(v -> dialog.dismiss());
@@ -762,8 +790,10 @@ public class HistoryFragment extends Fragment {
     }
 
     private void saveQrCode() {
+        if (!isAdded() || getContext() == null) return;
+        
         if (currentQrBitmap == null || currentOrderNumber == null) {
-            ToastManager.showError(requireContext(), "No QR code to save");
+            ToastManager.showError(getContext(), "No QR code to save");
             return;
         }
 
@@ -773,19 +803,21 @@ public class HistoryFragment extends Fragment {
             values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
             values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/LaundryBuddy");
 
-            Uri uri = requireContext().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            Uri uri = getContext().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                     values);
             if (uri != null) {
-                OutputStream outputStream = requireContext().getContentResolver().openOutputStream(uri);
+                OutputStream outputStream = getContext().getContentResolver().openOutputStream(uri);
                 if (outputStream != null) {
                     currentQrBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
                     outputStream.close();
-                    ToastManager.showSuccess(requireContext(), "QR Code saved to gallery");
+                    ToastManager.showSuccess(getContext(), "QR Code saved to gallery");
                 }
             }
         } catch (Exception e) {
             Log.e(TAG, "Failed to save QR code", e);
-            ToastManager.showError(requireContext(), "Failed to save QR code");
+            if (getContext() != null) {
+                ToastManager.showError(getContext(), "Failed to save QR code");
+            }
         }
     }
 

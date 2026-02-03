@@ -37,13 +37,13 @@ public interface SupportApi {
             @Body Map<String, Object> body);
 
     // Contact Messages
-    @POST("contact")
+    @POST("contact/submit")
     Call<ApiResponse<ContactMessage>> sendContactMessage(@Body Map<String, Object> body);
 
     // Admin endpoints
     @GET("support/all-tickets")
     Call<ApiResponse<List<SupportTicket>>> getAllTickets();
 
-    @GET("contact/messages")
+    @GET("contact/all")
     Call<ApiResponse<List<ContactMessage>>> getAllContactMessages();
 }

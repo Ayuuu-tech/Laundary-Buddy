@@ -49,15 +49,15 @@ public class ContactActivity extends AppCompatActivity {
         String name = app.getUserName();
         String email = app.getUserEmail();
 
-        Log.d(TAG, "Prefilling user info: " + name + ", " + email);
+        Log.d(TAG, "Prefilling user info from prefs: Name=" + name + ", Email=" + email);
 
-        if (name != null && !name.isEmpty()) {
+        if (name != null && !name.trim().isEmpty()) {
             binding.nameInput.setText(name);
             binding.nameInput.setEnabled(false);
             binding.nameLayout.setEnabled(false);
         }
 
-        if (email != null && !email.isEmpty()) {
+        if (email != null && !email.trim().isEmpty()) {
             binding.emailInput.setText(email);
             binding.emailInput.setEnabled(false);
             binding.emailLayout.setEnabled(false);
@@ -72,18 +72,21 @@ public class ContactActivity extends AppCompatActivity {
                     User user = response.body().getUser() != null ? response.body().getUser()
                             : response.body().getData();
                     if (user != null) {
+                        Log.d(TAG, "Fetched user info from server: " + user.getName());
                         // Save locally too
-                        LaundryBuddyApp.getInstance().saveUserInfo(user.getId(), user.getName(), user.getEmail(),
-                                user.getRole());
+                        LaundryBuddyApp.getInstance().saveFullUserInfo(user);
 
-                        // Update UI if empty
-                        if (TextUtils.isEmpty(binding.nameInput.getText())) {
+                        // Update UI if empty or mismatch
+                        if (user.getName() != null && !user.getName().isEmpty()) {
                             binding.nameInput.setText(user.getName());
                             binding.nameInput.setEnabled(false);
+                            binding.nameLayout.setHelperText("Verified from account");
                         }
-                        if (TextUtils.isEmpty(binding.emailInput.getText())) {
+
+                        if (user.getEmail() != null && !user.getEmail().isEmpty()) {
                             binding.emailInput.setText(user.getEmail());
                             binding.emailInput.setEnabled(false);
+                            binding.emailLayout.setHelperText("Verified from account");
                         }
                     }
                 }
@@ -134,6 +137,11 @@ public class ContactActivity extends AppCompatActivity {
             return;
         }
 
+        if (message.length() < 5) {
+            binding.messageLayout.setError("Message must be at least 5 characters");
+            return;
+        }
+
         setLoading(true);
 
         Map<String, Object> body = new HashMap<>();
@@ -141,6 +149,7 @@ public class ContactActivity extends AppCompatActivity {
         body.put("email", email);
         body.put("subject", subject);
         body.put("message", message);
+        body.put("hostelRoom", LaundryBuddyApp.getInstance().getPrefs().getString("hostel_room", ""));
 
         ApiClient.getInstance().getSupportApi().sendContactMessage(body)
                 .enqueue(new Callback<ApiResponse<ContactMessage>>() {
