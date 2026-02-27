@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /laundry-dashboard.html
+Disallow: /laundry-login.html
+Disallow: /offline.html
+
+Sitemap: https://laundrybuddy.ayushmaanyadav.me/sitemap.xml
