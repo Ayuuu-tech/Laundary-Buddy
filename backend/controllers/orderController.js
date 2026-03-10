@@ -1,5 +1,6 @@
 const Order = require('../models/Order');
 const crypto = require('crypto');
+const { v4: uuidv4 } = require('uuid');
 
 // Get all orders for user
 exports.getOrders = async (req, res) => {
@@ -72,14 +73,17 @@ exports.createOrder = async (req, res) => {
       ? items.map((it) => ({
         type: it.type || it.name || 'unknown',
         count: typeof it.count === 'number' ? it.count : (typeof it.quantity === 'number' ? it.quantity : parseInt(it.count || it.quantity || 0, 10)),
-        quantity: undefined,
-        name: undefined,
         color: it.color || 'mixed',
       }))
       : [];
 
-    const orderNumber = 'ORD' + Date.now() + crypto.randomInt(1000, 9999).toString();
+    // Generate unique order number using UUID suffix for collision resistance
+    const orderNumber = 'ORD' + Date.now() + '-' + uuidv4().slice(0, 6).toUpperCase();
     const initialStatus = 'submitted';
+
+    // Calculate total: use client-sent amount or fall back to calculated amount
+    const calculatedTotal = normalizedItems.reduce((sum, item) => sum + (item.count * 10), 0);
+    const finalTotal = typeof totalAmount === 'number' && totalAmount > 0 ? totalAmount : calculatedTotal;
 
     // Create Order with session
     const [order] = await Order.create([{
@@ -90,7 +94,7 @@ exports.createOrder = async (req, res) => {
       pickupTime,
       deliveryDate,
       items: normalizedItems,
-      totalAmount: normalizedItems.reduce((sum, item) => sum + (item.count * 10), 0),
+      totalAmount: finalTotal,
       address,
       phone,
       specialInstructions,
@@ -140,19 +144,12 @@ exports.updateOrder = async (req, res) => {
     // List allowed fields to prevent mass assignment
     const { items, totalAmount, serviceType, pickupDate, deliveryDate, deliveryAddress, specialInstructions, status, paymentStatus, feedback } = req.body;
 
-    // Only admins can update status/paymentStatus via this generic route?
-    // Usually status updates have their own flow, but if we allow it here for now,
-    // we should at least not allow updating user or _id.
+    // Only admins can update status/paymentStatus
     const updateData = { items, totalAmount, serviceType, pickupDate, deliveryDate, deliveryAddress, specialInstructions };
 
-    // If admin, allow status updates (or valid roles)
-    // Checking req.user.isAdmin or role from session if available?
-    // Since this controller is for general usage, maybe we should restricted critical fields?
-    // For now, removing status/paymentStatus unless specific logic handles it.
-    // Wait, the user might need to update status through other endpoints.
-    // Let's include them if present but sanitize.
-    if (status) updateData.status = status;
-    if (paymentStatus) updateData.paymentStatus = paymentStatus;
+    // Restrict status and paymentStatus changes to admin users only
+    if (status && req.user.isAdmin) updateData.status = status;
+    if (paymentStatus && req.user.isAdmin) updateData.paymentStatus = paymentStatus;
     if (feedback) updateData.feedback = feedback;
 
     const updatedOrder = await Order.findOneAndUpdate(

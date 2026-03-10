@@ -15,9 +15,12 @@ const subscriptionSchema = new mongoose.Schema({
     keys: {
         p256dh: { type: String, required: true },
         auth: { type: String, required: true }
-    },
-    userAgent: String,
-    createdAt: { type: Date, default: Date.now, expires: '90d' } // Auto-expire unused subs after 90 days? Optional.
-}, { timestamps: true });
+    }
+}, {
+    timestamps: true // Auto-generates createdAt and updatedAt
+});
+
+// TTL index — automatically delete subscriptions older than 90 days
+subscriptionSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 });
 
 module.exports = mongoose.model('Subscription', subscriptionSchema);

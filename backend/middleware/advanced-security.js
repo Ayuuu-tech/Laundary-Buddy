@@ -99,8 +99,10 @@ function sanitizeInputMiddleware(req, res, next) {
           // Remove null bytes
           obj[key] = obj[key].replace(/\0/g, '');
 
-          // Trim whitespace
-          obj[key] = obj[key].trim();
+          // Trim whitespace (except for password fields which may have intentional spaces)
+          if (!key.toLowerCase().includes('password')) {
+            obj[key] = obj[key].trim();
+          }
 
           // Escape HTML to prevent XSS (for display purposes)
           // Note: validator.escape is already applied by express-validator when needed
@@ -135,15 +137,15 @@ function sanitizeInputMiddleware(req, res, next) {
  */
 function containsSuspiciousPatterns(input) {
   const suspiciousPatterns = [
-    /<script[^>]*>.*?<\/script>/gi,  // Script tags
-    /javascript:/gi,                  // JavaScript protocol
-    /on\w+\s*=/gi,                   // Event handlers (onclick, onerror, etc.)
-    /\$where:/gi,                     // MongoDB $where
-    /\$ne:/gi,                        // MongoDB $ne (in unexpected places)
-    /union\s+select/gi,               // SQL injection
-    /exec\s*\(/gi,                    // Code execution
-    /eval\s*\(/gi,                    // eval function
-    /\.\.\/\.\.\//g,                  // Path traversal
+    /<script[^>]*>.*?<\/script>/i,  // Script tags
+    /javascript:/i,                  // JavaScript protocol
+    /on\w+\s*=/i,                   // Event handlers (onclick, onerror, etc.)
+    /\$where:/i,                     // MongoDB $where
+    /\$ne:/i,                        // MongoDB $ne (in unexpected places)
+    /union\s+select/i,               // SQL injection
+    /exec\s*\(/i,                    // Code execution
+    /eval\s*\(/i,                    // eval function
+    /\.\.\/\.\.\//,                  // Path traversal
   ];
 
   return suspiciousPatterns.some(pattern => pattern.test(input));
@@ -234,9 +236,9 @@ function validatePhoneMiddleware(fieldName = 'phone') {
  */
 function preventSQLInjection(req, res, next) {
   const sqlPatterns = [
-    /(\bselect\b|\binsert\b|\bupdate\b|\bdelete\b|\bdrop\b|\bcreate\b|\balter\b|\bexec\b|\bunion\b)/gi,
-    /(-{2}|\/\*|\*\/|;)/g,
-    /(xp_|sp_)/gi
+    /\b(select|insert|update|delete|drop|create|alter|exec|union)\b\s+(\b(from|into|table|database|set|all|where)\b|\*)/i,
+    /\b(xp_|sp_)\w+/i
+    // Removed overly aggressive pattern that matched semicolons and CSS comments
   ];
 
   const checkValue = (value, key) => {

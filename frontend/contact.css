@@ -397,7 +397,7 @@ nav a:hover, nav a.active {
     margin-top: 30px;
     height: 350px;
     border-radius: 16px;
-    background: url('assests/home.png') no-repeat center center;
+    background: url('assets/home.png') no-repeat center center;
     background-size: cover;
     display: flex;
     align-items: center;

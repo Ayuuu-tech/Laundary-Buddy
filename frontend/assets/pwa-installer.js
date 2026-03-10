@@ -13,7 +13,7 @@
  * 
  * Usage:
  * Include this script in all HTML pages before other scripts:
- * <script src="assests/pwa-installer.js"></script>
+ * <script src="assets/pwa-installer.js"></script>
  * 
  * Created: 2025
  * Part of: Laundry Buddy College Project
@@ -70,7 +70,7 @@
         // Check for updates
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
-          
+
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               console.log('Update available!');
@@ -96,15 +96,15 @@
     setupInstallPrompt() {
       window.addEventListener('beforeinstallprompt', (e) => {
         console.log('Install prompt triggered');
-        
+
         // Prevent default Chrome install prompt
         e.preventDefault();
-        
+
         // Save the event for later use
         this.deferredPrompt = e;
 
         // Show custom install banner
-        this.showInstallBanner();
+        // this.showInstallBanner(); // Disabled the web app install popup
       });
 
       // Detect successful installation
@@ -112,7 +112,7 @@
         console.log('PWA installed successfully');
         this.isInstalled = true;
         this.hideInstallBanner();
-        
+
         // Show success message
         if (window.toastManager) {
           window.toastManager.success('Laundry Buddy installed!');
@@ -207,7 +207,7 @@
 
       // Wait for user choice
       const { outcome } = await this.deferredPrompt.userChoice;
-      
+
       console.log(`Install prompt outcome: ${outcome}`);
 
       if (outcome === 'accepted') {
@@ -400,8 +400,8 @@
     checkIfInstalled() {
       // Check if running as installed PWA
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-                          window.navigator.standalone ||
-                          document.referrer.includes('android-app://');
+        window.navigator.standalone ||
+        document.referrer.includes('android-app://');
 
       if (isStandalone) {
         this.isInstalled = true;

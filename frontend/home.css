@@ -6,15 +6,29 @@ body.dark-theme .quick-access-grid .card.color-5 {
     background-color: var(--color-1) !important;
     color: #111 !important;
 }
-body.dark-theme .quick-access-grid .card.color-2 { background-color: var(--color-2) !important; }
-body.dark-theme .quick-access-grid .card.color-3 { background-color: var(--color-3) !important; }
-body.dark-theme .quick-access-grid .card.color-4 { background-color: var(--color-4) !important; }
-body.dark-theme .quick-access-grid .card.color-5 { background-color: var(--color-5) !important; }
+
+body.dark-theme .quick-access-grid .card.color-2 {
+    background-color: var(--color-2) !important;
+}
+
+body.dark-theme .quick-access-grid .card.color-3 {
+    background-color: var(--color-3) !important;
+}
+
+body.dark-theme .quick-access-grid .card.color-4 {
+    background-color: var(--color-4) !important;
+}
+
+body.dark-theme .quick-access-grid .card.color-5 {
+    background-color: var(--color-5) !important;
+}
+
 body.dark-theme .quick-access-grid .card i,
 body.dark-theme .quick-access-grid .card h3,
 body.dark-theme .quick-access-grid .card p {
     color: #111 !important;
 }
+
 /* =========== GENERAL STYLES & VARIABLES =========== */
 :root {
     --primary-color: #F97316;
@@ -24,7 +38,7 @@ body.dark-theme .quick-access-grid .card p {
     --background-color: #F9FAFB;
     --white-color: #FFFFFF;
     --border-color: #E5E7EB;
-    
+
     /* Card Colors */
     --color-1: #FEE2E2;
     --color-2: #DBEAFE;
@@ -58,7 +72,7 @@ body {
 /* =========== HEADER & NAVBAR =========== */
 header {
     background-color: var(--white-color);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -86,6 +100,13 @@ header {
     margin-right: 8px;
 }
 
+.logo .app-logo {
+    height: 44px;
+    margin-right: 14px;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
 nav ul {
     list-style: none;
     display: flex;
@@ -99,7 +120,8 @@ nav a {
     transition: color 0.3s ease;
 }
 
-nav a:hover, nav a.active {
+nav a:hover,
+nav a.active {
     color: var(--primary-color);
 }
 
@@ -119,7 +141,7 @@ nav a:hover, nav a.active {
     margin-top: 30px;
     height: 350px;
     border-radius: 16px;
-    background: url('assests/home.png') no-repeat center center;
+    background: url('assets/home.png') no-repeat center center;
     background-size: cover;
     display: flex;
     align-items: center;
@@ -133,9 +155,11 @@ nav a:hover, nav a.active {
 .hero::before {
     content: '';
     position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.4);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
 }
 
 .hero-content {
@@ -171,14 +195,17 @@ nav a:hover, nav a.active {
     background-color: var(--primary-color);
     color: var(--white-color);
 }
+
 .btn-primary:hover {
     background-color: #EA580C;
 }
+
 .btn-secondary {
     background-color: var(--white-color);
     color: var(--text-color);
     border: 1px solid var(--border-color);
 }
+
 .btn-secondary:hover {
     background-color: var(--background-color);
 }
@@ -200,7 +227,8 @@ nav a:hover, nav a.active {
     color: black;
 }
 
-.quick-access-grid, .features-grid {
+.quick-access-grid,
+.features-grid {
     display: grid;
     gap: 20px;
 }
@@ -233,20 +261,23 @@ nav a:hover, nav a.active {
     text-align: center;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
+
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
 }
 
 .access-card i {
     font-size: 32px;
     margin-bottom: 10px;
 }
+
 .access-card h3 {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 5px;
 }
+
 .access-card p {
     font-size: 14px;
     color: var(--text-light);
@@ -255,28 +286,54 @@ nav a:hover, nav a.active {
 .feature-card {
     padding: 30px;
 }
+
 .feature-card i {
     font-size: 48px;
     margin-bottom: 15px;
 }
+
 .feature-card h3 {
     font-size: 20px;
     margin-bottom: 8px;
 }
+
 .feature-card p {
     font-size: 15px;
     color: var(--text-light);
 }
 
 /* Card Colors */
-.color-1 { background-color: var(--color-1); }
-.color-2 { background-color: var(--color-2); }
-.color-3 { background-color: var(--color-3); }
-.color-4 { background-color: var(--color-4); }
-.color-5 { background-color: var(--color-5); }
-.color-feature-1 { background-color: var(--color-feature-1); }
-.color-feature-2 { background-color: var(--color-feature-2); }
-.color-feature-3 { background-color: var(--color-feature-3); }
+.color-1 {
+    background-color: var(--color-1);
+}
+
+.color-2 {
+    background-color: var(--color-2);
+}
+
+.color-3 {
+    background-color: var(--color-3);
+}
+
+.color-4 {
+    background-color: var(--color-4);
+}
+
+.color-5 {
+    background-color: var(--color-5);
+}
+
+.color-feature-1 {
+    background-color: var(--color-feature-1);
+}
+
+.color-feature-2 {
+    background-color: var(--color-feature-2);
+}
+
+.color-feature-3 {
+    background-color: var(--color-feature-3);
+}
 
 
 /* =========== FOOTER =========== */
@@ -301,6 +358,7 @@ footer {
     color: var(--text-light);
     font-weight: 500;
 }
+
 .footer-links a:hover {
     color: var(--primary-color);
 }
@@ -311,6 +369,7 @@ footer {
     color: var(--text-light);
     text-decoration: none;
 }
+
 .social-icons a:hover {
     color: var(--primary-color);
 }
@@ -391,49 +450,58 @@ body.dark-theme .social-icons a:hover {
 
 /* =========== RESPONSIVE STYLES =========== */
 @media (max-width: 992px) {
-    .quick-access-grid { 
-        grid-template-columns: repeat(3, 1fr); 
+    .quick-access-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
-    .features-grid { 
-        grid-template-columns: 1fr; 
+
+    .features-grid {
+        grid-template-columns: 1fr;
     }
 }
 
 @media (max-width: 768px) {
-    .hero h1 { 
-        font-size: 32px; 
+    .hero h1 {
+        font-size: 32px;
     }
-    .hero p { 
-        font-size: 16px; 
+
+    .hero p {
+        font-size: 16px;
     }
-    .hero-buttons { 
-        display: flex; 
-        flex-direction: column; 
-        gap: 10px; 
+
+    .hero-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
         align-items: center;
     }
+
     .hero-buttons .btn {
         width: 100%;
         justify-content: center;
     }
-    .quick-access-grid { 
-        grid-template-columns: repeat(2, 1fr); 
+
+    .quick-access-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
+
     input,
     textarea,
     select {
-        font-size: 16px !important; /* Prevent zoom on iOS */
+        font-size: 16px !important;
+        /* Prevent zoom on iOS */
     }
 }
 
 @media (max-width: 575px) {
-    .hero h1 { 
-        font-size: 24px; 
+    .hero h1 {
+        font-size: 24px;
     }
-    .hero p { 
-        font-size: 14px; 
+
+    .hero p {
+        font-size: 14px;
     }
-    .quick-access-grid { 
-        grid-template-columns: 1fr; 
+
+    .quick-access-grid {
+        grid-template-columns: 1fr;
     }
 }

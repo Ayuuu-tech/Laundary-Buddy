@@ -70,7 +70,7 @@ exports.createTrackingItem = async (req, res) => {
     // resolve order id if provided
     let orderRef = undefined;
     if (orderId) {
-      try { orderRef = await Order.findOne({ _id: orderId, user: req.user.id }); } catch { }
+      try { orderRef = await Order.findOne({ _id: orderId, user: req.user.id }); } catch (err) { console.error('Error resolving orderId:', err.message); }
     }
     const tracking = await Tracking.create({
       user: req.user.id,
@@ -146,8 +146,7 @@ exports.trackByOrderNumber = async (req, res) => {
   }
 };
 
-// Upsert tracking by order number for Laundry Dashboard (secured via API key or dev mode)
-// Upsert tracking by order number for Laundry Dashboard (secured via API key or dev mode)
+// Upsert tracking by order number for Laundry Dashboard (secured via authenticated admin)
 exports.upsertByOrderNumberForLaundry = async (req, res) => {
   const mongoose = require('mongoose');
   const session = await mongoose.startSession();
@@ -234,12 +233,14 @@ exports.upsertByOrderNumberForLaundry = async (req, res) => {
         try {
           const { Resend } = require('resend');
           const resend = new Resend(process.env.RESEND_API_KEY);
-          const userEmail = order.userEmail;
+          // Populate user email from the Order's user reference
+          const orderUser = await require('../models/User').findById(order.user).select('email').lean();
+          const userEmail = orderUser ? orderUser.email : null;
 
           if (userEmail) {
             console.log(`📧 Sending 'Ready' notification email to ${userEmail}`);
             await resend.emails.send({
-              from: 'Laundry Buddy <onboarding@resend.dev>',
+              from: process.env.RESEND_FROM || 'Laundry Buddy <onboarding@resend.dev>',
               to: userEmail,
               subject: 'Message from Laundry Buddy: Your Order is Ready!',
               html: `<p>Hello!</p><p>Your laundry order <strong>${orderNumber}</strong> is now <strong>${status}</strong>.</p><p>You can pick it up at your convenience.</p><p>Thanks,<br>Laundry Buddy Team</p>`
@@ -280,6 +281,11 @@ exports.toggleNotifyWhenReady = async (req, res) => {
 
     if (!tracking) {
       return res.status(404).json({ success: false, message: 'Tracking not found' });
+    }
+
+    // Verify the requesting user owns this order
+    if (tracking.user.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized to modify this order' });
     }
 
     // Toggle the value (default is false if undefined)

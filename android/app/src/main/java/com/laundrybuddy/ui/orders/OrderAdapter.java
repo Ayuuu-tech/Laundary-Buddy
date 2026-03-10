@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * RecyclerView Adapter for Order items with rating support
@@ -76,7 +77,12 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             // Order Number
             String orderNum = order.getOrderNumber();
             if (orderNum == null || orderNum.isEmpty()) {
-                orderNum = "ORD" + order.getId().substring(0, 8).toUpperCase();
+                String id = order.getId();
+                if (id != null && id.length() >= 8) {
+                    orderNum = "ORD" + id.substring(0, 8).toUpperCase();
+                } else {
+                    orderNum = "ORD" + (id != null ? id.toUpperCase() : "UNKNOWN");
+                }
             }
             binding.orderNumber.setText(orderNum);
 
@@ -180,6 +186,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 return "";
             try {
                 SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
+                isoFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
                 SimpleDateFormat displayFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
                 Date date = isoFormat.parse(isoDate);
                 return date != null ? displayFormat.format(date) : isoDate;

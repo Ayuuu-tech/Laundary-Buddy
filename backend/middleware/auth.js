@@ -1,5 +1,6 @@
 const { logger } = require('./logger');
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
 const authMiddleware = async (req, res, next) => {
   try {
@@ -13,15 +14,16 @@ const authMiddleware = async (req, res, next) => {
         try {
           const decoded = jwt.verify(token, process.env.JWT_SECRET);
           if (decoded && decoded.id) {
+            // Verify isAdmin from database instead of trusting the JWT claim
+            const dbUser = await User.findById(decoded.id).select('isAdmin email').lean();
+            if (!dbUser) {
+              return res.status(401).json({ success: false, message: 'User not found.' });
+            }
             req.user = {
               id: decoded.id,
-              email: decoded.email,
-              isAdmin: decoded.isAdmin
+              email: dbUser.email || decoded.email,
+              isAdmin: dbUser.isAdmin
             };
-            // Optional: You could load full user from DB if controllers expect more fields attached to req.user
-            // check if controllers use req.user.phone etc without fetching DB.
-            // Most controllers query DB using req.user.id.
-            // Some might use req.user.isAdmin.
             return next();
           }
         } catch (jwtErr) {

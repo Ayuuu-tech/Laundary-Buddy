@@ -12,7 +12,7 @@ const Tracking = require('../models/Tracking');
 const exportUserData = async (req, res) => {
   try {
     const userId = req.user.id;
-    
+
     // Get user data
     const user = await User.findById(userId).select('-password -refreshTokens');
     if (!user) {
@@ -21,13 +21,13 @@ const exportUserData = async (req, res) => {
         message: 'User not found'
       });
     }
-    
+
     // Get all orders
-    const orders = await Order.find({ userId });
-    
+    const orders = await Order.find({ user: userId });
+
     // Get tracking history
-    const trackingHistory = await Tracking.find({ userId });
-    
+    const trackingHistory = await Tracking.find({ user: userId });
+
     // Compile all data
     const userData = {
       exportDate: new Date().toISOString(),
@@ -48,16 +48,16 @@ const exportUserData = async (req, res) => {
         status: order.status,
         totalAmount: order.totalAmount,
         createdAt: order.createdAt,
-        completedAt: order.completedAt
+        updatedAt: order.updatedAt
       })),
       trackingHistory: trackingHistory.map(track => ({
-        trackingNumber: track.trackingNumber,
+        orderNumber: track.orderNumber,
         status: track.status,
-        updates: track.updates,
+        timeline: track.timeline,
         createdAt: track.createdAt
       }))
     };
-    
+
     // Log the export request
     const SecurityLog = require('../models/SecurityLog');
     await SecurityLog.create({
@@ -66,13 +66,13 @@ const exportUserData = async (req, res) => {
       metadata: { ipAddress: req.ip },
       timestamp: new Date()
     });
-    
+
     // Set headers for download
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Content-Disposition', `attachment; filename=laundry-buddy-data-${userId}-${Date.now()}.json`);
-    
+
     res.json(userData);
-    
+
   } catch (error) {
     console.error('Data export error:', error);
     res.status(500).json({
@@ -91,7 +91,7 @@ const deleteUserAccount = async (req, res) => {
   try {
     const userId = req.user.id;
     const { password, confirmDeletion } = req.body;
-    
+
     // Require explicit confirmation
     if (confirmDeletion !== 'DELETE MY ACCOUNT') {
       return res.status(400).json({
@@ -99,7 +99,7 @@ const deleteUserAccount = async (req, res) => {
         message: 'Please type "DELETE MY ACCOUNT" to confirm deletion'
       });
     }
-    
+
     // Verify password
     const user = await User.findById(userId);
     if (!user) {
@@ -108,7 +108,7 @@ const deleteUserAccount = async (req, res) => {
         message: 'User not found'
       });
     }
-    
+
     const bcrypt = require('bcryptjs');
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -117,38 +117,42 @@ const deleteUserAccount = async (req, res) => {
         message: 'Incorrect password'
       });
     }
-    
+
     // Log the deletion request
     const SecurityLog = require('../models/SecurityLog');
     await SecurityLog.create({
       userId,
       event: 'ACCOUNT_DELETION_REQUEST',
-      metadata: { 
+      metadata: {
         ipAddress: req.ip,
-        email: user.email 
+        email: user.email
       },
       timestamp: new Date()
     });
-    
+
     // Delete all associated data
-    await Order.deleteMany({ userId });
-    await Tracking.deleteMany({ userId });
+    await Order.deleteMany({ user: userId });
+    await Tracking.deleteMany({ user: userId });
     await SecurityLog.updateMany(
       { userId },
       { $set: { userId: null, metadata: { deletedUser: true } } }
     );
-    
+
     // Delete user account
     await User.findByIdAndDelete(userId);
-    
-    // Destroy session
-    req.session.destroy();
-    
-    res.json({
-      success: true,
-      message: 'Account and all associated data have been permanently deleted'
+
+    // Destroy session with callback
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Error destroying session:', err);
+      }
+      res.clearCookie('connect.sid');
+      res.json({
+        success: true,
+        message: 'Account and all associated data have been permanently deleted'
+      });
     });
-    
+
   } catch (error) {
     console.error('Account deletion error:', error);
     res.status(500).json({
@@ -167,7 +171,7 @@ const requestAccountDeletion = async (req, res) => {
   try {
     const userId = req.user.id;
     const { reason } = req.body;
-    
+
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
@@ -175,29 +179,29 @@ const requestAccountDeletion = async (req, res) => {
         message: 'User not found'
       });
     }
-    
+
     // Mark account for deletion (to be processed by admin/automated job)
     user.deletionRequested = true;
     user.deletionRequestedAt = new Date();
     user.deletionReason = reason || 'Not specified';
     await user.save();
-    
+
     // Log the request
     const SecurityLog = require('../models/SecurityLog');
     await SecurityLog.create({
       userId,
       event: 'ACCOUNT_DELETION_REQUESTED',
-      metadata: { 
+      metadata: {
         ipAddress: req.ip,
-        reason 
+        reason
       },
       timestamp: new Date()
     });
-    
+
     // Send confirmation email
     const { Resend } = require('resend');
     const resend = new Resend(process.env.RESEND_API_KEY);
-    
+
     try {
       await resend.emails.send({
         from: process.env.RESEND_FROM,
@@ -217,12 +221,12 @@ const requestAccountDeletion = async (req, res) => {
     } catch (emailError) {
       console.error('Failed to send deletion confirmation email:', emailError);
     }
-    
+
     res.json({
       success: true,
       message: 'Account deletion has been scheduled. Your account will be deleted within 30 days. You can cancel this request by logging in.'
     });
-    
+
   } catch (error) {
     console.error('Deletion request error:', error);
     res.status(500).json({

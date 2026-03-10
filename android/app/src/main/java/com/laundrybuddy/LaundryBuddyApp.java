@@ -59,14 +59,11 @@ public class LaundryBuddyApp extends Application {
 
     // Convenience methods for auth token management
     public void saveAuthToken(String token) {
-        android.util.Log.d("LaundryBuddyApp", "Saving Token: " + token);
-        sharedPreferences.edit().putString("auth_token", token).commit(); // Use commit for sync write
+        sharedPreferences.edit().putString("auth_token", token).apply();
     }
 
     public String getAuthToken() {
-        String token = sharedPreferences.getString("auth_token", null);
-        android.util.Log.d("LaundryBuddyApp", "Reading Token: " + token);
-        return token;
+        return sharedPreferences.getString("auth_token", null);
     }
 
     public void clearAuth() {

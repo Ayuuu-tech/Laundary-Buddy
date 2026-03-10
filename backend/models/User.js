@@ -4,17 +4,18 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true, index: true },
-  password: { type: String, required: true },
+  password: { type: String, required: false }, // Not required for Google OAuth users
   phone: { type: String, default: '' },
   address: { type: String, default: '' },
   hostelRoom: { type: String, default: '' },
   googleId: { type: String, default: null },
   profilePhoto: { type: String, default: null },
   isAdmin: { type: Boolean, default: false },
-  resetOTP: { type: String, default: null }, // OTP for password reset
-  resetOTPExpiry: { type: Date, default: null }, // OTP expiry time
+  resetOTP: { type: String, default: null },
+  resetOTPExpiry: { type: Date, default: null },
   signupOTP: { type: String, default: null },
   signupOTPExpiry: { type: Date, default: null },
+  isEmailVerified: { type: Boolean, default: false }, // Track email verification
   loginOTP: { type: String, default: null },
   loginOTPExpiry: { type: Date, default: null },
 
@@ -24,6 +25,11 @@ const userSchema = new mongoose.Schema({
   lastLoginAt: { type: Date, default: null },
   lastLoginIP: { type: String, default: null },
   passwordChangedAt: { type: Date, default: null },
+
+  // Account deletion fields (GDPR compliance)
+  deletionRequested: { type: Boolean, default: false },
+  deletionRequestedAt: { type: Date, default: null },
+  deletionReason: { type: String, default: null },
 
   // Refresh token for JWT rotation
   refreshTokens: [{
@@ -35,13 +41,13 @@ const userSchema = new mongoose.Schema({
 
 // Method to check if account is locked
 userSchema.methods.isAccountLocked = function () {
-  return this.accountLockedUntil && this.accountLockedUntil > Date.now();
+  return !!(this.accountLockedUntil && this.accountLockedUntil > new Date());
 };
 
 // Method to increment failed login attempts
 userSchema.methods.incrementLoginAttempts = async function () {
-  const maxAttempts = parseInt(process.env.MAX_LOGIN_ATTEMPTS) || 5;
-  const lockoutDuration = parseInt(process.env.ACCOUNT_LOCKOUT_DURATION) || 15 * 60 * 1000; // 15 minutes
+  const maxAttempts = parseInt(process.env.MAX_LOGIN_ATTEMPTS, 10) || 5;
+  const lockoutDuration = parseInt(process.env.ACCOUNT_LOCKOUT_DURATION, 10) || 15 * 60 * 1000; // 15 minutes default
 
   this.failedLoginAttempts += 1;
 

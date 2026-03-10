@@ -1,4 +1,4 @@
-package com.laundrybuddy.api;
+xpackage com.laundrybuddy.api;
 
 import com.laundrybuddy.models.ApiResponse;
 import com.laundrybuddy.models.Order;

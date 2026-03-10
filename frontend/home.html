@@ -7,14 +7,14 @@
     <title>Home - Laundry Buddy</title>
     <link rel="manifest" href="/manifest.json">
     <!-- <meta name="theme-color" content="#F97316"> -->
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/favicon.svg">
+    <link rel="icon" href="assets/logo.png" type="image/png">
+    <link rel="apple-touch-icon" href="assets/logo.png">
     <link rel="stylesheet" href="home.css?v=2.0">
     <link rel="stylesheet" href="dark-mode.css?v=2.0">
     <link rel="stylesheet" href="responsive.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <script src="assests/pwa-installer.js"></script>
+    <script src="assets/pwa-installer.js"></script>
 </head>
 
 <body>
@@ -22,7 +22,7 @@
     <header>
         <div class="container navbar">
             <a href="home.html" class="logo">
-                <i class='bx bxs-washer'></i>
+                <img src="assets/logo.png" alt="Logo" class="app-logo">
                 <span>Laundry Buddy</span>
             </a>
             <nav>
@@ -42,7 +42,7 @@
             </button>
             <a href="profile.html">
                 <div class="profile">
-                    <img src="assests/profile.png" alt="User Profile">
+                    <img src="assets/profile.png" alt="User Profile">
                 </div>
             </a>
         </div>
@@ -54,9 +54,14 @@
                 <div class="hero-content">
                     <h1>Welcome to Laundry Buddy</h1>
                     <p>Smart laundry for students – Simple, Reliable, Stress-Free.</p>
-                    <div class="hero-buttons">
+                    <div class="hero-buttons"
+                        style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
                         <a href="submit.html" class="btn btn-primary">Submit Laundry</a>
                         <a href="track.html" class="btn btn-secondary">Track Laundry</a>
+                        <a href="assets/LaundryBuddy.apk" download="LaundryBuddy.apk"
+                            class="btn btn-secondary btn-android"
+                            style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;"><i
+                                class='bx bxl-android' style="font-size: 1.2rem;"></i> Get App</a>
                     </div>
                 </div>
             </section>
@@ -143,16 +148,17 @@
     </footer>
 
     <!-- Backend Integration Scripts -->
-    <script src="assests/api-config.js"></script>
-    <script src="assests/order-api.js"></script>
+    <script src="assets/api-config.js"></script>
+    <script src="assets/order-api.js"></script>
 
     <!-- Existing Scripts -->
-    <script src="assests/crypto-utils.js"></script>
-    <script src="assests/auth.js"></script>
-    <script src="assests/dark-mode.js"></script>
-    <script src="assests/mobile-menu.js"></script>
-    <script src="assests/keyboard-shortcuts.js"></script>
-    <script src="assests/home.js"></script>
+    <script src="assets/crypto-utils.js"></script>
+    <script src="assets/auth.js"></script>
+    <script src="assets/dark-mode.js"></script>
+    <script src="assets/mobile-menu.js"></script>
+    <script src="assets/keyboard-shortcuts.js"></script>
+    <script src="assets/home.js"></script>
+    <script src="assets/apk-installer.js"></script>
 
 </body>
 

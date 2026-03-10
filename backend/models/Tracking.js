@@ -12,7 +12,7 @@ const trackingSchema = new mongoose.Schema({
   orderNumber: { type: String, index: true },
   status: { type: String, default: 'pending' },
   currentLocation: String,
-  estimatedDelivery: String,
+  estimatedDelivery: Date,
   notifyWhenReady: { type: Boolean, default: false },
   timeline: [timelineSchema],
 }, { timestamps: true });

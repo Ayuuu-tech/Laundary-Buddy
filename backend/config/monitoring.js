@@ -1,15 +1,15 @@
 // Monitoring and Logging Setup Guide
 
 /**
- * Sentry Integration for Error Tracking
+ * Sentry Integration for Error Tracking (v10+ API)
  * Install: npm install @sentry/node @sentry/profiling-node
  */
 
 const Sentry = require('@sentry/node');
-const { ProfilingIntegration } = require('@sentry/profiling-node');
+const { nodeProfilingIntegration } = require('@sentry/profiling-node');
 
 /**
- * Initialize Sentry
+ * Initialize Sentry (v10 API)
  * Call this at the very beginning of server.js
  */
 function initSentry(app) {
@@ -22,19 +22,14 @@ function initSentry(app) {
     dsn: process.env.SENTRY_DSN,
     environment: process.env.NODE_ENV || 'development',
     integrations: [
-      // Enable HTTP calls tracing
-      new Sentry.Integrations.Http({ tracing: true }),
-      // Enable Express.js middleware tracing
-      new Sentry.Integrations.Express({ app }),
-      // Enable profiling
-      new ProfilingIntegration(),
+      // Enable profiling (v10 API)
+      nodeProfilingIntegration(),
     ],
     // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring
-    // In production, you might want to lower this to reduce overhead
     tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
     // Set profilesSampleRate to 1.0 to profile 100% of transactions
     profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-    
+
     // Don't log sensitive data
     beforeSend(event, hint) {
       // Remove sensitive headers
@@ -42,7 +37,7 @@ function initSentry(app) {
         delete event.request.headers['authorization'];
         delete event.request.headers['cookie'];
       }
-      
+
       // Remove sensitive data from request body
       if (event.request?.data) {
         if (typeof event.request.data === 'object') {
@@ -51,18 +46,15 @@ function initSentry(app) {
           delete event.request.data.confirmPassword;
         }
       }
-      
+
       return event;
     },
-    
+
     // Ignore certain errors
     ignoreErrors: [
-      // Browser extensions
       'top.GLOBALS',
-      // Network errors
       'NetworkError',
       'Network request failed',
-      // Random plugins/extensions
       'Cannot read property \'match\' of undefined',
     ],
   });
@@ -71,14 +63,12 @@ function initSentry(app) {
 }
 
 /**
- * Sentry Express middleware
- * Add after all controllers but before error handlers
+ * Sentry Express middleware (v10 API)
+ * In v10, request/tracing handlers are automatic. Only error handler needs setup.
  */
 function getSentryMiddleware() {
-  // If Sentry isn't configured or Handlers are unavailable, return no-op middleware to avoid crashes
-  const handlers = Sentry?.Handlers;
-  if (!process.env.SENTRY_DSN || !handlers) {
-    console.warn('⚠️  Sentry middleware disabled (missing DSN or Handlers)');
+  if (!process.env.SENTRY_DSN) {
+    console.warn('⚠️  Sentry middleware disabled (missing DSN)');
     const passthrough = (req, res, next) => next();
     const errorPassthrough = (err, req, res, next) => next(err);
     return {
@@ -88,10 +78,14 @@ function getSentryMiddleware() {
     };
   }
 
+  // In Sentry v10, request/tracing are auto-instrumented.
+  // We provide no-op passthroughs for requestHandler/tracingHandler
+  // and use Sentry.expressErrorHandler() for error handling.
+  const passthrough = (req, res, next) => next();
   return {
-    requestHandler: handlers.requestHandler(),
-    tracingHandler: handlers.tracingHandler(),
-    errorHandler: handlers.errorHandler()
+    requestHandler: passthrough,
+    tracingHandler: passthrough,
+    errorHandler: Sentry.expressErrorHandler ? Sentry.expressErrorHandler() : ((err, req, res, next) => next(err))
   };
 }
 
@@ -102,7 +96,7 @@ function getSentryMiddleware() {
 async function securityLogger(userId, event, metadata = {}) {
   try {
     const SecurityLog = require('../models/SecurityLog');
-    
+
     // Log to database
     await SecurityLog.create({
       userId,
@@ -110,7 +104,7 @@ async function securityLogger(userId, event, metadata = {}) {
       metadata,
       timestamp: new Date()
     });
-    
+
     // Log to Sentry for critical events
     const criticalEvents = [
       'LOGIN_FAILED',
@@ -118,7 +112,7 @@ async function securityLogger(userId, event, metadata = {}) {
       'SUSPICIOUS_ACTIVITY',
       'SQL_INJECTION_ATTEMPT'
     ];
-    
+
     if (criticalEvents.includes(event)) {
       Sentry.captureMessage(`Security Event: ${event}`, {
         level: 'warning',
@@ -129,14 +123,14 @@ async function securityLogger(userId, event, metadata = {}) {
         }
       });
     }
-    
+
     // Also log to console in development
     if (process.env.NODE_ENV !== 'production') {
       console.log(`🔐 Security Event: ${event}`, { userId, metadata });
     }
   } catch (error) {
     console.error('Failed to log security event:', error);
-    
+
     // Still try to notify Sentry about the logging failure
     if (Sentry && process.env.SENTRY_DSN) {
       Sentry.captureException(error);
@@ -144,10 +138,8 @@ async function securityLogger(userId, event, metadata = {}) {
   }
 }
 
-// Make security logger globally available
-if (typeof global !== 'undefined') {
-  global.securityLogger = securityLogger;
-}
+// Export security logger for use via require() (no global mutation)
+// Usage: const { securityLogger } = require('./config/monitoring');
 
 /**
  * Performance Monitoring Helper
@@ -159,7 +151,7 @@ function measurePerformance(operation) {
       const duration = Date.now() - start;
       if (duration > 1000) {
         console.warn(`⚠️  Slow operation: ${operation} took ${duration}ms`);
-        
+
         // Send to Sentry
         if (Sentry && process.env.SENTRY_DSN) {
           Sentry.captureMessage(`Slow operation: ${operation}`, {
@@ -181,19 +173,19 @@ function setupDatabaseQueryLogging(mongoose) {
   if (process.env.NODE_ENV !== 'production') {
     mongoose.set('debug', true);
   }
-  
+
   // Log slow queries
   mongoose.plugin((schema) => {
-    schema.pre(/^find/, function() {
+    schema.pre(/^find/, function () {
       this._startTime = Date.now();
     });
-    
-    schema.post(/^find/, function() {
+
+    schema.post(/^find/, function () {
       if (this._startTime) {
         const duration = Date.now() - this._startTime;
         if (duration > 100) { // Log queries slower than 100ms
           console.warn(`🐢 Slow query: ${this.mongooseCollection.name}.${this.op} took ${duration}ms`);
-          
+
           if (Sentry && process.env.SENTRY_DSN) {
             Sentry.captureMessage('Slow database query', {
               level: 'warning',
@@ -218,24 +210,24 @@ function setupDatabaseQueryLogging(mongoose) {
 function detailedRequestLogger(req, res, next) {
   const start = Date.now();
   const requestId = require('crypto').randomBytes(8).toString('hex');
-  
+
   // Add request ID to request object
   req.requestId = requestId;
-  
+
   // Log request
   console.log(`→ [${requestId}] ${req.method} ${req.path}`, {
     ip: req.ip,
     userAgent: req.get('user-agent'),
     userId: req.session?.userId
   });
-  
+
   // Log response
   res.on('finish', () => {
     const duration = Date.now() - start;
     const logLevel = res.statusCode >= 400 ? 'error' : 'info';
-    
+
     console.log(`← [${requestId}] ${res.statusCode} ${duration}ms`);
-    
+
     // Send slow requests to Sentry
     if (duration > 3000 && Sentry && process.env.SENTRY_DSN) {
       Sentry.captureMessage('Slow API response', {
@@ -249,7 +241,7 @@ function detailedRequestLogger(req, res, next) {
       });
     }
   });
-  
+
   next();
 }
 
@@ -260,7 +252,7 @@ function detailedRequestLogger(req, res, next) {
 function setupHealthCheck(app) {
   app.get('/health', async (req, res) => {
     const mongoose = require('mongoose');
-    
+
     const healthCheck = {
       status: 'healthy',
       timestamp: new Date().toISOString(),
@@ -272,7 +264,7 @@ function setupHealthCheck(app) {
         cpu: 'unknown'
       }
     };
-    
+
     // Check database connection
     try {
       if (mongoose.connection.readyState === 1) {
@@ -285,19 +277,19 @@ function setupHealthCheck(app) {
       healthCheck.checks.database = 'error';
       healthCheck.status = 'unhealthy';
     }
-    
+
     // Check memory usage
     const memoryUsage = process.memoryUsage();
     healthCheck.checks.memory = {
       used: Math.round(memoryUsage.heapUsed / 1024 / 1024) + 'MB',
       total: Math.round(memoryUsage.heapTotal / 1024 / 1024) + 'MB'
     };
-    
+
     // Check if memory usage is too high
     if (memoryUsage.heapUsed / memoryUsage.heapTotal > 0.9) {
       healthCheck.status = 'degraded';
     }
-    
+
     const statusCode = healthCheck.status === 'healthy' ? 200 : 503;
     res.status(statusCode).json(healthCheck);
   });

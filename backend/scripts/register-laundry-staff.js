@@ -10,10 +10,18 @@ async function registerLaundryStaff() {
     console.log('✅ Connected to MongoDB');
 
     // Laundry staff credentials
+    const password = process.env.ADMIN_PASSWORD || process.argv[2];
+    if (!password) {
+      console.error('❌ Password required. Provide via ADMIN_PASSWORD env var or as CLI argument.');
+      console.error('Usage: ADMIN_PASSWORD=<pass> node register-laundry-staff.js');
+      console.error('   or: node register-laundry-staff.js <password>');
+      process.exit(1);
+    }
+
     const staffData = {
       name: 'Laundry Manager',
-      email: 'laundry@bmu.edu.in',
-      password: 'Laundry@123', // Change this password
+      email: process.env.ADMIN_EMAIL || 'laundry@bmu.edu.in',
+      password: password,
       phone: '1234567890',
       address: 'Laundry Department',
       isAdmin: true
@@ -32,8 +40,7 @@ async function registerLaundryStaff() {
         
         console.log('✅ Laundry staff updated successfully!');
         console.log('📧 Email:', staffData.email);
-        console.log('🔑 Password:', staffData.password);
-        console.log('👮 Admin Status: true');
+        console.log(' Admin Status: true');
       } else {
         console.log('⚠️  Laundry staff already exists with admin privileges:', staffData.email);
         console.log('Staff details:', {
@@ -60,8 +67,7 @@ async function registerLaundryStaff() {
 
     console.log('✅ Laundry staff registered successfully!');
     console.log('📧 Email:', staffData.email);
-    console.log('🔑 Password:', staffData.password);
-    console.log('👤 Name:', staffData.name);
+    console.log(' Name:', staffData.name);
     console.log('⚡ Admin privileges: Enabled');
     console.log('\n🚀 You can now login to laundry dashboard with these credentials!');
 

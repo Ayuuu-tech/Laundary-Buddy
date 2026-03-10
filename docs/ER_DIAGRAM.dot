@@ -1,0 +1,162 @@
+    // Laundry Buddy — ER Diagram (Database Table Style, Crow's Foot Notation)
+    // Render:  dot -Tpng ER_DIAGRAM.dot -o ER_DIAGRAM.png -Gdpi=150
+    digraph ER {
+        graph [
+            rankdir=LR,
+            splines=ortho,
+            nodesep=0.8,
+            ranksep=2.0,
+            bgcolor="#F5F7FA",
+            fontname="Helvetica",
+            label=<<TABLE BORDER="0"><TR><TD><FONT POINT-SIZE="24" COLOR="#1A237E"><B>Laundry Buddy — ER Diagram</B></FONT></TD></TR><TR><TD><FONT POINT-SIZE="12" COLOR="#555">🔑 = Primary Key   |   🔗 = Foreign Key   |   * = Required   |   Crow's Foot Notation</FONT></TD></TR></TABLE>>,
+            labelloc=t,
+            pad=0.5
+        ];
+        node [shape=plain, fontname="Helvetica"];
+        edge [fontname="Helvetica", fontsize=10, color="#555555"];
+
+        /* ═══════════════════ USERS ═══════════════════ */
+        Users [label=<
+            <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+                <TR><TD COLSPAN="2" BGCOLOR="#4A90D9" COLOR="white"><FONT COLOR="white" POINT-SIZE="14"><B>Users</B></FONT></TD></TR>
+                <TR><TD BGCOLOR="#EDF2FA">🔑</TD><TD BGCOLOR="#EDF2FA" ALIGN="LEFT"> _id  (ObjectId)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> name  (String) *</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> email  (String) * unique</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> password  (String) *</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> phone  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> address  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> hostelRoom  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> googleId  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> profilePhoto  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> isAdmin  (Boolean)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> failedLoginAttempts  (Number)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> accountLockedUntil  (Date)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> lastLoginAt / lastLoginIP</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> passwordChangedAt  (Date)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> refreshTokens[]  (Embedded)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> createdAt / updatedAt  (Date)</TD></TR>
+            </TABLE>
+        >];
+
+        /* ═══════════════════ ORDERS ═══════════════════ */
+        Orders [label=<
+            <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+                <TR><TD COLSPAN="2" BGCOLOR="#4A90D9" COLOR="white"><FONT COLOR="white" POINT-SIZE="14"><B>Orders</B></FONT></TD></TR>
+                <TR><TD BGCOLOR="#EDF2FA">🔑</TD><TD BGCOLOR="#EDF2FA" ALIGN="LEFT"> _id  (ObjectId)</TD></TR>
+                <TR><TD>🔗</TD><TD ALIGN="LEFT"> user  (FK → Users._id) *</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> orderNumber  (String) unique</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> serviceType  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> pickupDate / pickupTime  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> deliveryDate  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> items[]  → OrderItems (Embedded)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> totalAmount  (Number)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> address / phone  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> specialInstructions  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> status  (String)  default: pending</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> paymentStatus  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> feedback { rating, comment, submittedAt }</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> createdAt / updatedAt  (Date)</TD></TR>
+            </TABLE>
+        >];
+
+        /* ═══════════════════ ORDER ITEMS (Weak Entity) ═══════════════════ */
+        OrderItems [label=<
+            <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6" BGCOLOR="#FFF8E1">
+                <TR><TD COLSPAN="2" BGCOLOR="#F9A825"><FONT COLOR="white" POINT-SIZE="14"><B>OrderItems (Embedded)</B></FONT></TD></TR>
+                <TR><TD>🔗</TD><TD ALIGN="LEFT"><I>(belongs to Order)</I></TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> type  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> count / quantity  (Number)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> name  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> color  (String)</TD></TR>
+            </TABLE>
+        >];
+
+        /* ═══════════════════ TRACKING ═══════════════════ */
+        Tracking [label=<
+            <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+                <TR><TD COLSPAN="2" BGCOLOR="#4A90D9" COLOR="white"><FONT COLOR="white" POINT-SIZE="14"><B>Tracking</B></FONT></TD></TR>
+                <TR><TD BGCOLOR="#EDF2FA">🔑</TD><TD BGCOLOR="#EDF2FA" ALIGN="LEFT"> _id  (ObjectId)</TD></TR>
+                <TR><TD>🔗</TD><TD ALIGN="LEFT"> user  (FK → Users._id) *</TD></TR>
+                <TR><TD>🔗</TD><TD ALIGN="LEFT"> order  (FK → Orders._id)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> orderNumber  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> status  (String)  default: pending</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> currentLocation  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> estimatedDelivery  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> notifyWhenReady  (Boolean)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> timeline[]  { status, timestamp, note }</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> createdAt / updatedAt  (Date)</TD></TR>
+            </TABLE>
+        >];
+
+        /* ═══════════════════ SUBSCRIPTIONS ═══════════════════ */
+        Subscriptions [label=<
+            <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+                <TR><TD COLSPAN="2" BGCOLOR="#4A90D9" COLOR="white"><FONT COLOR="white" POINT-SIZE="14"><B>Subscriptions</B></FONT></TD></TR>
+                <TR><TD BGCOLOR="#EDF2FA">🔑</TD><TD BGCOLOR="#EDF2FA" ALIGN="LEFT"> _id  (ObjectId)</TD></TR>
+                <TR><TD>🔗</TD><TD ALIGN="LEFT"> user  (FK → Users._id) *</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> endpoint  (String) * unique</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> keys { p256dh, auth }  (String) *</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> userAgent  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> createdAt  (Date)  TTL: 90 days</TD></TR>
+            </TABLE>
+        >];
+
+        /* ═══════════════════ SUPPORT TICKETS ═══════════════════ */
+        SupportTickets [label=<
+            <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+                <TR><TD COLSPAN="2" BGCOLOR="#4A90D9" COLOR="white"><FONT COLOR="white" POINT-SIZE="14"><B>SupportTickets</B></FONT></TD></TR>
+                <TR><TD BGCOLOR="#EDF2FA">🔑</TD><TD BGCOLOR="#EDF2FA" ALIGN="LEFT"> _id  (ObjectId)</TD></TR>
+                <TR><TD>🔗</TD><TD ALIGN="LEFT"> user  (FK → Users._id) *</TD></TR>
+                <TR><TD>🔗</TD><TD ALIGN="LEFT"> orderId  (FK → Orders._id) *</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> orderNumber  (String) *</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> type  (String) * [enum]</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> items / damageType / details  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> status  (String) [enum]  default: pending</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> response  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> resolvedAt  (Date)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> createdAt / updatedAt  (Date)</TD></TR>
+            </TABLE>
+        >];
+
+        /* ═══════════════════ CONTACT MESSAGES ═══════════════════ */
+        ContactMessages [label=<
+            <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+                <TR><TD COLSPAN="2" BGCOLOR="#4A90D9" COLOR="white"><FONT COLOR="white" POINT-SIZE="14"><B>ContactMessages</B></FONT></TD></TR>
+                <TR><TD BGCOLOR="#EDF2FA">🔑</TD><TD BGCOLOR="#EDF2FA" ALIGN="LEFT"> _id  (ObjectId)</TD></TR>
+                <TR><TD>🔗</TD><TD ALIGN="LEFT"> user  (FK → Users._id)  optional</TD></TR>
+                <TR><TD>🔗</TD><TD ALIGN="LEFT"> respondedBy  (FK → Users._id)  optional</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> name / email  (String) *</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> hostelRoom  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> message  (String) *</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> status / staffResponse  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> respondedAt  (Date)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> createdAt / updatedAt  (Date)</TD></TR>
+            </TABLE>
+        >];
+
+        /* ═══════════════════ SECURITY LOGS ═══════════════════ */
+        SecurityLogs [label=<
+            <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+                <TR><TD COLSPAN="2" BGCOLOR="#4A90D9" COLOR="white"><FONT COLOR="white" POINT-SIZE="14"><B>SecurityLogs</B></FONT></TD></TR>
+                <TR><TD BGCOLOR="#EDF2FA">🔑</TD><TD BGCOLOR="#EDF2FA" ALIGN="LEFT"> _id  (ObjectId)</TD></TR>
+                <TR><TD>🔗</TD><TD ALIGN="LEFT"> userId  (FK → Users._id)  optional</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> event  (String) * [enum]</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> ipAddress / userAgent  (String)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> metadata  (Mixed)</TD></TR>
+                <TR><TD> </TD><TD ALIGN="LEFT"> timestamp  (Date)  TTL: 90 days</TD></TR>
+            </TABLE>
+        >];
+
+        /* ═══════════════════ RELATIONSHIPS ═══════════════════ */
+        Users -> Orders         [taillabel="1", headlabel="M *", label="  places  ", style=bold, color="#4A90D9"];
+        Users -> Tracking       [taillabel="1", headlabel="M *", label="  tracks  ", style=bold, color="#4A90D9"];
+        Users -> Subscriptions  [taillabel="1", headlabel="M *", label="  subscribes  ", style=bold, color="#4A90D9"];
+        Users -> SupportTickets [taillabel="1", headlabel="M *", label="  raises  ", style=bold, color="#4A90D9"];
+        Users -> ContactMessages[taillabel="0..1", headlabel="M", label="  sends  ", style=bold, color="#4A90D9"];
+        Users -> SecurityLogs   [taillabel="0..1", headlabel="M", label="  generates  ", style=bold, color="#4A90D9"];
+        Users -> ContactMessages[taillabel="0..1", headlabel="M", label="  responds (Admin)  ", style=dashed, color="#9C27B0"];
+
+        Orders -> Tracking      [taillabel="1", headlabel="0..1", label="  tracked by  ", style=bold, color="#388E3C"];
+        Orders -> SupportTickets[taillabel="1", headlabel="M", label="  ticket for  ", style=bold, color="#388E3C"];
+        Orders -> OrderItems    [taillabel="1", headlabel="M", label="  contains (embedded)  ", style=bold, color="#F9A825"];
+    }

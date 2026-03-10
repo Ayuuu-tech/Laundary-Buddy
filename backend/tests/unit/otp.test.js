@@ -2,7 +2,7 @@ const crypto = require('crypto');
 
 describe('OTP Generation Utility', () => {
   const generateOTP = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+    return crypto.randomInt(100000, 999999).toString();
   };
 
   describe('OTP Format', () => {

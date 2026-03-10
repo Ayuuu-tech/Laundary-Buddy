@@ -34,7 +34,7 @@ public class ApiClient {
     private ApiClient(Context context) {
         // Cookie manager for session handling
         CookieManager cookieManager = new CookieManager();
-        cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+        cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ORIGINAL_SERVER);
 
         // Logging interceptor for debugging
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(message -> Log.d(TAG, message));
@@ -49,7 +49,6 @@ public class ApiClient {
                 .addInterceptor(chain -> {
                     okhttp3.Request original = chain.request();
                     String token = com.laundrybuddy.LaundryBuddyApp.getInstance().getAuthToken();
-                    android.util.Log.d("ApiClient", "Interceptor Check. Token: " + token);
 
                     if (token != null && !token.isEmpty()) {
                         okhttp3.Request request = original.newBuilder()
@@ -85,7 +84,9 @@ public class ApiClient {
         supportApi = retrofit.create(SupportApi.class);
         adminApi = retrofit.create(AdminApi.class);
 
-        Log.d(TAG, "API Client initialized with base URL: " + BuildConfig.API_BASE_URL);
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "API Client initialized");
+        }
     }
 
     public static synchronized void init(Context context) {

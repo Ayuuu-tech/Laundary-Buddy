@@ -23,7 +23,10 @@ const securityLogSchema = new mongoose.Schema({
       'SQL_INJECTION_ATTEMPT',
       'XSS_ATTEMPT',
       'RATE_LIMIT_EXCEEDED',
-      'ADMIN_ACCESS'
+      'ADMIN_ACCESS',
+      'DATA_EXPORT_REQUEST',
+      'ACCOUNT_DELETION_REQUEST',
+      'ACCOUNT_DELETION_REQUESTED'
     ]
   },
   ipAddress: { type: String },
@@ -36,7 +39,7 @@ const securityLogSchema = new mongoose.Schema({
 securityLogSchema.index({ userId: 1, timestamp: -1 });
 securityLogSchema.index({ event: 1, timestamp: -1 });
 
-// TTL index - automatically delete logs older than 90 days
-securityLogSchema.index({ timestamp: 1 }, { expireAfterSeconds: 7776000 });
+// TTL index - automatically delete logs older than 30 days
+securityLogSchema.index({ timestamp: 1 }, { expireAfterSeconds: 2592000 });
 
 module.exports = mongoose.model('SecurityLog', securityLogSchema);

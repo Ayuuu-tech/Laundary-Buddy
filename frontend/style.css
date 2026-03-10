@@ -1,11 +1,16 @@
 /* =========== GENERAL STYLES & VARIABLES =========== */
 :root {
-    --primary-color: #F97316; /* Orange */
-    --secondary-color: #4B5563; /* Dark Gray */
-    --text-color: #1F2937; /* Very Dark Gray */
+    --primary-color: #F97316;
+    /* Orange */
+    --secondary-color: #4B5563;
+    /* Dark Gray */
+    --text-color: #1F2937;
+    /* Very Dark Gray */
     --background-color: #FFFFFF;
-    --border-color: #E5E7EB; /* Light Gray */
-    --card-bg-color: #F9FAFB; /* Off-white for cards */
+    --border-color: #E5E7EB;
+    /* Light Gray */
+    --card-bg-color: #F9FAFB;
+    /* Off-white for cards */
 }
 
 * {
@@ -22,7 +27,9 @@ body {
 }
 
 /* Utility helpers */
-.hidden { display: none !important; }
+.hidden {
+    display: none !important;
+}
 
 .container {
     /* Wider laptop-friendly container for 15.6" screens at ~110% zoom */
@@ -53,6 +60,14 @@ header {
     font-size: 28px;
     margin-right: 8px;
     color: var(--primary-color);
+}
+
+.logo .app-logo {
+    height: 44px;
+    margin-right: 12px;
+    object-fit: contain;
+    border-radius: 4px;
+    /* Optional for rounded logo */
 }
 
 nav ul {
@@ -94,7 +109,8 @@ nav a:hover {
 }
 
 .btn-primary:hover {
-    background-color: #EA580C; /* Darker Orange */
+    background-color: #EA580C;
+    /* Darker Orange */
 }
 
 .btn-secondary {
@@ -105,6 +121,16 @@ nav a:hover {
 
 .btn-secondary:hover {
     background-color: var(--card-bg-color);
+}
+
+.btn-android {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+body.dark-theme .btn-android {
+    color: #ffffff;
+    border-color: #ffffff;
 }
 
 
@@ -232,7 +258,8 @@ footer {
 }
 
 .copyright {
-    color: #9CA3AF; /* Lighter Gray */
+    color: #9CA3AF;
+    /* Lighter Gray */
     font-size: 14px;
 }
 

@@ -11,7 +11,8 @@ async function connectDB() {
 
   await mongoose.connect(uri, {
     autoIndex: true,
-    maxPoolSize: 10, // Maintain up to 10 socket connections (M0-M10 optimum)
+    maxPoolSize: 100, // Handle up to 100 concurrent DB connections for 20K+ users
+    minPoolSize: 10, // Keep 10 connections alive to prevent connection overhead spikes
   });
 
   console.log(`✅ Connected to MongoDB: ${mongoose.connection.name}`);

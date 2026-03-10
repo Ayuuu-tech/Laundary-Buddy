@@ -40,7 +40,7 @@ router.get('/stats', authMiddleware, isAdmin, async (req, res) => {
 router.get('/users', authMiddleware, isAdmin, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
+    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
     const skip = (page - 1) * limit;
 
     const users = await User.find()
@@ -98,7 +98,7 @@ router.get('/sessions', authMiddleware, isAdmin, async (req, res) => {
 router.get('/orders', authMiddleware, isAdmin, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
+    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
     const skip = (page - 1) * limit;
 
     const { status, search, priority, date } = req.query;
@@ -115,14 +115,11 @@ router.get('/orders', authMiddleware, isAdmin, async (req, res) => {
     }
 
     if (search) {
-      // Search by orderNumber (exact) or Regex on others if needed (Regex is slow for 30k, use text index if possible)
-      // For now, doing simple regex on orderNumber is okay if indexed, but for user name/room, populate first?
-      // Better: perform lookups. But simplest for now is:
+      // Escape special regex characters to prevent ReDoS
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query.$or = [
-        { orderNumber: { $regex: search, $options: 'i' } },
-        { 'address': { $regex: search, $options: 'i' } }, // room number often in address
-        // Note: searching localized user fields (name) requires aggregate lookup which is complex here.
-        // We'll rely on orderNumber and Room for primary search for now.
+        { orderNumber: { $regex: escapedSearch, $options: 'i' } },
+        { 'address': { $regex: escapedSearch, $options: 'i' } },
       ];
     }
 
@@ -184,7 +181,7 @@ router.get('/orders', authMiddleware, isAdmin, async (req, res) => {
 router.put('/orders/:id/status', authMiddleware, isAdmin, async (req, res) => {
   try {
     const { status } = req.body;
-    
+
     if (!status) {
       return res.status(400).json({
         success: false,
@@ -192,7 +189,12 @@ router.put('/orders/:id/status', authMiddleware, isAdmin, async (req, res) => {
       });
     }
 
-    const validStatuses = ['pending', 'submitted', 'received', 'washing', 'drying', 'folding', 'ready', 'ready-for-pickup', 'delivered', 'completed', 'cancelled'];
+    const validStatuses = [
+      'pending', 'submitted', 'confirmed', 'received',
+      'washing', 'drying', 'folding', 'ready', 'ready-for-pickup',
+      'picked-up', 'in-progress', 'out-for-delivery',
+      'delivered', 'completed', 'cancelled'
+    ];
     if (!validStatuses.includes(status.toLowerCase())) {
       return res.status(400).json({
         success: false,

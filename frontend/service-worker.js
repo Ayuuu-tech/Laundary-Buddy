@@ -59,32 +59,32 @@ const STATIC_ASSETS = [
   // '/confirmation-modal.css', // removed unused modal styles from precache
 
   // JavaScript files
-  '/assests/auth.js',
-  '/assests/home.js',
-  '/assests/login.js',
-  '/assests/signup.js',
-  '/assests/profile.js',
-  '/assests/history.js',
-  '/assests/submit.js',
-  '/assests/track.js',
-  '/assests/contact.js',
-  '/assests/support.js',
-  '/assests/form-validator.js',
-  '/assests/loading-manager.js',
-  '/assests/crypto-utils.js',
-  '/assests/toast-manager.js',
-  '/assests/email-validator.js',
-  // '/assests/confirmation-modal.js', // removed unused modal script from precache
-  '/assests/dark-mode.js',
-  '/assests/keyboard-shortcuts.js',
+  '/assets/auth.js',
+  '/assets/home.js',
+  '/assets/login.js',
+  '/assets/signup.js',
+  '/assets/profile.js',
+  '/assets/history.js',
+  '/assets/submit.js',
+  '/assets/track.js',
+  '/assets/contact.js',
+  '/assets/support.js',
+  '/assets/form-validator.js',
+  '/assets/loading-manager.js',
+  '/assets/crypto-utils.js',
+  '/assets/toast-manager.js',
+  '/assets/email-validator.js',
+  // '/assets/confirmation-modal.js', // removed unused modal script from precache
+  '/assets/dark-mode.js',
+  '/assets/keyboard-shortcuts.js',
 
   // Images
-  '/assests/laundary_buddy.png',
-  '/assests/home.png',
-  '/assests/login.png',
-  '/assests/profile.png',
-  '/assests/submit.png',
-  '/assests/track.png',
+  '/assets/laundary_buddy.png',
+  '/assets/home.png',
+  '/assets/login.png',
+  '/assets/profile.png',
+  '/assets/submit.png',
+  '/assets/track.png',
 
   // External resources (optional - comment out if too large)
   // 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap',
@@ -172,7 +172,7 @@ self.addEventListener('fetch', (event) => {
     // Better: Network-First but with very short validity? 
     // Safest for 30k users launch: Network-First.
     event.respondWith(networkFirstStrategy(request));
-  } else if (request.url.includes('/assests/data/')) {
+  } else if (request.url.includes('/assets/data/')) {
     // Network-first for JSON data
     event.respondWith(networkFirstStrategy(request));
   } else if (request.destination === 'image') {
@@ -295,7 +295,7 @@ self.addEventListener('sync', (event) => {
 /**
  * Sync pending submissions
  */
-importScripts('/assests/idb-utils.js');
+importScripts('/assets/idb-utils.js');
 
 /**
  * Sync pending submissions

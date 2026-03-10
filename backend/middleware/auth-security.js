@@ -11,11 +11,11 @@ function generateAccessToken(user) {
   return jwt.sign(
     {
       id: user._id,
-      email: user.email,
-      isAdmin: user.isAdmin
+      email: user.email
+      // Note: isAdmin is NOT included — always verify from DB
     },
     process.env.JWT_SECRET,
-    { expiresIn: '30d' } // Extended for mobile app usage without refresh flow
+    { expiresIn: '4h' } // Short-lived access token
   );
 }
 
@@ -25,12 +25,13 @@ function generateAccessToken(user) {
  * @returns {string} JWT token
  */
 function generateRefreshToken(user) {
+  const refreshSecret = process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET;
   return jwt.sign(
     {
       id: user._id,
       type: 'refresh'
     },
-    process.env.JWT_SECRET,
+    refreshSecret,
     { expiresIn: '7d' }
   );
 }
@@ -50,7 +51,8 @@ async function refreshAccessToken(req, res) {
     }
 
     // Verify refresh token
-    const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+    const refreshSecret = process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET;
+    const decoded = jwt.verify(refreshToken, refreshSecret);
 
     if (decoded.type !== 'refresh') {
       return res.status(401).json({

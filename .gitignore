@@ -72,3 +72,26 @@ wrangler.toml.backup
 .eslintcache
 .npm
 .yarn-integrity
+
+# Android specific ignores
+android/.gradle/
+android/local.properties
+android/app/build/
+android/build/
+android/app/release/
+android/app/debug/
+android/lib/build/
+android/.cxx/
+android/.externalNativeBuild/
+android/captures/
+android/google-services.json
+*.apk
+*.aar
+*.jks
+*.keystore
+
+# Gradle
+.gradle/
+build/
+bin/
+

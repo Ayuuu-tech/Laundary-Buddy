@@ -3,13 +3,16 @@ const router = express.Router();
 const trackingController = require('../controllers/trackingController');
 const authMiddleware = require('../middleware/auth');
 
-// Public route for tracking by order number
-router.get('/order/:orderNumber', trackingController.trackByOrderNumber);
-// Laundry dashboard upsert by order number (API key protected in production)
-router.put('/order/:orderNumber', authMiddleware, trackingController.upsertByOrderNumberForLaundry);
-
-// Protected routes
+// All tracking routes require authentication
 router.use(authMiddleware);
+
+// Track by order number
+router.get('/order/:orderNumber', trackingController.trackByOrderNumber);
+
+// Laundry dashboard upsert by order number (admin-only verified inside controller)
+router.put('/order/:orderNumber', trackingController.upsertByOrderNumberForLaundry);
+
+// CRUD routes
 router.get('/', trackingController.getTrackingItems);
 router.get('/:id', trackingController.getTrackingItem);
 router.post('/', trackingController.createTrackingItem);

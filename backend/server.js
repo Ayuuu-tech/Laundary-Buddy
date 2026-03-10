@@ -9,7 +9,6 @@ const { initSentry, getSentryMiddleware, setupHealthCheck, setupDatabaseQueryLog
 
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
 const compression = require('compression');
 const mongoSanitize = require('express-mongo-sanitize');
 const session = require('express-session');
@@ -40,7 +39,7 @@ const sentryMiddleware = getSentryMiddleware();
 app.use(sentryMiddleware.requestHandler);
 app.use(sentryMiddleware.tracingHandler);
 
-// Trust proxy (important for rate limiting behind reverse proxies)
+// Trust proxy (important for rate limiting behind reverse proxies like Render, Heroku)
 app.set('trust proxy', 1);
 
 // HTTPS enforcement and security headers (must be early in middleware chain)
@@ -68,7 +67,6 @@ app.use(cors({
 
     // Log for debugging in production
     logger.debug(`CORS check for origin: ${origin}`);
-    logger.debug(`Allowed origins: ${allowedOrigins.join(', ')}`);
 
     // In production, check allowed origins strictly
     if (isProduction) {
@@ -77,18 +75,12 @@ app.use(cors({
         return callback(null, true);
       }
 
-      // Allow Cloudflare Pages, Render, and other deployment platforms
-      if (origin.includes('.pages.dev') ||
-        origin.includes('.onrender.com') ||
-        origin.includes('cloudflare')) {
-        return callback(null, true);
-      }
-
-      // Check if origin domain matches any allowed domain (without protocol)
-      const originDomain = origin.replace(/https?:\/\//, '');
-      if (allowedOrigins.some(allowed => {
-        const allowedDomain = allowed.replace(/https?:\/\//, '');
-        return originDomain === allowedDomain;
+      // Allow specific deployment platform origins from environment
+      const trustedDomains = (process.env.TRUSTED_DOMAINS || '').split(',').filter(Boolean);
+      if (trustedDomains.some(domain => {
+        // Strict domain matching to prevent substring attacks
+        const originHost = origin.replace(/https?:\/\//, '');
+        return originHost === domain || originHost.endsWith('.' + domain);
       })) {
         return callback(null, true);
       }
@@ -129,31 +121,31 @@ app.use(session({
   store: MongoStore.create({
     mongoUrl: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/laundry_buddy',
     ttl: 24 * 60 * 60,
-    touchAfter: 24 * 3600,
+    touchAfter: 3600, // Re-save session only if 1 hour has passed
     autoRemove: 'native'
   }),
   cookie: {
-    secure: isProduction, // true in production (HTTPS)
+    secure: isProduction,
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000,
-    sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-site in production
+    sameSite: isProduction ? 'none' : 'lax',
     path: '/',
-    domain: isProduction ? '.ayushmaanyadav.me' : undefined // Required for cross-subdomain cookie sharing
+    domain: isProduction ? (process.env.COOKIE_DOMAIN || '.ayushmaanyadav.me') : undefined
   }
 }));
 
-// Body parser middleware
-app.use(bodyParser.json({ limit: '10mb' }));
-app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+// Body parser middleware (using built-in Express parsers instead of body-parser)
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // IP blocking middleware (should be early)
 app.use(ipBlockingMiddleware);
 
-// Advanced input sanitization
-app.use(sanitizeInputMiddleware);
+// Advanced input sanitization (only on API routes to avoid breaking static file requests)
+app.use('/api/', sanitizeInputMiddleware);
 
-// Prevent SQL injection attempts
-app.use(preventSQLInjection);
+// Prevent SQL injection attempts (only on API routes)
+app.use('/api/', preventSQLInjection);
 
 // Sanitize data to prevent MongoDB injection
 app.use(mongoSanitize());
@@ -185,15 +177,8 @@ setupHealthCheck(app);
 
 // Sentry error handler (must be before any other error middleware)
 app.use(sentryMiddleware.errorHandler);
-app.get('/api/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Laundry Buddy API is running',
-    timestamp: new Date().toISOString()
-  });
-});
 
-// Root route for API info (moved from / to /api)
+// Root route for API info
 app.get('/api', (req, res) => {
   res.json({
     success: true,
@@ -213,12 +198,16 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
-// 404 handler
+// 404 handler — JSON for API routes, fallback to index.html for frontend routes (SPA-like)
 app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found'
-  });
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({
+      success: false,
+      message: 'API route not found'
+    });
+  }
+  // For non-API routes, serve index.html (handles frontend routing)
+  res.status(404).sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
 // Error handling middleware
@@ -241,6 +230,26 @@ app.use((err, req, res, next) => {
 });
 
 let server;
+
+// Graceful shutdown handler
+async function gracefulShutdown(signal) {
+  logger.info(`🛑 Received ${signal}. Shutting down gracefully...`);
+  if (server) {
+    server.close(async () => {
+      try {
+        const mongoose = require('mongoose');
+        await mongoose.disconnect();
+        logger.info('✅ Database disconnected');
+      } catch (err) {
+        logger.error('Error disconnecting database:', err.message);
+      }
+      logger.info('✅ Server closed');
+      process.exit(0);
+    });
+  } else {
+    process.exit(0);
+  }
+}
 
 // Start server function
 async function start() {
@@ -274,30 +283,9 @@ async function start() {
   }
 }
 
-// Graceful shutdown
-process.on('SIGINT', async () => {
-  logger.info('🛑 Shutting down gracefully...');
-  if (server) {
-    server.close(() => {
-      logger.info('✅ Server closed');
-      process.exit(0);
-    });
-  } else {
-    process.exit(0);
-  }
-});
-
-process.on('SIGTERM', async () => {
-  logger.info('🛑 Shutting down gracefully...');
-  if (server) {
-    server.close(() => {
-      logger.info('✅ Server closed');
-      process.exit(0);
-    });
-  } else {
-    process.exit(0);
-  }
-});
+// Register shutdown handlers (single function, no duplication)
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 
 start();
 
