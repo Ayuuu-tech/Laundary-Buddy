@@ -32,7 +32,7 @@ const securityLogSchema = new mongoose.Schema({
   ipAddress: { type: String },
   userAgent: { type: String },
   metadata: { type: mongoose.Schema.Types.Mixed },
-  timestamp: { type: Date, default: Date.now, index: true }
+  timestamp: { type: Date, default: Date.now }
 });
 
 // Index for querying logs
