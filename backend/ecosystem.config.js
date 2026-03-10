@@ -7,12 +7,10 @@ module.exports = {
         watch: false,
         max_memory_restart: '400M', // Restart if memory exceeds 400MB to avoid Render hard kill
         env: {
-            NODE_ENV: 'development',
-            PORT: 3000
+            NODE_ENV: 'development'
         },
         env_production: {
-            NODE_ENV: 'production',
-            PORT: 3000
+            NODE_ENV: 'production'
         },
         node_args: '--max_old_space_size=350', // Limit V8 heap to stay within 512MB
         log_date_format: "YYYY-MM-DD HH:mm Z"
