@@ -11,6 +11,7 @@
     /* Light Gray */
     --card-bg-color: #F9FAFB;
     /* Off-white for cards */
+    --white-color: #FFFFFF;
 }
 
 * {
@@ -45,6 +46,8 @@ header {
     align-items: center;
     padding: 20px 0;
     border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 .logo {
