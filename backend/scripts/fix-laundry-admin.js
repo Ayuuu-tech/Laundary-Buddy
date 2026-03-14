@@ -20,12 +20,13 @@ async function fixLaundryAdmin() {
     for (const email of staffEmails) {
       const user = await User.findOne({ email: email.toLowerCase() });
       if (user) {
-        if (!user.isAdmin) {
+        if (!user.isAdmin || !user.isEmailVerified) {
           user.isAdmin = true;
+          user.isEmailVerified = true;  // Required for /auth/login to work
           await user.save();
-          console.log(`✅ Updated ${email} - isAdmin: true`);
+          console.log(`✅ Updated ${email} - isAdmin: true, isEmailVerified: true`);
         } else {
-          console.log(`ℹ️  ${email} already has admin rights`);
+          console.log(`ℹ️  ${email} already has admin rights and email verified`);
         }
       } else {
         console.log(`⚠️  User not found: ${email}`);
@@ -44,11 +45,12 @@ async function fixLaundryAdmin() {
 
     console.log('\n📋 Found potential laundry staff accounts:');
     for (const user of recentUsers) {
-      console.log(`   - ${user.email} (isAdmin: ${user.isAdmin})`);
-      if (!user.isAdmin) {
+      console.log(`   - ${user.email} (isAdmin: ${user.isAdmin}, isEmailVerified: ${user.isEmailVerified})`);
+      if (!user.isAdmin || !user.isEmailVerified) {
         user.isAdmin = true;
+        user.isEmailVerified = true;  // Required for /auth/login to work
         await user.save();
-        console.log('     ✅ Updated to admin');
+        console.log('     ✅ Updated to admin + email verified');
       }
     }
 

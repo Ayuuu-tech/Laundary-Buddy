@@ -10,7 +10,7 @@ async function fixAdmin() {
     // Update the laundry staff user
     const result = await User.updateOne(
       { email: 'laundry@bmu.edu.in' },
-      { $set: { isAdmin: true } }
+      { $set: { isAdmin: true, isEmailVerified: true } }
     );
 
     console.log('Update result:', result);

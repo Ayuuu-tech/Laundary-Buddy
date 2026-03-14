@@ -30,10 +30,11 @@ async function registerLaundryStaff() {
     // Check if staff already exists
     const existingStaff = await User.findOne({ email: staffData.email });
     if (existingStaff) {
-      // Update if missing admin privileges
-      if (!existingStaff.isAdmin) {
-        console.log('⚠️  Staff exists but missing admin privileges. Updating...');
+      // Update if missing admin privileges or email verification
+      if (!existingStaff.isAdmin || !existingStaff.isEmailVerified) {
+        console.log('⚠️  Staff exists but missing admin privileges or email verification. Updating...');
         existingStaff.isAdmin = true;
+        existingStaff.isEmailVerified = true;
         const hashedPassword = await bcrypt.hash(staffData.password, 10);
         existingStaff.password = hashedPassword;
         await existingStaff.save();
@@ -62,7 +63,8 @@ async function registerLaundryStaff() {
       password: hashedPassword,
       phone: staffData.phone,
       address: staffData.address,
-      isAdmin: true
+      isAdmin: true,
+      isEmailVerified: true  // Admin/staff accounts skip email verification
     });
 
     console.log('✅ Laundry staff registered successfully!');
