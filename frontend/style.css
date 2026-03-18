@@ -144,6 +144,12 @@ nav a:hover {
 .hero-buttons {
     display: flex;
     gap: 15px;
+    flex-wrap: wrap;
+}
+
+.hero-buttons .btn {
+    white-space: nowrap;
+    min-width: 150px;
 }
 
 /* =========== FEATURES SECTION =========== */
