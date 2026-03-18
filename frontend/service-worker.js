@@ -20,7 +20,7 @@
  * Part of: Laundry Buddy College Project
  */
 
-const CACHE_VERSION = 'laundry-buddy-v1.0.1';
+const CACHE_VERSION = 'laundry-buddy-v1.0.2';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
 const MAX_DYNAMIC_CACHE_SIZE = 50;
@@ -160,6 +160,12 @@ self.addEventListener('fetch', (event) => {
 
   // Always use network-first for navigation/HTML documents to ensure reload gets fresh pages
   if (request.mode === 'navigate' || request.destination === 'document') {
+    event.respondWith(networkFirstStrategy(request));
+    return;
+  }
+
+  // Always prefer fresh APK from network to avoid stale app installs
+  if (url.pathname.endsWith('.apk')) {
     event.respondWith(networkFirstStrategy(request));
     return;
   }
