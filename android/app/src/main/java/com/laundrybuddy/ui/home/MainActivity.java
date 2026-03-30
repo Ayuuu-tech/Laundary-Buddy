@@ -61,9 +61,6 @@ public class MainActivity extends AppCompatActivity {
                 loadFragment(new SupportFragment());
                 binding.bottomNavigation.setSelectedItemId(-1);
                 return true;
-            } else if (id == R.id.action_dark_mode) {
-                toggleDarkMode();
-                return true;
             } else if (id == R.id.action_logout) {
                 logout();
                 return true;
@@ -118,12 +115,6 @@ public class MainActivity extends AppCompatActivity {
                 .beginTransaction()
                 .replace(R.id.fragmentContainer, fragment)
                 .commit();
-    }
-
-    private void toggleDarkMode() {
-        app.getThemeManager().toggleDarkMode();
-        boolean isDark = app.getThemeManager().isDarkMode();
-        Toast.makeText(this, "Dark mode " + (isDark ? "enabled" : "disabled"), Toast.LENGTH_SHORT).show();
     }
 
     private void logout() {

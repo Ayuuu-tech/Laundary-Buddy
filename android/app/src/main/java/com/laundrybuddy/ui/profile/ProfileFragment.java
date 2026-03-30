@@ -191,16 +191,8 @@ public class ProfileFragment extends Fragment {
     }
 
     private void setupSettings() {
-        int themeMode = themeManager.getThemeMode();
-        binding.darkModeSwitch.setChecked(themeMode == ThemeManager.MODE_DARK);
-
-        binding.darkModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                themeManager.setThemeMode(ThemeManager.MODE_DARK);
-            } else {
-                themeManager.setThemeMode(ThemeManager.MODE_LIGHT);
-            }
-        });
+        // Dark mode removed - hide the switch
+        binding.darkModeSwitch.setVisibility(android.view.View.GONE);
     }
 
     private void setupClickListeners() {
@@ -246,8 +238,9 @@ public class ProfileFragment extends Fragment {
     }
 
     private void saveProfile() {
-        if (binding == null || !isAdded()) return;
-        
+        if (binding == null || !isAdded())
+            return;
+
         String newHostelRoom = binding.hostelRoomEdit.getText().toString().trim();
         String newPhone = binding.phoneEdit.getText().toString().trim();
 
@@ -267,8 +260,9 @@ public class ProfileFragment extends Fragment {
                 .enqueue(new Callback<ApiResponse<User>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
-                        if (binding == null || !isAdded()) return;
-                        
+                        if (binding == null || !isAdded())
+                            return;
+
                         if (response.isSuccessful() && response.body() != null) {
                             ApiResponse<User> apiResponse = response.body();
                             if (apiResponse.isSuccess()) {
@@ -290,7 +284,8 @@ public class ProfileFragment extends Fragment {
                             } else {
                                 if (getContext() != null) {
                                     ToastManager.showError(getContext(),
-                                            apiResponse.getMessage() != null ? apiResponse.getMessage() : "Update failed");
+                                            apiResponse.getMessage() != null ? apiResponse.getMessage()
+                                                    : "Update failed");
                                 }
                             }
                         } else {
@@ -302,8 +297,9 @@ public class ProfileFragment extends Fragment {
 
                     @Override
                     public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
-                        if (!isAdded()) return;
-                        
+                        if (!isAdded())
+                            return;
+
                         Log.e(TAG, "Profile update failed", t);
                         if (getContext() != null) {
                             ToastManager.showError(getContext(), getString(R.string.error_network));
@@ -317,7 +313,8 @@ public class ProfileFragment extends Fragment {
     }
 
     private void handleImageResult(Uri uri) {
-        if (uri == null || !isAdded()) return;
+        if (uri == null || !isAdded())
+            return;
 
         if (getContext() != null) {
             ToastManager.showInfo(getContext(), "Uploading photo...");
@@ -339,8 +336,9 @@ public class ProfileFragment extends Fragment {
                     .enqueue(new Callback<ApiResponse<User>>() {
                         @Override
                         public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
-                            if (binding == null || !isAdded()) return;
-                            
+                            if (binding == null || !isAdded())
+                                return;
+
                             Log.d(TAG, "Upload response: " + response.code() + " " + response.message());
                             if (response.isSuccessful() && response.body() != null) {
                                 ApiResponse<User> apiResponse = response.body();
@@ -389,8 +387,9 @@ public class ProfileFragment extends Fragment {
 
                         @Override
                         public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
-                            if (!isAdded()) return;
-                            
+                            if (!isAdded())
+                                return;
+
                             Log.e(TAG, "Photo upload failed", t);
                             if (getContext() != null) {
                                 ToastManager.showError(getContext(), getString(R.string.error_network));
@@ -407,8 +406,9 @@ public class ProfileFragment extends Fragment {
     }
 
     private File getFileFromUri(Uri uri) {
-        if (getContext() == null) return null;
-        
+        if (getContext() == null)
+            return null;
+
         try {
             ContentResolver contentResolver = getContext().getContentResolver();
             String fileName = getFileName(uri);
@@ -434,8 +434,9 @@ public class ProfileFragment extends Fragment {
 
     private String getFileName(Uri uri) {
         String result = "profile_photo.jpg";
-        if (getContext() == null) return result;
-        
+        if (getContext() == null)
+            return result;
+
         if (uri.getScheme().equals("content")) {
             try (Cursor cursor = getContext().getContentResolver().query(uri, null, null, null, null)) {
                 if (cursor != null && cursor.moveToFirst()) {

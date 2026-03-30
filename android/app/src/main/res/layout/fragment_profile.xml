@@ -384,10 +384,11 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <!-- Dark Mode Toggle -->
+                <!-- Dark Mode Toggle - REMOVED -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:visibility="gone"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
                     android:padding="16dp">
@@ -414,11 +415,6 @@
                         android:layout_height="wrap_content" />
 
                 </LinearLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/divider" />
 
                 <!-- Contact Us -->
                 <LinearLayout
