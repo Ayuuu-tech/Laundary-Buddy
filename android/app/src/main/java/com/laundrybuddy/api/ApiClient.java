@@ -23,6 +23,7 @@ public class ApiClient {
 
     private static final String TAG = "ApiClient";
     private static ApiClient instance;
+    private static volatile boolean isLoggingOut = false;
 
     private final Retrofit retrofit;
     private final AuthApi authApi;
@@ -66,25 +67,42 @@ public class ApiClient {
                     okhttp3.Response response = chain.proceed(request);
 
                     if (response.code() == 401) {
-                        Log.w(TAG, "Received 401 Unauthorized - token may be expired");
-                        // Clear auth on main thread and redirect to login
-                        android.os.Handler mainHandler = new android.os.Handler(android.os.Looper.getMainLooper());
-                        mainHandler.post(() -> {
-                            try {
-                                com.laundrybuddy.LaundryBuddyApp app = com.laundrybuddy.LaundryBuddyApp.getInstance();
-                                if (app != null && app.isLoggedIn()) {
-                                    app.clearAuth();
-                                    android.content.Intent intent = new android.content.Intent(app,
-                                            com.laundrybuddy.ui.auth.LoginActivity.class);
-                                    intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-                                            | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                    intent.putExtra("session_expired", true);
-                                    app.startActivity(intent);
+                        // Skip auto-logout for auth-related endpoints
+                        // (login, register, logout, etc. can legitimately return 401)
+                        String url = request.url().toString();
+                        boolean isAuthEndpoint = url.contains("auth/login")
+                                || url.contains("auth/register")
+                                || url.contains("auth/logout")
+                                || url.contains("auth/google")
+                                || url.contains("auth/forgot-password")
+                                || url.contains("auth/me")
+                                || url.contains("auth/check");
+
+                        if (!isAuthEndpoint && !isLoggingOut) {
+                            Log.w(TAG, "Received 401 on protected endpoint - token expired: " + url);
+                            isLoggingOut = true;
+                            // Clear auth on main thread and redirect to login
+                            android.os.Handler mainHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+                            mainHandler.post(() -> {
+                                try {
+                                    com.laundrybuddy.LaundryBuddyApp app = com.laundrybuddy.LaundryBuddyApp
+                                            .getInstance();
+                                    if (app != null && app.isLoggedIn()) {
+                                        app.clearAuth();
+                                        android.content.Intent intent = new android.content.Intent(app,
+                                                com.laundrybuddy.ui.auth.LoginActivity.class);
+                                        intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                                                | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                        intent.putExtra("session_expired", true);
+                                        app.startActivity(intent);
+                                    }
+                                } catch (Exception e) {
+                                    Log.e(TAG, "Error handling 401 redirect", e);
+                                } finally {
+                                    isLoggingOut = false;
                                 }
-                            } catch (Exception e) {
-                                Log.e(TAG, "Error handling 401 redirect", e);
-                            }
-                        });
+                            });
+                        }
                     }
                     return response;
                 })
