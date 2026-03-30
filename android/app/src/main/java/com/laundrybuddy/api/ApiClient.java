@@ -60,6 +60,34 @@ public class ApiClient {
                     }
                     return chain.proceed(original);
                 })
+                // Intercept 401 responses to handle expired/invalid tokens
+                .addInterceptor(chain -> {
+                    okhttp3.Request request = chain.request();
+                    okhttp3.Response response = chain.proceed(request);
+
+                    if (response.code() == 401) {
+                        Log.w(TAG, "Received 401 Unauthorized - token may be expired");
+                        // Clear auth on main thread and redirect to login
+                        android.os.Handler mainHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+                        mainHandler.post(() -> {
+                            try {
+                                com.laundrybuddy.LaundryBuddyApp app = com.laundrybuddy.LaundryBuddyApp.getInstance();
+                                if (app != null && app.isLoggedIn()) {
+                                    app.clearAuth();
+                                    android.content.Intent intent = new android.content.Intent(app,
+                                            com.laundrybuddy.ui.auth.LoginActivity.class);
+                                    intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                                            | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                    intent.putExtra("session_expired", true);
+                                    app.startActivity(intent);
+                                }
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error handling 401 redirect", e);
+                            }
+                        });
+                    }
+                    return response;
+                })
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)

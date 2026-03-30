@@ -66,6 +66,11 @@ public class LoginActivity extends AppCompatActivity {
 
         setupGoogleSignIn();
         setupClickListeners();
+
+        // Show session expired message if redirected from 401 interceptor
+        if (getIntent().getBooleanExtra("session_expired", false)) {
+            Toast.makeText(this, "Session expired. Please login again.", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void setupGoogleSignIn() {

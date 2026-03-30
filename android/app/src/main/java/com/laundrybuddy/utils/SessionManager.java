@@ -26,18 +26,20 @@ public class SessionManager implements Application.ActivityLifecycleCallbacks {
 
     private static final String TAG = "SessionManager";
 
-    // Session timeout duration (15 minutes = 15 * 60 * 1000 ms)
-    private static final long SESSION_TIMEOUT_MS = 15 * 60 * 1000;
+    // Session timeout duration (7 days - matches backend JWT expiry)
+    // Previously 15 minutes which was too aggressive for mobile apps,
+    // causing auth token wipe when app was backgrounded briefly.
+    private static final long SESSION_TIMEOUT_MS = 7L * 24 * 60 * 60 * 1000;
 
-    // Check interval for timeout (1 minute)
-    private static final long CHECK_INTERVAL_MS = 60 * 1000;
+    // Check interval for timeout (30 minutes)
+    private static final long CHECK_INTERVAL_MS = 30 * 60 * 1000;
 
     private static SessionManager instance;
     private final LaundryBuddyApp app;
     private final Handler handler;
     private long lastActivityTime;
     private boolean isInForeground = false;
-    private Activity currentActivity;
+    private java.lang.ref.WeakReference<Activity> currentActivityRef;
 
     private final Runnable timeoutChecker = new Runnable() {
         @Override
@@ -82,8 +84,9 @@ public class SessionManager implements Application.ActivityLifecycleCallbacks {
      * Check if session has timed out and logout if necessary.
      */
     private void checkSessionTimeout() {
-        if (app == null) return;
-        
+        if (app == null)
+            return;
+
         try {
             if (!app.isLoggedIn()) {
                 return; // Not logged in, nothing to check
@@ -115,6 +118,8 @@ public class SessionManager implements Application.ActivityLifecycleCallbacks {
             if (app != null) {
                 app.clearAuth();
             }
+
+            Activity currentActivity = currentActivityRef != null ? currentActivityRef.get() : null;
 
             // Show toast notification
             if (currentActivity != null && !currentActivity.isFinishing() && !currentActivity.isDestroyed()) {
@@ -167,7 +172,7 @@ public class SessionManager implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityResumed(@NonNull Activity activity) {
-        currentActivity = activity;
+        currentActivityRef = new java.lang.ref.WeakReference<>(activity);
         isInForeground = true;
 
         // Skip session check for login/signup activities
@@ -215,8 +220,9 @@ public class SessionManager implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityDestroyed(@NonNull Activity activity) {
-        if (currentActivity == activity) {
-            currentActivity = null;
+        if (currentActivityRef != null && currentActivityRef.get() == activity) {
+            currentActivityRef.clear();
+            currentActivityRef = null;
         }
     }
 }

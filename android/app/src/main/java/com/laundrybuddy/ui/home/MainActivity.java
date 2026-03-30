@@ -121,10 +121,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void toggleDarkMode() {
-        boolean currentMode = app.isDarkMode();
-        app.setDarkMode(!currentMode);
-        Toast.makeText(this, "Dark mode " + (!currentMode ? "enabled" : "disabled"), Toast.LENGTH_SHORT).show();
-        // In production, you'd recreate the activity or update theme
+        app.getThemeManager().toggleDarkMode();
+        boolean isDark = app.getThemeManager().isDarkMode();
+        Toast.makeText(this, "Dark mode " + (isDark ? "enabled" : "disabled"), Toast.LENGTH_SHORT).show();
     }
 
     private void logout() {
