@@ -24,13 +24,13 @@ const apiLimiter = createRateLimiter(
 // Strict rate limiter for auth endpoints (configurable via env for deployments)
 const authLimiter = createRateLimiter(
   parseInt(process.env.AUTH_RATE_LIMIT_WINDOW_MS, 10) || 15 * 60 * 1000, // default: 15 minutes
-  parseInt(process.env.AUTH_RATE_LIMIT_MAX_REQUESTS, 10) || 10 // default: 10 requests per window
+  parseInt(process.env.AUTH_RATE_LIMIT_MAX_REQUESTS, 10) || 30 // default: 30 requests per window
 );
 
 // Stricter rate limiter for OTP generation (prevent email spam)
 const otpLimiter = createRateLimiter(
   60 * 60 * 1000, // 1 hour
-  3 // 3 requests per hour
+  10 // 10 requests per hour
 );
 
 // Security headers configuration

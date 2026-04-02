@@ -236,8 +236,18 @@ public class SignupActivity extends AppCompatActivity {
                     String error = "Signup failed";
                     if (response.body() != null && response.body().getMessage() != null) {
                         error = response.body().getMessage();
+                    } else {
+                        try {
+                            if (response.errorBody() != null) {
+                                String errBody = response.errorBody().string();
+                                org.json.JSONObject errJson = new org.json.JSONObject(errBody);
+                                if (errJson.has("message")) {
+                                    error = errJson.getString("message");
+                                }
+                            }
+                        } catch (Exception ignored) {}
                     }
-                    Toast.makeText(SignupActivity.this, error, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SignupActivity.this, error, Toast.LENGTH_LONG).show();
                 }
             }
 
@@ -337,6 +347,9 @@ public class SignupActivity extends AppCompatActivity {
                 }
             });
         });
+
+        // Close button to dismiss dialog
+        dialogView.findViewById(R.id.closeDialog).setOnClickListener(v -> dialog.dismiss());
 
         dialog.show();
     }

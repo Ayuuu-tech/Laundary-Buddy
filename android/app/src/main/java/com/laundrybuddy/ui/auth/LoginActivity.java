@@ -160,35 +160,69 @@ public class LoginActivity extends AppCompatActivity {
         pendingEmail = email;
         pendingPassword = password;
 
-        // Request OTP (validates credentials + sends OTP email)
         Map<String, Object> body = new HashMap<>();
         body.put("email", email);
         body.put("password", password);
 
-        ApiClient.getInstance().getAuthApi().requestLoginOTP(body).enqueue(new Callback<ApiResponse<Void>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
-                setLoading(false);
+        if (isStaffMode) {
+            // Staff login: direct login without OTP
+            ApiClient.getInstance().getAuthApi().login(body).enqueue(new Callback<ApiResponse<User>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                    setLoading(false);
 
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    Toast.makeText(LoginActivity.this, "OTP sent to your email!", Toast.LENGTH_SHORT).show();
-                    showOtpDialog();
-                } else {
-                    String error = "Invalid email or password";
-                    if (response.body() != null && response.body().getMessage() != null) {
-                        error = response.body().getMessage();
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        ApiResponse<User> apiResponse = response.body();
+                        if (apiResponse.getToken() != null) {
+                            app.saveAuthToken(apiResponse.getToken());
+                        }
+                        User user = apiResponse.getUser() != null ? apiResponse.getUser() : apiResponse.getData();
+                        if (user != null) {
+                            handleLoginSuccess(user);
+                        }
+                    } else {
+                        String error = "Invalid email or password";
+                        if (response.body() != null && response.body().getMessage() != null) {
+                            error = response.body().getMessage();
+                        }
+                        Toast.makeText(LoginActivity.this, error, Toast.LENGTH_SHORT).show();
                     }
-                    Toast.makeText(LoginActivity.this, error, Toast.LENGTH_SHORT).show();
                 }
-            }
 
-            @Override
-            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
-                setLoading(false);
-                Log.e(TAG, "Login OTP request failed", t);
-                Toast.makeText(LoginActivity.this, getString(R.string.error_network), Toast.LENGTH_SHORT).show();
-            }
-        });
+                @Override
+                public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                    setLoading(false);
+                    Log.e(TAG, "Staff login failed", t);
+                    Toast.makeText(LoginActivity.this, getString(R.string.error_network), Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            // Student login: OTP verification flow
+            ApiClient.getInstance().getAuthApi().requestLoginOTP(body).enqueue(new Callback<ApiResponse<Void>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                    setLoading(false);
+
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        Toast.makeText(LoginActivity.this, "OTP sent to your email!", Toast.LENGTH_SHORT).show();
+                        showOtpDialog();
+                    } else {
+                        String error = "Invalid email or password";
+                        if (response.body() != null && response.body().getMessage() != null) {
+                            error = response.body().getMessage();
+                        }
+                        Toast.makeText(LoginActivity.this, error, Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                    setLoading(false);
+                    Log.e(TAG, "Login OTP request failed", t);
+                    Toast.makeText(LoginActivity.this, getString(R.string.error_network), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     private void showOtpDialog() {
@@ -278,8 +312,8 @@ public class LoginActivity extends AppCompatActivity {
             });
         });
 
-        // Allow cancel via a custom button (hidden X)
-        dialogView.setOnClickListener(null);
+        // Close button to dismiss dialog
+        dialogView.findViewById(R.id.closeDialog).setOnClickListener(v -> dialog.dismiss());
 
         dialog.show();
     }
