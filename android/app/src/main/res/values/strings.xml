@@ -116,8 +116,8 @@
     <string name="send">Send</string>
     <string name="staff_login">Staff Login</string>
 
-    <!-- Google Sign-In - Replace with your actual client ID -->
-    <string name="google_client_id">708319771344-7qt9aj690fvqlcmqg6lplq6o1aag9193.apps.googleusercontent.com</string>
+    <!-- Google Sign-In - Web client ID (must match backend GOOGLE_CLIENT_ID) -->
+    <string name="google_client_id">708319771344-gd8frork6c2r8o45rbkfctpk9nl8shdb.apps.googleusercontent.com</string>
 
     <!-- Legal -->
     <string name="privacy_policy">Privacy Policy</string>

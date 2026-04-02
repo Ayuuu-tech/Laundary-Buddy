@@ -10,6 +10,12 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
 import com.laundrybuddy.LaundryBuddyApp;
 import com.laundrybuddy.R;
 import com.laundrybuddy.api.ApiClient;
@@ -26,14 +32,16 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
- * Signup Activity for new user registration
+ * Signup Activity for new user registration (email/password + Google)
  */
 public class SignupActivity extends AppCompatActivity {
 
     private static final String TAG = "SignupActivity";
+    private static final int RC_SIGN_IN = 9002;
 
     private ActivitySignupBinding binding;
     private LaundryBuddyApp app;
+    private GoogleSignInClient googleSignInClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,16 +51,99 @@ public class SignupActivity extends AppCompatActivity {
 
         app = LaundryBuddyApp.getInstance();
 
+        setupGoogleSignIn();
         setupClickListeners();
+    }
+
+    private void setupGoogleSignIn() {
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .requestProfile()
+                .requestIdToken(getString(R.string.google_client_id))
+                .build();
+
+        googleSignInClient = GoogleSignIn.getClient(this, gso);
     }
 
     private void setupClickListeners() {
         // Signup button
         binding.signupButton.setOnClickListener(v -> attemptSignup());
 
+        // Google Sign-Up button
+        binding.googleSignUpButton.setOnClickListener(v -> signUpWithGoogle());
+
         // Login link
         binding.loginLink.setOnClickListener(v -> {
             finish(); // Go back to login
+        });
+    }
+
+    private void signUpWithGoogle() {
+        Intent signInIntent = googleSignInClient.getSignInIntent();
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            handleGoogleSignInResult(task);
+        }
+    }
+
+    private void handleGoogleSignInResult(Task<GoogleSignInAccount> completedTask) {
+        try {
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            if (account != null) {
+                sendGoogleTokenToBackend(account.getIdToken());
+            }
+        } catch (ApiException e) {
+            Log.e(TAG, "Google sign-up failed: " + e.getStatusCode());
+            Toast.makeText(this, "Google sign-up failed", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void sendGoogleTokenToBackend(String idToken) {
+        setLoading(true);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("credential", idToken);
+
+        ApiClient.getInstance().getAuthApi().googleLogin(body).enqueue(new Callback<ApiResponse<User>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                setLoading(false);
+
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<User> apiResponse = response.body();
+                    if (apiResponse.isSuccess()) {
+                        if (apiResponse.getToken() != null) {
+                            app.saveAuthToken(apiResponse.getToken());
+                        }
+                        User user = apiResponse.getUser() != null ? apiResponse.getUser() : apiResponse.getData();
+                        if (user != null) {
+                            handleSignupSuccess(user);
+                            Toast.makeText(SignupActivity.this,
+                                    "Welcome, " + user.getName() + "!", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        String error = apiResponse.getMessage() != null ? apiResponse.getMessage()
+                                : "Google sign-up failed";
+                        Toast.makeText(SignupActivity.this, error, Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(SignupActivity.this, "Google sign-up failed", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                setLoading(false);
+                Log.e(TAG, "Google signup failed", t);
+                Toast.makeText(SignupActivity.this, getString(R.string.error_network), Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
@@ -209,6 +300,7 @@ public class SignupActivity extends AppCompatActivity {
     private void setLoading(boolean loading) {
         binding.loadingProgress.setVisibility(loading ? View.VISIBLE : View.GONE);
         binding.signupButton.setEnabled(!loading);
+        binding.googleSignUpButton.setEnabled(!loading);
         binding.nameInput.setEnabled(!loading);
         binding.emailInput.setEnabled(!loading);
         binding.hostelRoomInput.setEnabled(!loading);

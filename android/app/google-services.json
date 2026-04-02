@@ -12,7 +12,12 @@
           "package_name": "com.laundrybuddy"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "708319771344-gd8frork6c2r8o45rbkfctpk9nl8shdb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBfVZWZo7HyUVY3ks_OG9bwAr_wTf7Hda0"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "708319771344-gd8frork6c2r8o45rbkfctpk9nl8shdb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

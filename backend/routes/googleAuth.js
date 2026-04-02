@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
+const { generateAccessToken, generateRefreshToken } = require('../middleware/auth-security');
 
 // Google OAuth - Verify token and login/register user
 router.post('/google', async (req, res) => {
@@ -53,6 +54,11 @@ router.post('/google', async (req, res) => {
 
     if (user) {
       // User exists - login
+      // Generate JWT tokens for Android app
+      const accessToken = generateAccessToken(user);
+      const refreshToken = generateRefreshToken(user);
+      await user.addRefreshToken(refreshToken);
+
       req.session.userId = user._id.toString();
       req.session.user = {
         id: user._id,
@@ -70,12 +76,13 @@ router.post('/google', async (req, res) => {
           console.error('Session save error:', err);
           return res.status(500).json({ success: false, message: 'Error saving session' });
         }
-        // console.log('✅ Google login session saved');
         return res.json({
           success: true,
           message: 'Login successful!',
           isNewUser: false,
-          user: req.session.user
+          user: req.session.user,
+          token: accessToken,
+          refreshToken: refreshToken
         });
       });
     }
@@ -92,6 +99,11 @@ router.post('/google', async (req, res) => {
       googleId: googleId,
       profilePhoto: picture
     });
+
+    // Generate JWT tokens for Android app
+    const accessToken = generateAccessToken(newUser);
+    const refreshToken = generateRefreshToken(newUser);
+    await newUser.addRefreshToken(refreshToken);
 
     req.session.userId = newUser._id.toString();
     req.session.user = {
@@ -115,7 +127,9 @@ router.post('/google', async (req, res) => {
         success: true,
         message: 'Account created successfully!',
         isNewUser: true,
-        user: req.session.user
+        user: req.session.user,
+        token: accessToken,
+        refreshToken: refreshToken
       });
     });
   } catch (error) {
@@ -129,3 +143,4 @@ router.post('/google', async (req, res) => {
 });
 
 module.exports = router;
+

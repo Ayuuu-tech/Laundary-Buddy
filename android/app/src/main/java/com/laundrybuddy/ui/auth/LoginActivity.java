@@ -43,6 +43,7 @@ public class LoginActivity extends AppCompatActivity {
     private ActivityLoginBinding binding;
     private GoogleSignInClient googleSignInClient;
     private LaundryBuddyApp app;
+    private boolean isStaffMode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,13 +101,24 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(this, "Password reset feature coming soon", Toast.LENGTH_SHORT).show();
         });
 
-        // Staff login
+        // Staff/Student login toggle
         binding.staffLoginText.setOnClickListener(v -> {
-            // Pre-fill staff email for convenience
-            binding.emailInput.setText("laundry@bmu.edu.in");
-            binding.passwordInput.setText("");
-            binding.passwordInput.requestFocus();
-            Toast.makeText(this, "Enter staff password to login", Toast.LENGTH_SHORT).show();
+            if (!isStaffMode) {
+                // Switch to Staff mode
+                isStaffMode = true;
+                binding.staffLoginText.setText("Login as Student");
+                binding.emailInput.setText("laundry@bmu.edu.in");
+                binding.passwordInput.setText("");
+                binding.passwordInput.requestFocus();
+                Toast.makeText(this, "Enter staff password to login", Toast.LENGTH_SHORT).show();
+            } else {
+                // Switch back to Student mode
+                isStaffMode = false;
+                binding.staffLoginText.setText("Login as Staff");
+                binding.emailInput.setText("");
+                binding.passwordInput.setText("");
+                binding.emailInput.requestFocus();
+            }
         });
     }
 
