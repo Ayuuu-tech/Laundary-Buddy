@@ -101,6 +101,10 @@ exports.verifySignupOTP = async (req, res) => {
     user.signupOTP = null;
     user.signupOTPExpiry = null;
     await user.save();
+    // Generate JWT tokens for Android app
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+    await user.addRefreshToken(refreshToken);
     // Create session
     req.session.userId = user._id.toString();
     req.session.user = {
@@ -116,7 +120,7 @@ exports.verifySignupOTP = async (req, res) => {
       if (err) {
         return res.status(500).json({ success: false, message: 'Error saving session' });
       }
-      res.status(201).json({ success: true, message: 'User registered successfully', user: req.session.user });
+      res.status(201).json({ success: true, message: 'User registered successfully', user: req.session.user, token: accessToken, refreshToken: refreshToken });
     });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error verifying signup OTP', error: error.message });
@@ -197,6 +201,10 @@ exports.verifyLoginOTP = async (req, res) => {
     user.loginOTP = null;
     user.loginOTPExpiry = null;
     await user.save();
+    // Generate JWT tokens for Android app
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+    await user.addRefreshToken(refreshToken);
     // Create session
     req.session.userId = user._id.toString();
     req.session.user = {
@@ -212,7 +220,7 @@ exports.verifyLoginOTP = async (req, res) => {
       if (err) {
         return res.status(500).json({ success: false, message: 'Error saving session' });
       }
-      res.json({ success: true, message: 'Login successful', user: req.session.user });
+      res.json({ success: true, message: 'Login successful', user: req.session.user, token: accessToken, refreshToken: refreshToken });
     });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error verifying OTP', error: error.message });

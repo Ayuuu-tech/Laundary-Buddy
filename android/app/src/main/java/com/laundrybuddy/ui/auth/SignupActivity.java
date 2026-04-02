@@ -6,8 +6,10 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -16,6 +18,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.laundrybuddy.LaundryBuddyApp;
 import com.laundrybuddy.R;
 import com.laundrybuddy.api.ApiClient;
@@ -32,7 +37,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
- * Signup Activity for new user registration (email/password + Google)
+ * Signup Activity with OTP verification and Google Sign-Up
  */
 public class SignupActivity extends AppCompatActivity {
 
@@ -42,6 +47,9 @@ public class SignupActivity extends AppCompatActivity {
     private ActivitySignupBinding binding;
     private LaundryBuddyApp app;
     private GoogleSignInClient googleSignInClient;
+
+    // Store signup data for OTP flow
+    private Map<String, Object> pendingSignupData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,16 +74,9 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        // Signup button
         binding.signupButton.setOnClickListener(v -> attemptSignup());
-
-        // Google Sign-Up button
         binding.googleSignUpButton.setOnClickListener(v -> signUpWithGoogle());
-
-        // Login link
-        binding.loginLink.setOnClickListener(v -> {
-            finish(); // Go back to login
-        });
+        binding.loginLink.setOnClickListener(v -> finish());
     }
 
     private void signUpWithGoogle() {
@@ -148,7 +149,6 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     private void attemptSignup() {
-        // Reset errors
         binding.nameLayout.setError(null);
         binding.emailLayout.setError(null);
         binding.hostelRoomLayout.setError(null);
@@ -162,14 +162,12 @@ public class SignupActivity extends AppCompatActivity {
         String password = binding.passwordInput.getText().toString();
         String confirmPassword = binding.confirmPasswordInput.getText().toString();
 
-        // Validate name
         if (TextUtils.isEmpty(name)) {
             binding.nameLayout.setError(getString(R.string.error_required_field));
             binding.nameInput.requestFocus();
             return;
         }
 
-        // Validate email
         if (TextUtils.isEmpty(email)) {
             binding.emailLayout.setError(getString(R.string.error_required_field));
             binding.emailInput.requestFocus();
@@ -182,14 +180,12 @@ public class SignupActivity extends AppCompatActivity {
             return;
         }
 
-        // Validate hostel room
         if (TextUtils.isEmpty(hostelRoom)) {
             binding.hostelRoomLayout.setError(getString(R.string.error_required_field));
             binding.hostelRoomInput.requestFocus();
             return;
         }
 
-        // Validate password
         if (TextUtils.isEmpty(password)) {
             binding.passwordLayout.setError(getString(R.string.error_required_field));
             binding.passwordInput.requestFocus();
@@ -202,7 +198,6 @@ public class SignupActivity extends AppCompatActivity {
             return;
         }
 
-        // Password strength check
         if (!isPasswordStrong(password)) {
             binding.passwordLayout
                     .setError("Password must contain uppercase, lowercase, number, and special character");
@@ -210,68 +205,140 @@ public class SignupActivity extends AppCompatActivity {
             return;
         }
 
-        // Validate confirm password
         if (!password.equals(confirmPassword)) {
             binding.confirmPasswordLayout.setError(getString(R.string.error_passwords_mismatch));
             binding.confirmPasswordInput.requestFocus();
             return;
         }
 
-        // Show loading
         setLoading(true);
 
-        // Make API call
-        Map<String, Object> body = new HashMap<>();
-        body.put("name", name);
-        body.put("email", email);
-        body.put("hostelRoom", hostelRoom);
-        body.put("password", password);
-
+        // Build signup data
+        pendingSignupData = new HashMap<>();
+        pendingSignupData.put("name", name);
+        pendingSignupData.put("email", email);
+        pendingSignupData.put("hostelRoom", hostelRoom);
+        pendingSignupData.put("password", password);
         if (!TextUtils.isEmpty(phone)) {
-            body.put("phone", phone);
+            pendingSignupData.put("phone", phone);
         }
 
-        ApiClient.getInstance().getAuthApi().register(body).enqueue(new Callback<ApiResponse<User>>() {
+        // Request Signup OTP
+        ApiClient.getInstance().getAuthApi().requestSignupOTP(pendingSignupData).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
-            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                 setLoading(false);
 
-                if (response.isSuccessful() && response.body() != null) {
-                    ApiResponse<User> apiResponse = response.body();
-                    if (apiResponse.isSuccess()) {
-                        User user = apiResponse.getUser() != null ? apiResponse.getUser() : apiResponse.getData();
-                        if (user != null) {
-                            handleSignupSuccess(user);
-                        } else {
-                            // Registration successful, but no user returned - go to login
-                            Toast.makeText(SignupActivity.this, getString(R.string.signup_success), Toast.LENGTH_SHORT)
-                                    .show();
-                            finish();
-                        }
-                    } else {
-                        String error = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Signup failed";
-                        Toast.makeText(SignupActivity.this, error, Toast.LENGTH_SHORT).show();
-                    }
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    Toast.makeText(SignupActivity.this, "OTP sent to your email!", Toast.LENGTH_SHORT).show();
+                    showOtpDialog(email);
                 } else {
                     String error = "Signup failed";
-                    try {
-                        if (response.errorBody() != null) {
-                            error = response.errorBody().string();
-                        }
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error parsing error body", e);
+                    if (response.body() != null && response.body().getMessage() != null) {
+                        error = response.body().getMessage();
                     }
                     Toast.makeText(SignupActivity.this, error, Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                 setLoading(false);
-                Log.e(TAG, "Signup failed", t);
+                Log.e(TAG, "Signup OTP request failed", t);
                 Toast.makeText(SignupActivity.this, getString(R.string.error_network), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void showOtpDialog(String email) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_otp_verification, null);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .setCancelable(false)
+                .create();
+
+        TextInputEditText otpInput = dialogView.findViewById(R.id.otpInput);
+        TextInputLayout otpLayout = dialogView.findViewById(R.id.otpLayout);
+        MaterialButton verifyButton = dialogView.findViewById(R.id.verifyButton);
+        TextView resendOtp = dialogView.findViewById(R.id.resendOtp);
+        View otpLoading = dialogView.findViewById(R.id.otpLoading);
+        TextView otpTitle = dialogView.findViewById(R.id.otpTitle);
+        TextView otpMessage = dialogView.findViewById(R.id.otpMessage);
+
+        otpTitle.setText("Verify Email");
+        otpMessage.setText("We've sent a 6-digit OTP to " + email);
+
+        verifyButton.setOnClickListener(v -> {
+            String otp = otpInput.getText().toString().trim();
+            if (otp.length() != 6) {
+                otpLayout.setError("Enter 6-digit OTP");
+                return;
+            }
+            otpLayout.setError(null);
+            verifyButton.setEnabled(false);
+            otpLoading.setVisibility(View.VISIBLE);
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("email", email);
+            body.put("otp", otp);
+
+            ApiClient.getInstance().getAuthApi().verifySignupOTP(body).enqueue(new Callback<ApiResponse<User>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                    verifyButton.setEnabled(true);
+                    otpLoading.setVisibility(View.GONE);
+
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        dialog.dismiss();
+                        ApiResponse<User> apiResponse = response.body();
+
+                        if (apiResponse.getToken() != null) {
+                            app.saveAuthToken(apiResponse.getToken());
+                        }
+
+                        User user = apiResponse.getUser() != null ? apiResponse.getUser() : apiResponse.getData();
+                        if (user != null) {
+                            handleSignupSuccess(user);
+                        } else {
+                            Toast.makeText(SignupActivity.this, getString(R.string.signup_success), Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
+                    } else {
+                        String error = "Invalid OTP";
+                        if (response.body() != null && response.body().getMessage() != null) {
+                            error = response.body().getMessage();
+                        }
+                        otpLayout.setError(error);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                    verifyButton.setEnabled(true);
+                    otpLoading.setVisibility(View.GONE);
+                    otpLayout.setError("Network error. Please try again.");
+                }
+            });
+        });
+
+        resendOtp.setOnClickListener(v -> {
+            resendOtp.setEnabled(false);
+            ApiClient.getInstance().getAuthApi().requestSignupOTP(pendingSignupData).enqueue(new Callback<ApiResponse<Void>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                    resendOtp.setEnabled(true);
+                    Toast.makeText(SignupActivity.this, "OTP resent!", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                    resendOtp.setEnabled(true);
+                    Toast.makeText(SignupActivity.this, "Failed to resend OTP", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
+        dialog.show();
     }
 
     private boolean isPasswordStrong(String password) {
@@ -279,18 +346,15 @@ public class SignupActivity extends AppCompatActivity {
         boolean hasLowercase = !password.equals(password.toUpperCase());
         boolean hasDigit = password.matches(".*\\d.*");
         boolean hasSpecial = password.matches(".*[!@#$%^&*(),.?\":{}|<>].*");
-
         return hasUppercase && hasLowercase && hasDigit && hasSpecial;
     }
 
     private void handleSignupSuccess(User user) {
-        // Save user info
         app.setSessionActive(true);
         app.saveFullUserInfo(user);
 
         Toast.makeText(this, getString(R.string.signup_success), Toast.LENGTH_SHORT).show();
 
-        // Navigate to home
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

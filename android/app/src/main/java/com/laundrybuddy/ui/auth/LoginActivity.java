@@ -6,8 +6,10 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -16,6 +18,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.laundrybuddy.LaundryBuddyApp;
 import com.laundrybuddy.R;
 import com.laundrybuddy.api.ApiClient;
@@ -33,7 +38,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
- * Login Activity handling email/password and Google Sign-In
+ * Login Activity handling email/password with OTP verification and Google Sign-In
  */
 public class LoginActivity extends AppCompatActivity {
 
@@ -45,15 +50,18 @@ public class LoginActivity extends AppCompatActivity {
     private LaundryBuddyApp app;
     private boolean isStaffMode = false;
 
+    // Store email/password for OTP flow
+    private String pendingEmail;
+    private String pendingPassword;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         app = LaundryBuddyApp.getInstance();
 
-        // Check if already logged in - Redirect immediately before UI setup
+        // Check if already logged in
         if (app.isLoggedIn()) {
-            // Check if user is staff - redirect to staff dashboard
             if (app.isUserStaff()) {
                 navigateToStaffDashboard();
             } else {
@@ -68,7 +76,6 @@ public class LoginActivity extends AppCompatActivity {
         setupGoogleSignIn();
         setupClickListeners();
 
-        // Show session expired message if redirected from 401 interceptor
         if (getIntent().getBooleanExtra("session_expired", false)) {
             Toast.makeText(this, "Session expired. Please login again.", Toast.LENGTH_LONG).show();
         }
@@ -85,26 +92,21 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        // Login button
         binding.loginButton.setOnClickListener(v -> attemptLogin());
-
-        // Google Sign-In button
         binding.googleSignInButton.setOnClickListener(v -> signInWithGoogle());
 
-        // Signup link
         binding.signupLink.setOnClickListener(v -> {
             startActivity(new Intent(this, SignupActivity.class));
         });
 
-        // Forgot password
+        // Forgot password - navigate to ResetPasswordActivity
         binding.forgotPasswordText.setOnClickListener(v -> {
-            Toast.makeText(this, "Password reset feature coming soon", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, ResetPasswordActivity.class));
         });
 
         // Staff/Student login toggle
         binding.staffLoginText.setOnClickListener(v -> {
             if (!isStaffMode) {
-                // Switch to Staff mode
                 isStaffMode = true;
                 binding.staffLoginText.setText("Login as Student");
                 binding.emailInput.setText("laundry@bmu.edu.in");
@@ -112,7 +114,6 @@ public class LoginActivity extends AppCompatActivity {
                 binding.passwordInput.requestFocus();
                 Toast.makeText(this, "Enter staff password to login", Toast.LENGTH_SHORT).show();
             } else {
-                // Switch back to Student mode
                 isStaffMode = false;
                 binding.staffLoginText.setText("Login as Staff");
                 binding.emailInput.setText("");
@@ -123,14 +124,12 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void attemptLogin() {
-        // Reset errors
         binding.emailLayout.setError(null);
         binding.passwordLayout.setError(null);
 
         String email = binding.emailInput.getText().toString().trim();
         String password = binding.passwordInput.getText().toString();
 
-        // Validate email
         if (TextUtils.isEmpty(email)) {
             binding.emailLayout.setError(getString(R.string.error_required_field));
             binding.emailInput.requestFocus();
@@ -143,7 +142,6 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // Validate password
         if (TextUtils.isEmpty(password)) {
             binding.passwordLayout.setError(getString(R.string.error_required_field));
             binding.passwordInput.requestFocus();
@@ -156,74 +154,134 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // Show loading
         setLoading(true);
 
-        // Make API call
+        // Store for OTP verification
+        pendingEmail = email;
+        pendingPassword = password;
+
+        // Request OTP (validates credentials + sends OTP email)
         Map<String, Object> body = new HashMap<>();
         body.put("email", email);
         body.put("password", password);
 
-        ApiClient.getInstance().getAuthApi().login(body).enqueue(new Callback<ApiResponse<User>>() {
+        ApiClient.getInstance().getAuthApi().requestLoginOTP(body).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
-            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                 setLoading(false);
 
-                Log.d(TAG, "Login response code: " + response.code());
-
-                if (response.isSuccessful() && response.body() != null) {
-                    ApiResponse<User> apiResponse = response.body();
-                    Log.d(TAG, "Login success: " + apiResponse.isSuccess());
-
-                    if (apiResponse.isSuccess()) {
-                        if (apiResponse.getToken() != null) {
-                            Log.d(TAG, "Got token, saving...");
-                            app.saveAuthToken(apiResponse.getToken());
-
-                            // Extract userId from JWT token as backup
-                            String userId = extractUserIdFromToken(apiResponse.getToken());
-                            if (userId != null) {
-                                Log.d(TAG, "Extracted userId from token: " + userId);
-                            }
-                        }
-                        User user = apiResponse.getUser() != null ? apiResponse.getUser() : apiResponse.getData();
-                        if (user != null) {
-                            Log.d(TAG, "Got user - id: " + user.getId() + ", name: " + user.getName());
-                            handleLoginSuccess(user);
-                            String tokenStatus = (apiResponse.getToken() != null) ? "Token RX" : "Token NULL";
-                            Toast.makeText(LoginActivity.this, "Login OK. " + tokenStatus, Toast.LENGTH_LONG).show();
-                        } else {
-                            // User object is null, try to extract from token
-                            String userId = extractUserIdFromToken(apiResponse.getToken());
-                            if (userId != null) {
-                                Log.d(TAG, "User null but extracting from token: " + userId);
-                                app.saveUserInfo(userId, "", "", "student");
-                                app.setSessionActive(true);
-                                navigateToHome();
-                            } else {
-                                Toast.makeText(LoginActivity.this, getString(R.string.error_login_failed),
-                                        Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    } else {
-                        String error = apiResponse.getMessage() != null ? apiResponse.getMessage()
-                                : getString(R.string.error_login_failed);
-                        Toast.makeText(LoginActivity.this, error, Toast.LENGTH_SHORT).show();
-                    }
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    Toast.makeText(LoginActivity.this, "OTP sent to your email!", Toast.LENGTH_SHORT).show();
+                    showOtpDialog();
                 } else {
-                    Log.e(TAG, "Login failed with code: " + response.code());
-                    Toast.makeText(LoginActivity.this, getString(R.string.error_login_failed), Toast.LENGTH_SHORT)
-                            .show();
+                    String error = "Invalid email or password";
+                    if (response.body() != null && response.body().getMessage() != null) {
+                        error = response.body().getMessage();
+                    }
+                    Toast.makeText(LoginActivity.this, error, Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                 setLoading(false);
-                Log.e(TAG, "Login failed", t);
+                Log.e(TAG, "Login OTP request failed", t);
                 Toast.makeText(LoginActivity.this, getString(R.string.error_network), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void showOtpDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_otp_verification, null);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .setCancelable(false)
+                .create();
+
+        TextInputEditText otpInput = dialogView.findViewById(R.id.otpInput);
+        TextInputLayout otpLayout = dialogView.findViewById(R.id.otpLayout);
+        MaterialButton verifyButton = dialogView.findViewById(R.id.verifyButton);
+        TextView resendOtp = dialogView.findViewById(R.id.resendOtp);
+        View otpLoading = dialogView.findViewById(R.id.otpLoading);
+        TextView otpMessage = dialogView.findViewById(R.id.otpMessage);
+
+        otpMessage.setText("We've sent a 6-digit OTP to " + pendingEmail);
+
+        verifyButton.setOnClickListener(v -> {
+            String otp = otpInput.getText().toString().trim();
+            if (otp.length() != 6) {
+                otpLayout.setError("Enter 6-digit OTP");
+                return;
+            }
+            otpLayout.setError(null);
+            verifyButton.setEnabled(false);
+            otpLoading.setVisibility(View.VISIBLE);
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("email", pendingEmail);
+            body.put("otp", otp);
+
+            ApiClient.getInstance().getAuthApi().verifyLoginOTP(body).enqueue(new Callback<ApiResponse<User>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                    verifyButton.setEnabled(true);
+                    otpLoading.setVisibility(View.GONE);
+
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        dialog.dismiss();
+                        ApiResponse<User> apiResponse = response.body();
+
+                        if (apiResponse.getToken() != null) {
+                            app.saveAuthToken(apiResponse.getToken());
+                        }
+
+                        User user = apiResponse.getUser() != null ? apiResponse.getUser() : apiResponse.getData();
+                        if (user != null) {
+                            handleLoginSuccess(user);
+                        }
+                    } else {
+                        String error = "Invalid OTP";
+                        if (response.body() != null && response.body().getMessage() != null) {
+                            error = response.body().getMessage();
+                        }
+                        otpLayout.setError(error);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                    verifyButton.setEnabled(true);
+                    otpLoading.setVisibility(View.GONE);
+                    otpLayout.setError("Network error. Please try again.");
+                }
+            });
+        });
+
+        resendOtp.setOnClickListener(v -> {
+            resendOtp.setEnabled(false);
+            Map<String, Object> body = new HashMap<>();
+            body.put("email", pendingEmail);
+            body.put("password", pendingPassword);
+
+            ApiClient.getInstance().getAuthApi().requestLoginOTP(body).enqueue(new Callback<ApiResponse<Void>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                    resendOtp.setEnabled(true);
+                    Toast.makeText(LoginActivity.this, "OTP resent!", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                    resendOtp.setEnabled(true);
+                    Toast.makeText(LoginActivity.this, "Failed to resend OTP", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
+        // Allow cancel via a custom button (hidden X)
+        dialogView.setOnClickListener(null);
+
+        dialog.show();
     }
 
     private void signInWithGoogle() {
@@ -292,14 +350,12 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void handleLoginSuccess(User user) {
-        // Save user info
         app.setSessionActive(true);
         app.saveFullUserInfo(user);
         Log.d(TAG, "Saved user info - id: " + user.getId());
 
         Toast.makeText(this, getString(R.string.login_success), Toast.LENGTH_SHORT).show();
 
-        // Navigate based on role
         if (user.isAdmin() || user.isStaff()) {
             navigateToStaffDashboard();
         } else {
@@ -307,23 +363,12 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Extract userId from JWT token payload
-     */
     private String extractUserIdFromToken(String token) {
-        if (token == null)
-            return null;
+        if (token == null) return null;
         try {
-            // JWT has 3 parts: header.payload.signature
             String[] parts = token.split("\\.");
-            if (parts.length < 2)
-                return null;
-
-            // Decode payload (base64)
+            if (parts.length < 2) return null;
             String payload = new String(android.util.Base64.decode(parts[1], android.util.Base64.URL_SAFE));
-            Log.d(TAG, "JWT payload: " + payload);
-
-            // Parse JSON to extract id
             org.json.JSONObject json = new org.json.JSONObject(payload);
             if (json.has("id")) {
                 return json.getString("id");

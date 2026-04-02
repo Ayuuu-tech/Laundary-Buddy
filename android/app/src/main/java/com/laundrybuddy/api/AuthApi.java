@@ -37,6 +37,27 @@ public interface AuthApi {
     @GET("auth/check")
     Call<ApiResponse<Map<String, Object>>> checkAuth();
 
+    // OTP-based Login
+    @POST("auth/request-login-otp")
+    Call<ApiResponse<Void>> requestLoginOTP(@Body Map<String, Object> body);
+
+    @POST("auth/verify-login-otp")
+    Call<ApiResponse<User>> verifyLoginOTP(@Body Map<String, Object> body);
+
+    // OTP-based Signup
+    @POST("auth/request-signup-otp")
+    Call<ApiResponse<Void>> requestSignupOTP(@Body Map<String, Object> body);
+
+    @POST("auth/verify-signup-otp")
+    Call<ApiResponse<User>> verifySignupOTP(@Body Map<String, Object> body);
+
+    // OTP-based Password Reset
+    @POST("auth/request-reset-otp")
+    Call<ApiResponse<Void>> requestResetOTP(@Body Map<String, Object> body);
+
+    @POST("auth/verify-reset-otp")
+    Call<ApiResponse<Void>> verifyResetOTP(@Body Map<String, Object> body);
+
     @POST("auth/forgot-password")
     Call<ApiResponse<Void>> requestPasswordReset(@Body Map<String, Object> body);
 
