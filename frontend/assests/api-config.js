@@ -23,7 +23,7 @@ const getApiBaseUrl = () => {
   }
 
   // Production (deployed domain) matches the Android App exactly
-  return 'https://laundry-buddy-api.onrender.com/api';
+  return 'https://laundry-buddy-backend.onrender.com/api';
 };
 
 const API_CONFIG = {
