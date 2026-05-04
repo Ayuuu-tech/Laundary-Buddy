@@ -72,3 +72,5 @@ wrangler.toml.backup
 .eslintcache
 .npm
 .yarn-integrity
+android_logs.txt
+trace_logs.txt
