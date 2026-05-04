@@ -258,9 +258,13 @@ async function start() {
       await sequelize.query('ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "feedbackRating" INTEGER;');
       await sequelize.query('ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "feedbackComment" TEXT;');
       await sequelize.query('ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "feedbackSubmittedAt" TIMESTAMP WITH TIME ZONE;');
-      console.log('✅ Checked/Added feedback columns to orders table');
+      
+      // Fix support_tickets constraints that sync won't update
+      await sequelize.query('ALTER TABLE "support_tickets" ALTER COLUMN "orderId" DROP NOT NULL;');
+      await sequelize.query('ALTER TABLE "support_tickets" ALTER COLUMN "orderNumber" DROP NOT NULL;');
+      console.log('✅ Checked/Added database schema updates (feedback columns, support constraints)');
     } catch (err) {
-      console.log('⚠️ Could not auto-add feedback columns (might already exist):', err.message);
+      console.log('⚠️ Could not apply some manual schema updates:', err.message);
     }
     
     console.log('✅ Database tables synced');
