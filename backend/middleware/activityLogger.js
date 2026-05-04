@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -76,7 +76,7 @@ const ROUTE_DESCRIPTIONS = {
   'GET /api/csrf-token': { desc: 'Fetched CSRF token', cat: 'system' },
 
   // Health
-  'GET /api/health': { desc: 'Health check', cat: 'system' },
+  'GET /api/health': { desc: 'Health check', cat: 'system' }
 };
 
 /**
@@ -136,7 +136,9 @@ function getRouteInfo(method, path) {
  * Sanitize request body — remove sensitive fields
  */
 function sanitizeBody(body) {
-  if (!body || typeof body !== 'object') return null;
+  if (!body || typeof body !== 'object') {
+    return null;
+  }
 
   const sanitized = { ...body };
   const sensitiveFields = ['password', 'currentPassword', 'newPassword', 'otp', 'token', 'refreshToken', 'accessToken'];
@@ -160,9 +162,15 @@ function sanitizeBody(body) {
  * Determine severity based on status code
  */
 function getSeverity(statusCode) {
-  if (statusCode >= 500) return 'critical';
-  if (statusCode >= 400) return 'warning';
-  if (statusCode >= 300) return 'info';
+  if (statusCode >= 500) {
+    return 'critical';
+  }
+  if (statusCode >= 400) {
+    return 'warning';
+  }
+  if (statusCode >= 300) {
+    return 'info';
+  }
   return 'info';
 }
 

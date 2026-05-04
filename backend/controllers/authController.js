@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -369,7 +369,7 @@ exports.register = async (req, res) => {
       password: hashedPassword,
       phone: phone || '',
       address: address || '',
-      hostelRoom: hostelRoom || '',
+      hostelRoom: hostelRoom || ''
     });
 
     req.session.userId = created.id.toString();
@@ -517,10 +517,18 @@ exports.updateProfile = async (req, res) => {
     const User = getUserModel();
     const { name, phone, address, hostelRoom, profilePhoto } = req.body;
     const updateFields = {};
-    if (name !== undefined) updateFields.name = name;
-    if (phone !== undefined) updateFields.phone = phone;
-    if (address !== undefined) updateFields.address = address;
-    if (hostelRoom !== undefined) updateFields.hostelRoom = hostelRoom;
+    if (name !== undefined) {
+      updateFields.name = name;
+    }
+    if (phone !== undefined) {
+      updateFields.phone = phone;
+    }
+    if (address !== undefined) {
+      updateFields.address = address;
+    }
+    if (hostelRoom !== undefined) {
+      updateFields.hostelRoom = hostelRoom;
+    }
     if (profilePhoto !== undefined) {
       if (profilePhoto.length > 3 * 1024 * 1024) {
         return res.status(400).json({ success: false, message: 'Profile photo is too large' });
@@ -558,7 +566,9 @@ exports.updateProfile = async (req, res) => {
             const filename = `profile-${req.user.id}-${Date.now()}.${ext}`;
             const filepath = path.join(__dirname, '../uploads/profiles', filename);
             const dir = path.dirname(filepath);
-            if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+            if (!fs.existsSync(dir)) {
+              fs.mkdirSync(dir, { recursive: true });
+            }
             fs.writeFileSync(filepath, buffer);
             fields.profilePhoto = `/uploads/profiles/${filename}`;
           }

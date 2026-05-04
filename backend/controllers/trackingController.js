@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -79,7 +79,9 @@ exports.createTrackingItem = async (req, res) => {
     // resolve order id if provided
     let orderRef = undefined;
     if (orderId) {
-      try { orderRef = await Order.findOne({ where: { id: orderId, userId: req.user.id } }); } catch { }
+      try {
+        orderRef = await Order.findOne({ where: { id: orderId, userId: req.user.id } });
+      } catch { }
     }
     const tracking = await Tracking.create({
       userId: req.user.id,
@@ -88,7 +90,7 @@ exports.createTrackingItem = async (req, res) => {
       status: status || 'picked_up',
       currentLocation,
       estimatedDelivery,
-      timeline: timeline || [],
+      timeline: timeline || []
     });
 
     res.status(201).json({ success: true, message: 'Tracking item created successfully', tracking });
@@ -108,10 +110,18 @@ exports.updateTrackingItem = async (req, res) => {
 
     const { status, currentLocation, estimatedDelivery, timeline } = req.body;
     const updateData = {};
-    if (status) updateData.status = status;
-    if (currentLocation) updateData.currentLocation = currentLocation;
-    if (estimatedDelivery) updateData.estimatedDelivery = estimatedDelivery;
-    if (timeline) updateData.timeline = timeline;
+    if (status) {
+      updateData.status = status;
+    }
+    if (currentLocation) {
+      updateData.currentLocation = currentLocation;
+    }
+    if (estimatedDelivery) {
+      updateData.estimatedDelivery = estimatedDelivery;
+    }
+    if (timeline) {
+      updateData.timeline = timeline;
+    }
 
     await Tracking.update(updateData, { where: { id: req.params.id, userId: req.user.id } });
     const updatedTracking = await Tracking.findByPk(req.params.id);
@@ -194,13 +204,15 @@ exports.upsertByOrderNumberForLaundry = async (req, res) => {
         orderNumber,
         status,
         estimatedDelivery: estimatedDelivery || null,
-        timeline: [{ status, timestamp: now, note: note || `Updated to ${status}` }],
+        timeline: [{ status, timestamp: now, note: note || `Updated to ${status}` }]
       }, { transaction: t });
     } else {
       const timeline = tracking.timeline || [];
       timeline.push({ status, timestamp: now, note: note || `Updated to ${status}` });
       tracking.status = status;
-      if (estimatedDelivery) tracking.estimatedDelivery = estimatedDelivery;
+      if (estimatedDelivery) {
+        tracking.estimatedDelivery = estimatedDelivery;
+      }
       tracking.timeline = timeline;
       // Force Sequelize to detect JSON change
       tracking.changed('timeline', true);

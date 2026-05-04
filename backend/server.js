@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -75,7 +75,9 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      return callback(null, true);
+    }
     logger.debug(`CORS check for origin: ${origin}`);
     logger.debug(`Allowed origins: ${allowedOrigins.join(', ')}`);
 
@@ -266,7 +268,7 @@ async function start() {
       logger.info(`📍 Server URL: http://localhost:${PORT}`);
       logger.info(`📊 Health Check: http://localhost:${PORT}/api/health`);
       logger.info(`🔍 Environment: ${process.env.NODE_ENV || 'development'}`);
-      logger.info(`💾 Database: PostgreSQL (Supabase) Connected`);
+      logger.info('💾 Database: PostgreSQL (Supabase) Connected');
       logger.info('========================================');
     });
   } catch (err) {
@@ -281,7 +283,9 @@ process.on('SIGINT', async () => {
   if (server) {
     server.close(async () => {
       const sequelize = getSequelize();
-      if (sequelize) await sequelize.close();
+      if (sequelize) {
+        await sequelize.close();
+      }
       logger.info('✅ Server closed');
       process.exit(0);
     });
@@ -295,7 +299,9 @@ process.on('SIGTERM', async () => {
   if (server) {
     server.close(async () => {
       const sequelize = getSequelize();
-      if (sequelize) await sequelize.close();
+      if (sequelize) {
+        await sequelize.close();
+      }
       logger.info('✅ Server closed');
       process.exit(0);
     });

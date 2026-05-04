@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -24,7 +24,7 @@ const createRateLimiter = (windowMs = 15 * 60 * 1000, max = 100) => {
       message: 'Too many requests from this IP, please try again later.'
     },
     standardHeaders: true,
-    legacyHeaders: false,
+    legacyHeaders: false
   });
 };
 
@@ -51,21 +51,21 @@ const helmetConfig = helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://accounts.google.com", "https://apis.google.com"],
-      imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: ["'self'", "https://accounts.google.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      scriptSrc: ["'self'", "'unsafe-inline'", 'https://accounts.google.com', 'https://apis.google.com'],
+      imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
+      connectSrc: ["'self'", 'https://accounts.google.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com'],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
-      frameSrc: ["https://accounts.google.com"],
+      frameSrc: ['https://accounts.google.com'],
       baseUri: ["'self'"],
       formAction: ["'self'"],
       frameAncestors: ["'none'"]
-    },
+    }
   },
   crossOriginEmbedderPolicy: false,
-  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
 
   // Additional security headers
   hsts: {

@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -84,7 +84,7 @@ const permissionsPolicyMiddleware = (req, res, next) => {
  * Combined HTTPS and security middleware
  */
 const httpsSecurityMiddleware = [
-  httpsRedirect,
+  httpsRedirect
   // hstsMiddleware, // Handled by Helmet
   // antiClickjackingMiddleware, // Handled by Helmet
   // noSniffMiddleware, // Handled by Helmet

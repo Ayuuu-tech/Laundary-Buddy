@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -36,7 +36,7 @@ router.get('/stats', authMiddleware, isAdmin, async (req, res) => {
     try {
       const sequelize = req.app.locals.sequelize;
       if (sequelize) {
-        const [results] = await sequelize.query("SELECT COUNT(*) as count FROM \"sessions\" WHERE expire > NOW()");
+        const [results] = await sequelize.query('SELECT COUNT(*) as count FROM "sessions" WHERE expire > NOW()');
         activeSessions = results[0]?.count || 0;
       }
     } catch (sessErr) {
@@ -90,7 +90,9 @@ router.get('/sessions', authMiddleware, isAdmin, async (req, res) => {
       const [results] = await sequelize.query('SELECT sid, expire, sess FROM "sessions"');
       sessions = results.map(s => {
         let sessionData = {};
-        try { sessionData = typeof s.sess === 'string' ? JSON.parse(s.sess) : s.sess; } catch { }
+        try {
+          sessionData = typeof s.sess === 'string' ? JSON.parse(s.sess) : s.sess;
+        } catch { }
         return {
           id: s.sid,
           userId: sessionData?.userId,
@@ -136,16 +138,15 @@ router.get('/orders', authMiddleware, isAdmin, async (req, res) => {
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
       let startDate;
-      if (date === 'today') startDate = today;
-      else if (date === 'yesterday') {
+      if (date === 'today') {
+        startDate = today;
+      } else if (date === 'yesterday') {
         const y = new Date(today); y.setDate(y.getDate() - 1);
         startDate = y;
-      }
-      else if (date === 'week') {
+      } else if (date === 'week') {
         const w = new Date(today); w.setDate(w.getDate() - 7);
         startDate = w;
-      }
-      else if (date === 'month') {
+      } else if (date === 'month') {
         const m = new Date(today); m.setMonth(m.getMonth() - 1);
         startDate = m;
       }
@@ -291,8 +292,12 @@ router.get('/logs', authMiddleware, isAdmin, async (req, res) => {
 
     if (dateFrom || dateTo) {
       where.createdAt = {};
-      if (dateFrom) where.createdAt[Op.gte] = new Date(dateFrom);
-      if (dateTo) where.createdAt[Op.lte] = new Date(dateTo);
+      if (dateFrom) {
+        where.createdAt[Op.gte] = new Date(dateFrom);
+      }
+      if (dateTo) {
+        where.createdAt[Op.lte] = new Date(dateTo);
+      }
     }
 
     const { count: totalLogs, rows: logs } = await ActivityLog.findAndCountAll({

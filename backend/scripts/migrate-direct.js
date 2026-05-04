@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -76,7 +76,7 @@ async function migrate() {
   const userIdMap = {};
   const orderIdMap = {};
 
-  let stats = { inserted: 0, skipped: 0, errors: 0 };
+  const stats = { inserted: 0, skipped: 0, errors: 0 };
 
   // ==========================================
   // 3. Migrate Users
@@ -92,7 +92,7 @@ async function migrate() {
     try {
       const email = (mu.email || '').toLowerCase().trim();
       if (!email) {
-        console.log(`   ⚠️  Skipped — no email`);
+        console.log('   ⚠️  Skipped — no email');
         stats.skipped++;
         continue;
       }
@@ -228,7 +228,7 @@ async function migrate() {
         const pgOrderId = orderIdMap[mongoOrderId];
 
         if (!pgUserId) {
-          console.log(`   ⚠️  Tracking skipped — user not mapped`);
+          console.log('   ⚠️  Tracking skipped — user not mapped');
           stats.skipped++;
           continue;
         }
@@ -287,8 +287,8 @@ async function migrate() {
         console.log(`     Fields: ${Object.keys(sample).join(', ')}`);
       }
     }
-    console.log(`\n   ℹ️  These collections were not auto-migrated.`);
-    console.log(`       If needed, you can add migration logic for them.`);
+    console.log('\n   ℹ️  These collections were not auto-migrated.');
+    console.log('       If needed, you can add migration logic for them.');
   } else {
     console.log('   No additional collections found.');
   }
@@ -329,7 +329,9 @@ async function migrate() {
 
 // Normalize status values
 function normalizeStatus(status) {
-  if (!status) return 'pending';
+  if (!status) {
+    return 'pending';
+  }
   const map = {
     'Pending': 'pending', 'PENDING': 'pending',
     'Submitted': 'submitted', 'submitted': 'submitted',

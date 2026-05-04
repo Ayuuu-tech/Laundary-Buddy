@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -117,20 +117,26 @@ function validateSpecificFormats() {
 
 function getEnv(key, defaultValue) {
   const value = process.env[key];
-  if (value === undefined || value === '') return defaultValue;
+  if (value === undefined || value === '') {
+    return defaultValue;
+  }
   return value;
 }
 
 function getEnvInt(key, defaultValue) {
   const value = process.env[key];
-  if (value === undefined || value === '') return defaultValue;
+  if (value === undefined || value === '') {
+    return defaultValue;
+  }
   const parsed = parseInt(value, 10);
   return isNaN(parsed) ? defaultValue : parsed;
 }
 
 function getEnvBool(key, defaultValue) {
   const value = process.env[key];
-  if (value === undefined || value === '') return defaultValue;
+  if (value === undefined || value === '') {
+    return defaultValue;
+  }
   return value.toLowerCase() === 'true' || value === '1';
 }
 

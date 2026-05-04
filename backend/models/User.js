@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -132,7 +132,7 @@ function initUser(sequelize) {
 
   // Instance method: check if account is locked
   User.prototype.isAccountLocked = function () {
-    return this.accountLockedUntil && this.accountLockedUntil > Date.now();
+    return !!(this.accountLockedUntil && this.accountLockedUntil > Date.now());
   };
 
   // Instance method: increment failed login attempts

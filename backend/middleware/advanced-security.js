@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -131,9 +131,15 @@ function sanitizeInputMiddleware(req, res, next) {
       }
     };
 
-    if (req.body) sanitizeObject(req.body);
-    if (req.query) sanitizeObject(req.query);
-    if (req.params) sanitizeObject(req.params);
+    if (req.body) {
+      sanitizeObject(req.body);
+    }
+    if (req.query) {
+      sanitizeObject(req.query);
+    }
+    if (req.params) {
+      sanitizeObject(req.params);
+    }
 
     next();
   } catch (error) {
@@ -154,7 +160,7 @@ function containsSuspiciousPatterns(input) {
     /union\s+select/gi,               // SQL injection
     /exec\s*\(/gi,                    // Code execution
     /eval\s*\(/gi,                    // eval function
-    /\.\.\/\.\.\//g,                  // Path traversal
+    /\.\.\/\.\.\//g                  // Path traversal
   ];
 
   return suspiciousPatterns.some(pattern => pattern.test(input));

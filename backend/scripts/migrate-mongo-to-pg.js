@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -15,22 +15,22 @@
  * ============================================================
  * MongoDB → PostgreSQL (Supabase) Data Migration Script
  * ============================================================
- * 
+ *
  * YEH SCRIPT KYA KARTA HAI:
  * 1. MongoDB se export ki gayi JSON files read karta hai
  * 2. Data ko PostgreSQL format mein convert karta hai
  * 3. Supabase PostgreSQL mein INSERT karta hai
- * 
+ *
  * USAGE:
  *   Step 1: MongoDB se JSON export karo:
  *     mongoexport --db laundry_buddy --collection users --out scripts/mongo-data/users.json --jsonArray
  *     mongoexport --db laundry_buddy --collection orders --out scripts/mongo-data/orders.json --jsonArray
  *     mongoexport --db laundry_buddy --collection tracking --out scripts/mongo-data/tracking.json --jsonArray
- * 
+ *
  *   Step 2: Yeh script run karo:
  *     node scripts/migrate-mongo-to-pg.js
- * 
- * NOTE: 
+ *
+ * NOTE:
  *   - Pehle se existing data duplicate nahi hoga (email check karta hai)
  *   - Passwords directly copy hote hain (bcrypt hash dono mein same kaam karta hai)
  *   - MongoDB _id → new PostgreSQL auto-increment id
@@ -135,7 +135,7 @@ function mapMongoTracking(mongoTrack, userIdMap, orderIdMap) {
   const pgOrderId = orderIdMap[mongoOrderId];
 
   if (!pgUserId) {
-    console.log(`   ⚠️  Tracking skipped — user not found`);
+    console.log('   ⚠️  Tracking skipped — user not found');
     return null;
   }
 
@@ -155,7 +155,9 @@ function mapMongoTracking(mongoTrack, userIdMap, orderIdMap) {
 
 // Normalize status values
 function mapStatus(status) {
-  if (!status) return 'pending';
+  if (!status) {
+    return 'pending';
+  }
   const statusMap = {
     'Pending': 'pending',
     'PENDING': 'pending',
@@ -200,7 +202,7 @@ async function migrate() {
     console.log('      mongoexport --db laundry_buddy --collection tracking --out scripts/mongo-data/tracking.json --jsonArray');
     console.log('   3. Run again: node scripts/migrate-mongo-to-pg.js');
     console.log('');
-    
+
     // Create the directory for user convenience
     fs.mkdirSync(DATA_DIR, { recursive: true });
     console.log(`📁 Created folder: ${DATA_DIR}`);
@@ -247,7 +249,7 @@ async function migrate() {
           const mapped = mapMongoUser(mongoUser);
 
           if (!mapped.email) {
-            console.log(`   ⚠️  Skipped user — no email`);
+            console.log('   ⚠️  Skipped user — no email');
             totalSkipped++;
             continue;
           }
@@ -315,7 +317,7 @@ async function migrate() {
           console.log(`   ✅ Order migrated: ${mapped.orderNumber} → pgId: ${created.id}`);
           totalInserted++;
         } catch (err) {
-          console.error(`   ❌ Error migrating order:`, err.message);
+          console.error('   ❌ Error migrating order:', err.message);
           totalErrors++;
         }
       }
@@ -356,7 +358,7 @@ async function migrate() {
           console.log(`   ✅ Tracking migrated for order: ${mapped.orderNumber || mapped.orderId}`);
           totalInserted++;
         } catch (err) {
-          console.error(`   ❌ Error migrating tracking:`, err.message);
+          console.error('   ❌ Error migrating tracking:', err.message);
           totalErrors++;
         }
       }

@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -34,7 +34,7 @@ describe('OTP Generation Utility', () => {
       const otp1 = generateOTP();
       const otp2 = generateOTP();
       const otp3 = generateOTP();
-      
+
       // Very unlikely to generate same OTP three times
       expect(new Set([otp1, otp2, otp3]).size).toBeGreaterThan(1);
     });

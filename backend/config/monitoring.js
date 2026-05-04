@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -35,7 +35,7 @@ function initSentry(app) {
     integrations: [
       new Sentry.Integrations.Http({ tracing: true }),
       new Sentry.Integrations.Express({ app }),
-      new ProfilingIntegration(),
+      new ProfilingIntegration()
     ],
     tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
     profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
@@ -55,7 +55,7 @@ function initSentry(app) {
       return event;
     },
 
-    ignoreErrors: ['top.GLOBALS', 'NetworkError', 'Network request failed', "Cannot read property 'match' of undefined"],
+    ignoreErrors: ['top.GLOBALS', 'NetworkError', 'Network request failed', "Cannot read property 'match' of undefined"]
   });
 
   console.log('✅ Sentry error tracking initialized');

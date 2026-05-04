@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -28,7 +28,7 @@ const levels = {
   warn: 1,
   info: 2,
   http: 3,
-  debug: 4,
+  debug: 4
 };
 
 // Define colors for each level
@@ -37,7 +37,7 @@ const colors = {
   warn: 'yellow',
   info: 'green',
   http: 'magenta',
-  debug: 'white',
+  debug: 'white'
 };
 
 winston.addColors(colors);
@@ -55,9 +55,9 @@ const logger = winston.createLogger({
         winston.format.printf(
           (info) => `${info.timestamp} ${info.level}: ${info.message}`
         )
-      ),
-    }),
-  ],
+      )
+    })
+  ]
 });
 
 // Add file transport in production
@@ -68,7 +68,7 @@ if (process.env.NODE_ENV === 'production') {
       filename: path.join(__dirname, '../logs/error.log'),
       level: 'error',
       maxsize: 5242880, // 5MB
-      maxFiles: 5,
+      maxFiles: 5
     })
   );
 
@@ -77,7 +77,7 @@ if (process.env.NODE_ENV === 'production') {
     new winston.transports.File({
       filename: path.join(__dirname, '../logs/combined.log'),
       maxsize: 5242880, // 5MB
-      maxFiles: 5,
+      maxFiles: 5
     })
   );
 }
@@ -85,14 +85,14 @@ if (process.env.NODE_ENV === 'production') {
 // HTTP request logging middleware
 const httpLogger = (req, res, next) => {
   const start = Date.now();
-  
+
   res.on('finish', () => {
     const duration = Date.now() - start;
     logger.http(
       `${req.method} ${req.originalUrl} ${res.statusCode} - ${duration}ms`
     );
   });
-  
+
   next();
 };
 

@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -79,7 +79,7 @@ exports.createOrder = async (req, res) => {
       ? items.map((it) => ({
         type: it.type || it.name || 'unknown',
         count: typeof it.count === 'number' ? it.count : (typeof it.quantity === 'number' ? it.quantity : parseInt(it.count || it.quantity || 0, 10)),
-        color: it.color || 'mixed',
+        color: it.color || 'mixed'
       }))
       : [];
 
@@ -100,7 +100,7 @@ exports.createOrder = async (req, res) => {
       phone,
       specialInstructions,
       status: initialStatus,
-      paymentStatus: 'pending',
+      paymentStatus: 'pending'
     }, { transaction: t });
 
     // Create Initial Tracking with transaction
@@ -134,17 +134,37 @@ exports.updateOrder = async (req, res) => {
     const { items, totalAmount, serviceType, pickupDate, deliveryDate, deliveryAddress, specialInstructions, status, paymentStatus, feedback } = req.body;
 
     const updateData = {};
-    if (items !== undefined) updateData.items = items;
-    if (totalAmount !== undefined) updateData.totalAmount = totalAmount;
-    if (serviceType !== undefined) updateData.serviceType = serviceType;
-    if (pickupDate !== undefined) updateData.pickupDate = pickupDate;
-    if (deliveryDate !== undefined) updateData.deliveryDate = deliveryDate;
-    if (specialInstructions !== undefined) updateData.specialInstructions = specialInstructions;
-    if (status) updateData.status = status;
-    if (paymentStatus) updateData.paymentStatus = paymentStatus;
+    if (items !== undefined) {
+      updateData.items = items;
+    }
+    if (totalAmount !== undefined) {
+      updateData.totalAmount = totalAmount;
+    }
+    if (serviceType !== undefined) {
+      updateData.serviceType = serviceType;
+    }
+    if (pickupDate !== undefined) {
+      updateData.pickupDate = pickupDate;
+    }
+    if (deliveryDate !== undefined) {
+      updateData.deliveryDate = deliveryDate;
+    }
+    if (specialInstructions !== undefined) {
+      updateData.specialInstructions = specialInstructions;
+    }
+    if (status) {
+      updateData.status = status;
+    }
+    if (paymentStatus) {
+      updateData.paymentStatus = paymentStatus;
+    }
     if (feedback) {
-      if (feedback.rating) updateData.feedbackRating = feedback.rating;
-      if (feedback.comment) updateData.feedbackComment = feedback.comment;
+      if (feedback.rating) {
+        updateData.feedbackRating = feedback.rating;
+      }
+      if (feedback.comment) {
+        updateData.feedbackComment = feedback.comment;
+      }
       updateData.feedbackSubmittedAt = new Date();
     }
 

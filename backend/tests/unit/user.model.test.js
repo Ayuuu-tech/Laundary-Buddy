@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -23,11 +23,11 @@ describe('User Model', () => {
       password: data.password || '',
       failedLoginAttempts: data.failedLoginAttempts || 0,
       accountLockedUntil: data.accountLockedUntil || null,
-      save: jest.fn().mockResolvedValue(true),
+      save: jest.fn().mockResolvedValue(true)
     };
     // Attach instance methods (same logic as in models/User.js)
     user.isAccountLocked = function () {
-      return this.accountLockedUntil && this.accountLockedUntil > Date.now();
+      return !!(this.accountLockedUntil && this.accountLockedUntil > Date.now());
     };
     user.incrementLoginAttempts = async function () {
       const maxAttempts = parseInt(process.env.MAX_LOGIN_ATTEMPTS) || 5;

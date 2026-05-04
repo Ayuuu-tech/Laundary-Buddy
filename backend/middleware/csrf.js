@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -35,10 +35,14 @@ class CSRFProtection {
   }
 
   validateToken(token) {
-    if (!token) return false;
+    if (!token) {
+      return false;
+    }
 
     const expiry = this.tokens.get(token);
-    if (!expiry) return false;
+    if (!expiry) {
+      return false;
+    }
 
     if (Date.now() > expiry) {
       this.tokens.delete(token);
@@ -102,7 +106,7 @@ function validateCSRFToken(req, res, next) {
     '/api/contact',             // Public contact form
     '/api/user',                // Protected by session auth (singular fallback)
     '/api/users',               // Protected by session auth (plural)
-    '/api/admin',               // Protected by admin middleware + JWT auth
+    '/api/admin'               // Protected by admin middleware + JWT auth
   ];
 
   if (skipRoutes.some(route => req.path.startsWith(route))) {

@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -67,7 +67,7 @@ async function connectDB() {
   }
 
   await sequelize.authenticate();
-  console.log(`✅ Connected to PostgreSQL database`);
+  console.log('✅ Connected to PostgreSQL database');
 
   return sequelize;
 }

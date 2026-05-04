@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -22,22 +22,22 @@ let Order;
 
 /**
  * Initializes the Order model with its schema definition and constraints.
- * 
+ *
  * @param {import('sequelize').Sequelize} sequelize - The Sequelize database connection instance.
  * @returns {import('sequelize').ModelCtor<import('sequelize').Model>} The initialized Order model.
  */
 function initOrder(sequelize) {
   Order = sequelize.define('Order', {
-    /** 
-     * Primary Key for the Order 
+    /**
+     * Primary Key for the Order
      */
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true
     },
-    /** 
-     * Foreign Key referencing the User who placed the order 
+    /**
+     * Foreign Key referencing the User who placed the order
      */
     userId: {
       type: DataTypes.INTEGER,
@@ -47,15 +47,15 @@ function initOrder(sequelize) {
         key: 'id'
       }
     },
-    /** 
-     * Unique alphanumeric tracking number for the order 
+    /**
+     * Unique alphanumeric tracking number for the order
      */
     orderNumber: {
       type: DataTypes.STRING(50),
       unique: true
     },
-    /** 
-     * Type of laundry service requested (e.g., Washing, Dry Cleaning) 
+    /**
+     * Type of laundry service requested (e.g., Washing, Dry Cleaning)
      */
     serviceType: {
       type: DataTypes.STRING(100),
@@ -73,15 +73,15 @@ function initOrder(sequelize) {
       type: DataTypes.STRING(50),
       defaultValue: null
     },
-    /** 
-     * JSON array detailing specific clothing items included in the order 
+    /**
+     * JSON array detailing specific clothing items included in the order
      */
     items: {
       type: DataTypes.JSON,
       defaultValue: []
     },
-    /** 
-     * Total cost associated with the laundry order 
+    /**
+     * Total cost associated with the laundry order
      */
     totalAmount: {
       type: DataTypes.DECIMAL(10, 2),
@@ -99,15 +99,15 @@ function initOrder(sequelize) {
       type: DataTypes.TEXT,
       defaultValue: null
     },
-    /** 
-     * Current lifecycle status of the order (e.g., pending, washing, completed) 
+    /**
+     * Current lifecycle status of the order (e.g., pending, washing, completed)
      */
     status: {
       type: DataTypes.STRING(30),
       defaultValue: 'pending'
     },
-    /** 
-     * Payment resolution status (e.g., pending, paid) 
+    /**
+     * Payment resolution status (e.g., pending, paid)
      */
     paymentStatus: {
       type: DataTypes.STRING(30),
@@ -144,7 +144,7 @@ function initOrder(sequelize) {
 /**
  * Retrieves the currently initialized Order model.
  * Throws an error if the database has not been initialized.
- * 
+ *
  * @throws {Error} If the database connection is not established.
  * @returns {import('sequelize').ModelCtor<import('sequelize').Model>} The active Order model instance.
  */

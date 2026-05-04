@@ -6,9 +6,9 @@
 
 -- 1. DATABASE SETUP
 -- ==========================================
-DROP DATABASE IF EXISTS laundry_buddy_viva;
-CREATE DATABASE laundry_buddy_viva;
-USE laundry_buddy_viva;
+DROP DATABASE IF EXISTS laundry_buddy;
+CREATE DATABASE laundry_buddy;
+USE laundry_buddy;
 
 -- =====================================================================================
 -- 2. DDL (Data Definition Language) & SCHEMA DESIGN (Normalized to 3NF)

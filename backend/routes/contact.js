@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -90,7 +90,9 @@ router.put('/update/:id', authMiddleware, isAdmin, async (req, res) => {
     const { status, staffResponse } = req.body;
 
     const update = {};
-    if (status) update.status = status;
+    if (status) {
+      update.status = status;
+    }
     if (staffResponse) {
       update.staffResponse = staffResponse;
       update.respondedById = req.user.id;

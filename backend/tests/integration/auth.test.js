@@ -2,11 +2,11 @@
  * ============================================================================
  * LAUNDRY BUDDY - Smart Laundry Management System
  * ============================================================================
- * 
+ *
  * @project   Laundry Buddy
  * @author    Ayush
  * @status    Production Ready
- * @description Part of the Laundry Buddy Evaluation Project. 
+ * @description Part of the Laundry Buddy Evaluation Project.
  *              Handles core application logic, API routing, and database integrations.
  * ============================================================================
  */
@@ -22,7 +22,7 @@ jest.mock('../../models/User', () => {
     findByPk: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
-    count: jest.fn(),
+    count: jest.fn()
   };
   return { getUserModel: jest.fn(() => mockUser), initUser: jest.fn(() => mockUser) };
 });
@@ -32,7 +32,7 @@ jest.mock('../../models/RefreshToken', () => {
     findOne: jest.fn(),
     findAll: jest.fn().mockResolvedValue([]),
     create: jest.fn(),
-    destroy: jest.fn(),
+    destroy: jest.fn()
   };
   return { getRefreshTokenModel: jest.fn(() => mockRT), initRefreshToken: jest.fn(() => mockRT) };
 });
