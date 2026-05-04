@@ -9,6 +9,8 @@ services:
     buildCommand: npm install
     startCommand: node server.js
     envVars:
+      - key: NODE_VERSION
+        value: "20.19.0"
       - key: NODE_ENV
         value: production
       - key: PORT
