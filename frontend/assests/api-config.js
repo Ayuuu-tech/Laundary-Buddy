@@ -22,8 +22,8 @@ const getApiBaseUrl = () => {
     return `http://${hostname}:3000/api`;
   }
 
-  // Production (deployed domain) matches the Android App exactly
-  return 'https://laundry-buddy-backend.onrender.com/api';
+  // Production (deployed domain) matches the custom domain exactly to avoid 3rd-party cookie blocks
+  return 'https://api.ayushmaanyadav.me/api';
 };
 
 const API_CONFIG = {
