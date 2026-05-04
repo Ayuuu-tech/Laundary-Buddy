@@ -29,10 +29,19 @@ router.post('/report', authMiddleware, validate(validationRules.createTicket), a
     const Order = getOrderModel();
     const { type, orderNumber, orderId, items, damageType, details } = req.body;
 
+    // Resolve orderId: use provided orderId, or look up by orderNumber
+    let resolvedOrderId = orderId ? parseInt(orderId, 10) : null;
+    if ((!resolvedOrderId || isNaN(resolvedOrderId)) && orderNumber) {
+      const order = await Order.findOne({ where: { orderNumber } });
+      if (order) {
+        resolvedOrderId = order.id;
+      }
+    }
+
     const ticket = await SupportTicket.create({
       userId: req.user.id,
-      orderNumber,
-      orderId,
+      orderNumber: orderNumber || null,
+      orderId: resolvedOrderId || null,
       type,
       items,
       damageType,
@@ -41,11 +50,15 @@ router.post('/report', authMiddleware, validate(validationRules.createTicket), a
     });
 
     // Reload with associations
+    const includeOptions = [
+      { model: User, as: 'user', attributes: ['name', 'email', 'phone'] }
+    ];
+    if (resolvedOrderId) {
+      includeOptions.push({ model: Order, as: 'order', attributes: ['orderNumber', 'items', 'createdAt'] });
+    }
+
     const fullTicket = await SupportTicket.findByPk(ticket.id, {
-      include: [
-        { model: User, as: 'user', attributes: ['name', 'email', 'phone'] },
-        { model: Order, as: 'order', attributes: ['orderNumber', 'items', 'createdAt'] }
-      ]
+      include: includeOptions
     });
 
     console.log('✅ Support ticket created:', ticket.id);

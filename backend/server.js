@@ -252,6 +252,17 @@ async function start() {
     // Note: Use { force: false } (default) to avoid ALTER TABLE issues with Supabase pooler
     // For schema changes, use Sequelize migrations or the Supabase SQL editor
     await sequelize.sync();
+    
+    // Explicitly add new columns to orders table in case they weren't added by sync
+    try {
+      await sequelize.query('ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "feedbackRating" INTEGER;');
+      await sequelize.query('ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "feedbackComment" TEXT;');
+      await sequelize.query('ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "feedbackSubmittedAt" TIMESTAMP WITH TIME ZONE;');
+      console.log('✅ Checked/Added feedback columns to orders table');
+    } catch (err) {
+      console.log('⚠️ Could not auto-add feedback columns (might already exist):', err.message);
+    }
+    
     console.log('✅ Database tables synced');
 
     app.locals.sequelize = sequelize;

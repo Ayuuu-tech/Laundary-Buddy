@@ -126,7 +126,7 @@
       // Filter by user ID instead of studentId
       const userSubmissions = this.tracker.laundryItems.filter(item => {
         console.log(`Comparing item.studentId: ${item.studentId} with userId: ${userId}`);
-        return item.studentId === userId || item.studentId === userId.toString();
+        return String(item.studentId || item.userId || '') === String(userId);
       });
 
       if (userSubmissions.length === 0) {

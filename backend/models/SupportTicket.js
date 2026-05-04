@@ -33,7 +33,8 @@ function initSupportTicket(sequelize) {
     },
     orderId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
+      defaultValue: null,
       references: {
         model: 'orders',
         key: 'id'
@@ -41,7 +42,8 @@ function initSupportTicket(sequelize) {
     },
     orderNumber: {
       type: DataTypes.STRING(50),
-      allowNull: false
+      allowNull: true,
+      defaultValue: null
     },
     type: {
       type: DataTypes.ENUM('missing-clothes', 'damage', 'contact'),
