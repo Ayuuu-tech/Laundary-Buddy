@@ -895,7 +895,7 @@
             console.log('   - Order user ID:', order.userId);
             return {
               tokenNumber: order.orderNumber,
-              studentId: order.userId || (window.authManager ? window.authManager.currentUser?.id : 'unknown'),
+              studentId: order.userId || order.userid || (window.authManager ? window.authManager.currentUser?.id : 'unknown'),
               studentName: 'User',
               hostelRoom: order.address || 'N/A',
               submittedDate: order.createdAt || new Date().toISOString(),

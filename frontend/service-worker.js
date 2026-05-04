@@ -33,7 +33,7 @@
  * Part of: Laundry Buddy College Project
  */
 
-const CACHE_VERSION = 'laundry-buddy-v1.0.2';
+const CACHE_VERSION = 'laundry-buddy-v1.0.3';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
 const MAX_DYNAMIC_CACHE_SIZE = 50;
