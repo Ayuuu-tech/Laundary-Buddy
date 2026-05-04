@@ -1,23 +1,57 @@
-const User = require('../models/User');
-const SecurityLog = require('../models/SecurityLog');
-const mongoose = require('mongoose');
+/**
+ * ============================================================================
+ * LAUNDRY BUDDY - Smart Laundry Management System
+ * ============================================================================
+ * 
+ * @project   Laundry Buddy
+ * @author    Ayush
+ * @status    Production Ready
+ * @description Part of the Laundry Buddy Evaluation Project. 
+ *              Handles core application logic, API routing, and database integrations.
+ * ============================================================================
+ */
+
+const { getUserModel } = require('../models/User');
+const { getSecurityLogModel } = require('../models/SecurityLog');
+const { Op } = require('sequelize');
 
 const cleanup = async () => {
     console.log('🧹 Running system cleanup...');
     try {
-        // 1. Clear expired OTPs (User model fields)
+        const User = getUserModel();
+        const SecurityLog = getSecurityLogModel();
         const now = new Date();
-        await User.updateMany(
-            { $or: [{ signupOTPExpiry: { $lt: now } }, { loginOTPExpiry: { $lt: now } }, { resetOTPExpiry: { $lt: now } }] },
-            { $unset: { signupOTP: 1, signupOTPExpiry: 1, loginOTP: 1, loginOTPExpiry: 1, resetOTP: 1, resetOTPExpiry: 1 } }
+
+        // 1. Clear expired OTPs (User model fields)
+        await User.update(
+            { signupOTP: null, signupOTPExpiry: null, loginOTP: null, loginOTPExpiry: null, resetOTP: null, resetOTPExpiry: null },
+            {
+                where: {
+                    [Op.or]: [
+                        { signupOTPExpiry: { [Op.lt]: now } },
+                        { loginOTPExpiry: { [Op.lt]: now } },
+                        { resetOTPExpiry: { [Op.lt]: now } }
+                    ]
+                }
+            }
         );
 
         // 2. Clear old Security Logs (retention: 30 days)
         const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
-        const logsResult = await SecurityLog.deleteMany({ timestamp: { $lt: thirtyDaysAgo } });
-        console.log(`- Deleted ${logsResult.deletedCount} old security logs`);
+        const logsResult = await SecurityLog.destroy({ where: { timestamp: { [Op.lt]: thirtyDaysAgo } } });
+        console.log(`- Deleted ${logsResult} old security logs`);
 
-        // 3. Clear expired sessions (MongoStore handles this automatically)
+        // 3. Clear expired sessions (connect-pg-simple handles this automatically)
+
+        // 4. Clear expired refresh tokens
+        try {
+            const { getRefreshTokenModel } = require('../models/RefreshToken');
+            const RefreshToken = getRefreshTokenModel();
+            const expiredTokens = await RefreshToken.destroy({ where: { expiresAt: { [Op.lt]: now } } });
+            console.log(`- Deleted ${expiredTokens} expired refresh tokens`);
+        } catch (e) {
+            // RefreshToken model might not be initialized yet
+        }
 
         console.log('✅ Cleanup complete');
     } catch (error) {
@@ -26,8 +60,8 @@ const cleanup = async () => {
 };
 
 const startScheduler = () => {
-    // Run once on startup
-    cleanup();
+    // Run once on startup (delayed to ensure models are initialized)
+    setTimeout(cleanup, 5000);
 
     // Run every 24 hours
     setInterval(cleanup, 24 * 60 * 60 * 1000);

@@ -1,3 +1,16 @@
+/**
+ * ============================================================================
+ * LAUNDRY BUDDY - Smart Laundry Management System
+ * ============================================================================
+ * 
+ * @project   Laundry Buddy
+ * @author    Ayush
+ * @status    Production Ready
+ * @description Part of the Laundry Buddy Evaluation Project. 
+ *              Handles core application logic, API routing, and database integrations.
+ * ============================================================================
+ */
+
 // history.js - Order history page functionality with JSON and OOP
 (function () {
   'use strict';
@@ -9,6 +22,7 @@
   class Order {
     constructor(orderData) {
       this.id = orderData.id;
+      this.dbId = orderData.dbId;
       this.date = orderData.date;
       this.displayDate = orderData.displayDate;
       this.items = orderData.items;
@@ -424,9 +438,10 @@
                 (order.status === 'cancelled' ? 'cancelled' : 'in-process');
 
               return {
-                id: order._id || order.orderNumber || `ORDER-${index + 1}`,
+                id: order.id || order._id || order.orderNumber || `ORDER-${index + 1}`,
                 orderNumber: order.orderNumber,
                 mongoId: order._id,
+                dbId: order.id,
                 date: orderDate.toISOString(),
                 displayDate: this.formatDisplayDate(orderDate),
                 items: order.items || [],
@@ -638,7 +653,7 @@
           // Submit feedback to backend
           if (window.orderManager) {
             // Use mongoId if available, otherwise use the id
-            const orderId = order.mongoId || order.id;
+            const orderId = order.dbId || order.mongoId || order.id;
             console.log('Submitting feedback for order:', orderId, order);
 
             const response = await window.orderManager.updateOrder(orderId, {

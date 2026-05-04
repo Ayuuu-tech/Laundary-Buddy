@@ -106,9 +106,11 @@ public class ApiClient {
                     }
                     return response;
                 })
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .writeTimeout(30, TimeUnit.SECONDS)
+                .connectTimeout(90, TimeUnit.SECONDS)
+                .readTimeout(90, TimeUnit.SECONDS)
+                .writeTimeout(90, TimeUnit.SECONDS)
+                // Retry on connection failure (handles Render cold starts)
+                .retryOnConnectionFailure(true)
                 .build();
 
         // Custom Gson with UserFieldAdapter to handle user field as String or Object

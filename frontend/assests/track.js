@@ -1,3 +1,16 @@
+/**
+ * ============================================================================
+ * LAUNDRY BUDDY - Smart Laundry Management System
+ * ============================================================================
+ * 
+ * @project   Laundry Buddy
+ * @author    Ayush
+ * @status    Production Ready
+ * @description Part of the Laundry Buddy Evaluation Project. 
+ *              Handles core application logic, API routing, and database integrations.
+ * ============================================================================
+ */
+
 // track.js - Track laundry page functionality with JSON and OOP
 (function () {
   'use strict';
@@ -879,10 +892,10 @@
           // Convert orders to tracking format
           const laundryItems = orders.map(order => {
             console.log('🔄 Converting order:', order);
-            console.log('   - Order user ID:', order.user);
+            console.log('   - Order user ID:', order.userId);
             return {
               tokenNumber: order.orderNumber,
-              studentId: order.user || 'unknown',
+              studentId: order.userId || 'unknown',
               studentName: 'User',
               hostelRoom: order.address || 'N/A',
               submittedDate: order.createdAt || new Date().toISOString(),

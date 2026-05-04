@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<!--
+ ============================================================================
+ LAUNDRY BUDDY - Smart Laundry Management System
+ ============================================================================
+ @project   Laundry Buddy
+ @author    Ayush
+ @status    Production Ready
+ @description Frontend View Template.
+ ============================================================================
+-->
+
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Laundry Buddy - Activity Logs Dashboard">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>Activity Logs - Laundry Buddy</title>
+  <link rel="stylesheet" href="home.css?v=2.0">
+  <link rel="stylesheet" href="logs.css?v=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+
+<body class="logs-page">
+  <header>
+    <div class="container navbar">
+      <a href="laundry-dashboard.html" class="logo">
+        <i class='bx bxs-washer'></i>
+        <span>Laundry Buddy</span>
+      </a>
+      <nav>
+        <ul>
+          <li><a href="laundry-dashboard.html">Dashboard</a></li>
+          <li><a href="logs.html" class="active">Logs</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <button class="btn btn-secondary" id="laundry-logout">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="logs-container">
+      <!-- Header -->
+      <div class="logs-header">
+        <h1><i class='bx bx-pulse'></i> Activity Logs</h1>
+        <div class="logs-header-actions">
+          <div class="live-indicator" id="live-indicator">
+            <span class="live-dot"></span>
+            <span>Live</span>
+          </div>
+          <button class="log-btn" id="refresh-logs-btn" title="Refresh">
+            <i class='bx bx-refresh'></i> Refresh
+          </button>
+          <button class="log-btn log-btn-primary" id="export-logs-btn" title="Export as CSV">
+            <i class='bx bx-download'></i> Export
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="logs-stats">
+        <div class="log-stat-card">
+          <div class="log-stat-icon"><i class='bx bx-pulse'></i></div>
+          <div class="log-stat-info">
+            <h3>Total Requests Today</h3>
+            <div class="stat-value" id="stat-total-today">—</div>
+          </div>
+        </div>
+        <div class="log-stat-card">
+          <div class="log-stat-icon"><i class='bx bx-user'></i></div>
+          <div class="log-stat-info">
+            <h3>Active Users Today</h3>
+            <div class="stat-value" id="stat-active-users">—</div>
+          </div>
+        </div>
+        <div class="log-stat-card">
+          <div class="log-stat-icon"><i class='bx bx-error'></i></div>
+          <div class="log-stat-info">
+            <h3>Errors Today</h3>
+            <div class="stat-value" id="stat-errors-today">—</div>
+          </div>
+        </div>
+        <div class="log-stat-card">
+          <div class="log-stat-icon"><i class='bx bx-data'></i></div>
+          <div class="log-stat-info">
+            <h3>Total Records</h3>
+            <div class="stat-value" id="stat-total-records">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="logs-filters">
+        <div class="filter-group-label">
+          <i class='bx bx-filter-alt'></i>
+          <span>Filters</span>
+        </div>
+
+        <input type="text" class="log-filter-input" id="filter-search" placeholder="Search logs..." />
+
+        <select class="log-filter-select" id="filter-category">
+          <option value="all">All Categories</option>
+          <option value="auth">🔐 Auth</option>
+          <option value="order">📦 Orders</option>
+          <option value="admin">👑 Admin</option>
+          <option value="profile">👤 Profile</option>
+          <option value="support">🎫 Support</option>
+          <option value="tracking">📍 Tracking</option>
+          <option value="notification">🔔 Notifications</option>
+          <option value="contact">📧 Contact</option>
+        </select>
+
+        <select class="log-filter-select" id="filter-severity">
+          <option value="all">All Severity</option>
+          <option value="info">ℹ️ Info</option>
+          <option value="warning">⚠️ Warning</option>
+          <option value="critical">🔴 Critical</option>
+        </select>
+
+        <select class="log-filter-select" id="filter-method">
+          <option value="all">All Methods</option>
+          <option value="GET">GET</option>
+          <option value="POST">POST</option>
+          <option value="PUT">PUT</option>
+          <option value="DELETE">DELETE</option>
+          <option value="PATCH">PATCH</option>
+        </select>
+
+        <button class="log-btn" id="clear-filters-btn">
+          <i class='bx bx-x'></i> Clear
+        </button>
+      </div>
+
+      <!-- Logs Table -->
+      <div class="logs-table-wrapper">
+        <table class="logs-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Method</th>
+              <th>Route</th>
+              <th>Description</th>
+              <th>User</th>
+              <th>Status</th>
+              <th>Speed</th>
+              <th>Category</th>
+              <th>Severity</th>
+            </tr>
+          </thead>
+          <tbody id="logs-table-body">
+            <tr>
+              <td colspan="9">
+                <div class="logs-loading">
+                  <i class='bx bx-loader-alt bx-spin'></i> Loading activity logs...
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="logs-pagination">
+          <div class="pagination-info" id="pagination-info">Showing 0 of 0 logs</div>
+          <div class="pagination-controls">
+            <button class="log-btn" id="btn-prev" disabled>
+              <i class='bx bx-chevron-left'></i> Previous
+            </button>
+            <button class="log-btn" id="btn-next" disabled>
+              Next <i class='bx bx-chevron-right'></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="assests/api-config.js"></script>
+  <script>
+    // =======================
+    // Activity Logs Dashboard
+    // =======================
+
+    const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? `http://${window.location.hostname}:3000`
+      : 'https://api.ayushmaanyadav.me';
+    let currentPage = 1;
+    const logsPerPage = 50;
+    let autoRefreshInterval = null;
+
+    // DOM Elements
+    const tableBody = document.getElementById('logs-table-body');
+    const paginationInfo = document.getElementById('pagination-info');
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+    const filterSearch = document.getElementById('filter-search');
+    const filterCategory = document.getElementById('filter-category');
+    const filterSeverity = document.getElementById('filter-severity');
+    const filterMethod = document.getElementById('filter-method');
+
+    // Auth check
+    async function checkAuth() {
+      try {
+        const token = localStorage.getItem('laundryStaffToken') || localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await fetch(`${API}/api/admin/stats`, {
+          credentials: 'include',
+          headers
+        });
+
+        if (!res.ok) {
+          window.location.href = 'laundry-login.html';
+          return false;
+        }
+        return true;
+      } catch (err) {
+        window.location.href = 'laundry-login.html';
+        return false;
+      }
+    }
+
+    // Fetch logs from API
+    async function fetchLogs(page = 1) {
+      try {
+        const token = localStorage.getItem('laundryStaffToken') || localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const params = new URLSearchParams({
+          page,
+          limit: logsPerPage
+        });
+
+        const search = filterSearch.value.trim();
+        const category = filterCategory.value;
+        const severity = filterSeverity.value;
+        const method = filterMethod.value;
+
+        if (search) params.append('search', search);
+        if (category !== 'all') params.append('category', category);
+        if (severity !== 'all') params.append('severity', severity);
+        if (method !== 'all') params.append('action', method);
+
+        const res = await fetch(`${API}/api/admin/logs?${params}`, {
+          credentials: 'include',
+          headers
+        });
+
+        if (!res.ok) throw new Error('Failed to fetch logs');
+
+        const data = await res.json();
+        return data;
+      } catch (error) {
+        console.error('Error fetching logs:', error);
+        return null;
+      }
+    }
+
+    // Time formatting
+    function formatTime(dateStr) {
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffSec = Math.floor(diffMs / 1000);
+      const diffMin = Math.floor(diffSec / 60);
+      const diffHr = Math.floor(diffMin / 60);
+
+      let relative;
+      if (diffSec < 60) relative = `${diffSec}s ago`;
+      else if (diffMin < 60) relative = `${diffMin}m ago`;
+      else if (diffHr < 24) relative = `${diffHr}h ago`;
+      else relative = `${Math.floor(diffHr / 24)}d ago`;
+
+      const timeStr = date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const dateFormatted = date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+
+      return `<div class="log-time">${dateFormatted} ${timeStr}</div><div class="log-time-relative">${relative}</div>`;
+    }
+
+    // Status code class
+    function getStatusClass(code) {
+      if (code >= 200 && code < 300) return 'status-2xx';
+      if (code >= 300 && code < 400) return 'status-3xx';
+      if (code >= 400 && code < 500) return 'status-4xx';
+      return 'status-5xx';
+    }
+
+    // Response time class
+    function getResponseTimeClass(ms) {
+      if (ms < 200) return 'response-fast';
+      if (ms < 1000) return 'response-medium';
+      return 'response-slow';
+    }
+
+    // Render logs table
+    function renderLogs(data) {
+      if (!data || !data.logs || data.logs.length === 0) {
+        tableBody.innerHTML = `
+          <tr><td colspan="9">
+            <div class="logs-empty">
+              <i class='bx bx-ghost'></i>
+              <p>No activity logs found</p>
+              <p style="font-size: 0.8rem;">Try adjusting your filters or wait for some activity</p>
+            </div>
+          </td></tr>`;
+        return;
+      }
+
+      // Update stats
+      if (data.stats) {
+        document.getElementById('stat-total-today').textContent = data.stats.totalToday?.toLocaleString() || '0';
+        document.getElementById('stat-active-users').textContent = data.stats.uniqueUsersToday?.toLocaleString() || '0';
+        document.getElementById('stat-errors-today').textContent = data.stats.errorsToday?.toLocaleString() || '0';
+      }
+      if (data.pagination) {
+        document.getElementById('stat-total-records').textContent = data.pagination.total?.toLocaleString() || '0';
+      }
+
+      // Render rows
+      tableBody.innerHTML = data.logs.map((log, i) => `
+        <tr class="${i < 3 && currentPage === 1 ? 'new-row' : ''}">
+          <td>${formatTime(log.createdAt)}</td>
+          <td><span class="method-badge method-${log.action}">${log.action}</span></td>
+          <td><span class="route-path" title="${escapeHtml(log.route)}">${escapeHtml(truncate(log.route, 40))}</span></td>
+          <td style="max-width: 200px; font-size: 0.82rem;">${escapeHtml(log.description || '-')}</td>
+          <td>
+            ${log.userName || log.userEmail ? `
+              <div class="log-user-info">
+                <span class="log-user-name">${escapeHtml(log.userName || 'Unknown')}</span>
+                <span class="log-user-email">${escapeHtml(log.userEmail || '')}</span>
+              </div>
+            ` : '<span style="color: var(--log-text-muted)">Anonymous</span>'}
+          </td>
+          <td><span class="status-code ${getStatusClass(log.statusCode)}">${log.statusCode || '-'}</span></td>
+          <td><span class="response-time ${getResponseTimeClass(log.responseTime)}">${log.responseTime ? log.responseTime + 'ms' : '-'}</span></td>
+          <td><span class="category-badge category-${log.category}">${log.category}</span></td>
+          <td><span class="severity-badge severity-${log.severity}">${log.severity}</span></td>
+        </tr>
+      `).join('');
+
+      // Update pagination
+      const { page, total, pages } = data.pagination;
+      const start = (page - 1) * logsPerPage + 1;
+      const end = Math.min(page * logsPerPage, total);
+      paginationInfo.textContent = `Showing ${start}–${end} of ${total.toLocaleString()} logs`;
+
+      btnPrev.disabled = page <= 1;
+      btnNext.disabled = page >= pages;
+    }
+
+    // Helpers
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function truncate(str, len) {
+      if (!str) return '';
+      return str.length > len ? str.substring(0, len) + '...' : str;
+    }
+
+    // Load logs
+    async function loadLogs(page = 1) {
+      currentPage = page;
+      const data = await fetchLogs(page);
+      if (data) renderLogs(data);
+    }
+
+    // Export logs as CSV
+    function exportCSV(data) {
+      if (!data || !data.logs) return;
+
+      const headers = ['Time', 'Method', 'Route', 'Description', 'User', 'Email', 'Status', 'Response Time (ms)', 'Category', 'Severity', 'IP Address'];
+      const rows = data.logs.map(log => [
+        new Date(log.createdAt).toISOString(),
+        log.action,
+        log.route,
+        log.description,
+        log.userName || '',
+        log.userEmail || '',
+        log.statusCode,
+        log.responseTime,
+        log.category,
+        log.severity,
+        log.ipAddress || ''
+      ]);
+
+      const csv = [headers.join(','), ...rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `activity-logs-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Event Listeners
+    btnPrev.addEventListener('click', () => loadLogs(currentPage - 1));
+    btnNext.addEventListener('click', () => loadLogs(currentPage + 1));
+
+    document.getElementById('refresh-logs-btn').addEventListener('click', () => loadLogs(currentPage));
+
+    document.getElementById('export-logs-btn').addEventListener('click', async () => {
+      const data = await fetchLogs(currentPage);
+      if (data) exportCSV(data);
+    });
+
+    document.getElementById('clear-filters-btn').addEventListener('click', () => {
+      filterSearch.value = '';
+      filterCategory.value = 'all';
+      filterSeverity.value = 'all';
+      filterMethod.value = 'all';
+      loadLogs(1);
+    });
+
+    // Filter debounce
+    let searchTimeout;
+    filterSearch.addEventListener('input', () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => loadLogs(1), 400);
+    });
+
+    filterCategory.addEventListener('change', () => loadLogs(1));
+    filterSeverity.addEventListener('change', () => loadLogs(1));
+    filterMethod.addEventListener('change', () => loadLogs(1));
+
+    // Auto-refresh every 10 seconds
+    function startAutoRefresh() {
+      autoRefreshInterval = setInterval(() => {
+        loadLogs(currentPage);
+      }, 10000);
+    }
+
+    function stopAutoRefresh() {
+      if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+      }
+    }
+
+    // Pause auto-refresh when tab is hidden
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        stopAutoRefresh();
+        document.getElementById('live-indicator').style.opacity = '0.3';
+      } else {
+        loadLogs(currentPage);
+        startAutoRefresh();
+        document.getElementById('live-indicator').style.opacity = '1';
+      }
+    });
+
+    // Logout
+    const logoutBtn = document.getElementById('laundry-logout');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async () => {
+        try {
+          await fetch(`${API}/api/auth/logout`, { method: 'POST', credentials: 'include' });
+        } catch { }
+        localStorage.removeItem('laundryStaffToken');
+        localStorage.removeItem('token');
+        window.location.href = 'laundry-login.html';
+      });
+    }
+
+    // Initialize
+    (async () => {
+      const authed = await checkAuth();
+      if (authed) {
+        await loadLogs(1);
+        startAutoRefresh();
+      }
+    })();
+  </script>
+</body>
+
+</html>

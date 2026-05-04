@@ -1,5 +1,18 @@
+/**
+ * ============================================================================
+ * LAUNDRY BUDDY - Smart Laundry Management System
+ * ============================================================================
+ * 
+ * @project   Laundry Buddy
+ * @author    Ayush
+ * @status    Production Ready
+ * @description Part of the Laundry Buddy Evaluation Project. 
+ *              Handles core application logic, API routing, and database integrations.
+ * ============================================================================
+ */
+
 const webpush = require('web-push');
-const Subscription = require('../models/Subscription');
+const { getSubscriptionModel } = require('../models/Subscription');
 const logger = require('../middleware/logger').logger;
 
 // Configure web-push
@@ -16,6 +29,7 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
 // Subscribe to push notifications
 exports.subscribe = async (req, res) => {
     try {
+        const Subscription = getSubscriptionModel();
         const subscription = req.body;
 
         // Validate subscription object
@@ -23,18 +37,24 @@ exports.subscribe = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid subscription object' });
         }
 
-        // Save/Update subscription
         // Upsert based on endpoint
-        await Subscription.findOneAndUpdate(
-            { endpoint: subscription.endpoint },
-            {
-                user: req.user.id,
-                endpoint: subscription.endpoint,
-                keys: subscription.keys,
+        const existing = await Subscription.findOne({ where: { endpoint: subscription.endpoint } });
+        if (existing) {
+            await existing.update({
+                userId: req.user.id,
+                p256dh: subscription.keys.p256dh,
+                auth: subscription.keys.auth,
                 userAgent: req.headers['user-agent']
-            },
-            { upsert: true, new: true }
-        );
+            });
+        } else {
+            await Subscription.create({
+                userId: req.user.id,
+                endpoint: subscription.endpoint,
+                p256dh: subscription.keys.p256dh,
+                auth: subscription.keys.auth,
+                userAgent: req.headers['user-agent']
+            });
+        }
 
         res.status(201).json({ success: true, message: 'Subscribed successfully' });
     } catch (error) {
@@ -46,7 +66,8 @@ exports.subscribe = async (req, res) => {
 // Send notification to a specific user
 exports.sendNotificationToUser = async (userId, payload) => {
     try {
-        const subscriptions = await Subscription.find({ user: userId });
+        const Subscription = getSubscriptionModel();
+        const subscriptions = await Subscription.findAll({ where: { userId } });
 
         if (subscriptions.length === 0) {
             return { success: false, message: 'No subscriptions found' };
@@ -56,14 +77,22 @@ exports.sendNotificationToUser = async (userId, payload) => {
 
         const promises = subscriptions.map(async (sub) => {
             try {
-                await webpush.sendNotification(sub, payloadString);
+                // Reconstruct the subscription object for web-push
+                const pushSubscription = {
+                    endpoint: sub.endpoint,
+                    keys: {
+                        p256dh: sub.p256dh,
+                        auth: sub.auth
+                    }
+                };
+                await webpush.sendNotification(pushSubscription, payloadString);
                 return { success: true };
             } catch (error) {
                 // Check for 410 Gone (expired) and delete
                 if (error.statusCode === 410 || error.statusCode === 404) {
-                    await Subscription.deleteOne({ _id: sub._id });
+                    await Subscription.destroy({ where: { id: sub.id } });
                 }
-                logger.warn(`Failed to send push to sub ${sub._id}: ${error.message}`);
+                logger.warn(`Failed to send push to sub ${sub.id}: ${error.message}`);
                 return { success: false, error };
             }
         });

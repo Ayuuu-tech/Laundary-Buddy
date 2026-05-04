@@ -1,24 +1,41 @@
+/**
+ * ============================================================================
+ * LAUNDRY BUDDY - Smart Laundry Management System
+ * ============================================================================
+ * 
+ * @project   Laundry Buddy
+ * @author    Ayush
+ * @status    Production Ready
+ * @description Part of the Laundry Buddy Evaluation Project. 
+ *              Handles core application logic, API routing, and database integrations.
+ * ============================================================================
+ */
+
 /* eslint-disable no-console */
 // Script to fix laundry staff admin status
 // Run with: node backend/scripts/fix-laundry-admin.js
 
-const mongoose = require('mongoose');
-const User = require('../models/User');
 require('dotenv').config();
+const { connectDB } = require('../config/db');
+const { initModels } = require('../models/index');
+const { getUserModel } = require('../models/User');
+const { Op } = require('sequelize');
 
 async function fixLaundryAdmin() {
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ Connected to MongoDB');
+    const sequelize = await connectDB();
+    initModels(sequelize);
+    const User = getUserModel();
+
+    console.log('✅ Connected to PostgreSQL');
 
     // Find all potential staff/laundry accounts and make them admin
     const staffEmails = [
       'laundry@bmu.edu.in'
-      // Add any other staff emails here
     ];
 
     for (const email of staffEmails) {
-      const user = await User.findOne({ email: email.toLowerCase() });
+      const user = await User.findOne({ where: { email: email.toLowerCase() } });
       if (user) {
         if (!user.isAdmin) {
           user.isAdmin = true;
@@ -33,13 +50,14 @@ async function fixLaundryAdmin() {
     }
 
     // Also check if the currently logged in staff user needs fixing
-    // Find users who logged in from laundry dashboard (you may need to identify them differently)
-    const recentUsers = await User.find({
-      $or: [
-        { email: { $regex: 'laundry', $options: 'i' } },
-        { name: { $regex: 'laundry', $options: 'i' } },
-        { address: { $regex: 'laundry', $options: 'i' } }
-      ]
+    const recentUsers = await User.findAll({
+      where: {
+        [Op.or]: [
+          { email: { [Op.like]: '%laundry%' } },
+          { name: { [Op.like]: '%laundry%' } },
+          { address: { [Op.like]: '%laundry%' } }
+        ]
+      }
     });
 
     console.log('\n📋 Found potential laundry staff accounts:');
@@ -53,6 +71,7 @@ async function fixLaundryAdmin() {
     }
 
     console.log('\n✅ Done!');
+    await sequelize.close();
     process.exit(0);
   } catch (error) {
     console.error('❌ Error:', error.message);

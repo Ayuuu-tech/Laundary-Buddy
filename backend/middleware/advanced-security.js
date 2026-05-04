@@ -1,3 +1,16 @@
+/**
+ * ============================================================================
+ * LAUNDRY BUDDY - Smart Laundry Management System
+ * ============================================================================
+ * 
+ * @project   Laundry Buddy
+ * @author    Ayush
+ * @status    Production Ready
+ * @description Part of the Laundry Buddy Evaluation Project. 
+ *              Handles core application logic, API routing, and database integrations.
+ * ============================================================================
+ */
+
 // Advanced API Security Middleware
 
 const validator = require('validator');
@@ -138,8 +151,6 @@ function containsSuspiciousPatterns(input) {
     /<script[^>]*>.*?<\/script>/gi,  // Script tags
     /javascript:/gi,                  // JavaScript protocol
     /on\w+\s*=/gi,                   // Event handlers (onclick, onerror, etc.)
-    /\$where:/gi,                     // MongoDB $where
-    /\$ne:/gi,                        // MongoDB $ne (in unexpected places)
     /union\s+select/gi,               // SQL injection
     /exec\s*\(/gi,                    // Code execution
     /eval\s*\(/gi,                    // eval function
@@ -230,7 +241,8 @@ function validatePhoneMiddleware(fieldName = 'phone') {
 
 /**
  * SQL Injection prevention (additional layer)
- * Note: We're using MongoDB, so this is preventative for any future SQL use
+ * Important: We use PostgreSQL/Sequelize which uses parameterized queries,
+ * but this provides an additional layer of defense
  */
 function preventSQLInjection(req, res, next) {
   const sqlPatterns = [

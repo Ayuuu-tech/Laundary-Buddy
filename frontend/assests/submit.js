@@ -1,3 +1,16 @@
+/**
+ * ============================================================================
+ * LAUNDRY BUDDY - Smart Laundry Management System
+ * ============================================================================
+ * 
+ * @project   Laundry Buddy
+ * @author    Ayush
+ * @status    Production Ready
+ * @description Part of the Laundry Buddy Evaluation Project. 
+ *              Handles core application logic, API routing, and database integrations.
+ * ============================================================================
+ */
+
 // submit.js - Submit laundry page functionality
 (function () {
   'use strict';
@@ -135,7 +148,7 @@
         console.log('📦 Backend response:', response);
 
         if (response.success) {
-          console.log('✅ Order saved to MongoDB:', response.order);
+          console.log('✅ Order saved to database:', response.order);
           alert('🎉 Order submitted successfully!\n\nOrder #: ' + response.order.orderNumber);
 
           // Get current user for submission object

@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class Tracking {
 
-    @SerializedName("_id")
+    @SerializedName(value = "_id", alternate = {"id"})
     private String id;
 
     @SerializedName("orderNumber")
@@ -67,6 +67,8 @@ public class Tracking {
                 com.google.gson.JsonObject obj = orderElement.getAsJsonObject();
                 if (obj.has("_id")) {
                     return obj.get("_id").getAsString();
+                } else if (obj.has("id")) {
+                    return obj.get("id").getAsString();
                 }
             }
         }

@@ -1,19 +1,47 @@
+/**
+ * ============================================================================
+ * LAUNDRY BUDDY - Smart Laundry Management System
+ * ============================================================================
+ * 
+ * @project   Laundry Buddy
+ * @author    Ayush
+ * @status    Production Ready
+ * @description Part of the Laundry Buddy Evaluation Project. 
+ *              Handles core application logic, API routing, and database integrations.
+ * ============================================================================
+ */
+
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User');
+const { getUserModel } = require('../models/User');
+const { getRefreshTokenModel } = require('../models/RefreshToken');
 const bcrypt = require('bcryptjs');
 const { generateAccessToken, generateRefreshToken } = require('../middleware/auth-security');
+
+// Helper: add refresh token
+async function addRefreshToken(userId, token) {
+  const RefreshToken = getRefreshTokenModel();
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  await RefreshToken.create({ userId, token, expiresAt });
+
+  const tokens = await RefreshToken.findAll({
+    where: { userId },
+    order: [['createdAt', 'DESC']]
+  });
+  if (tokens.length > 5) {
+    const toDelete = tokens.slice(5).map(t => t.id);
+    await RefreshToken.destroy({ where: { id: toDelete } });
+  }
+}
 
 // Google OAuth - Verify token and login/register user
 router.post('/google', async (req, res) => {
   try {
+    const User = getUserModel();
     const { credential } = req.body;
 
     if (!credential) {
-      return res.status(400).json({
-        success: false,
-        message: 'Google credential is required'
-      });
+      return res.status(400).json({ success: false, message: 'Google credential is required' });
     }
 
     // Verify ID token with Google's tokeninfo endpoint
@@ -43,25 +71,21 @@ router.post('/google', async (req, res) => {
     const { email, name, picture, sub: googleId } = payload;
 
     if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email not provided by Google'
-      });
+      return res.status(400).json({ success: false, message: 'Email not provided by Google' });
     }
 
     // Check if user exists
-    let user = await User.findOne({ email: email.toLowerCase() });
+    let user = await User.findOne({ where: { email: email.toLowerCase() } });
 
     if (user) {
       // User exists - login
-      // Generate JWT tokens for Android app
       const accessToken = generateAccessToken(user);
       const refreshToken = generateRefreshToken(user);
-      await user.addRefreshToken(refreshToken);
+      await addRefreshToken(user.id, refreshToken);
 
-      req.session.userId = user._id.toString();
+      req.session.userId = user.id.toString();
       req.session.user = {
-        id: user._id,
+        id: user.id,
         name: user.name,
         email: user.email,
         phone: user.phone,
@@ -100,14 +124,13 @@ router.post('/google', async (req, res) => {
       profilePhoto: picture
     });
 
-    // Generate JWT tokens for Android app
     const accessToken = generateAccessToken(newUser);
     const refreshToken = generateRefreshToken(newUser);
-    await newUser.addRefreshToken(refreshToken);
+    await addRefreshToken(newUser.id, refreshToken);
 
-    req.session.userId = newUser._id.toString();
+    req.session.userId = newUser.id.toString();
     req.session.user = {
-      id: newUser._id,
+      id: newUser.id,
       name: newUser.name,
       email: newUser.email,
       phone: newUser.phone,
@@ -134,13 +157,8 @@ router.post('/google', async (req, res) => {
     });
   } catch (error) {
     console.error('Google auth error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error with Google authentication',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error with Google authentication', error: error.message });
   }
 });
 
 module.exports = router;
-

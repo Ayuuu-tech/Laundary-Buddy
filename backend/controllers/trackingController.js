@@ -1,20 +1,37 @@
-const Tracking = require('../models/Tracking');
-const Order = require('../models/Order');
+/**
+ * ============================================================================
+ * LAUNDRY BUDDY - Smart Laundry Management System
+ * ============================================================================
+ * 
+ * @project   Laundry Buddy
+ * @author    Ayush
+ * @status    Production Ready
+ * @description Part of the Laundry Buddy Evaluation Project. 
+ *              Handles core application logic, API routing, and database integrations.
+ * ============================================================================
+ */
+
+const { getTrackingModel } = require('../models/Tracking');
+const { getOrderModel } = require('../models/Order');
+const { getUserModel } = require('../models/User');
+const { getSequelize } = require('../config/db');
 
 // Get all tracking items for user
 exports.getTrackingItems = async (req, res) => {
   try {
+    const Tracking = getTrackingModel();
+    const Order = getOrderModel();
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
+    const offset = (page - 1) * limit;
 
-    const tracking = await Tracking.find({ user: req.user.id })
-      .populate('order')
-      .sort({ updatedAt: -1 })
-      .skip(skip)
-      .limit(limit);
-
-    const total = await Tracking.countDocuments({ user: req.user.id });
+    const { count, rows: tracking } = await Tracking.findAndCountAll({
+      where: { userId: req.user.id },
+      include: [{ model: Order, as: 'order' }],
+      order: [['updatedAt', 'DESC']],
+      offset,
+      limit
+    });
 
     res.json({
       success: true,
@@ -22,42 +39,34 @@ exports.getTrackingItems = async (req, res) => {
       pagination: {
         page,
         limit,
-        total,
-        pages: Math.ceil(total / limit)
+        total: count,
+        pages: Math.ceil(count / limit)
       }
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching tracking items',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error fetching tracking items', error: error.message });
   }
 };
 
 // Get single tracking item
 exports.getTrackingItem = async (req, res) => {
   try {
-    const item = await Tracking.findOne({ _id: req.params.id, user: req.user.id });
+    const Tracking = getTrackingModel();
+    const item = await Tracking.findOne({ where: { id: req.params.id, userId: req.user.id } });
     if (!item) {
-      return res.status(404).json({
-        success: false,
-        message: 'Tracking item not found'
-      });
+      return res.status(404).json({ success: false, message: 'Tracking item not found' });
     }
     res.json({ success: true, tracking: item });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching tracking item',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error fetching tracking item', error: error.message });
   }
 };
 
 // Create tracking item
 exports.createTrackingItem = async (req, res) => {
   try {
+    const Tracking = getTrackingModel();
+    const Order = getOrderModel();
     const {
       orderId,
       orderNumber,
@@ -70,11 +79,11 @@ exports.createTrackingItem = async (req, res) => {
     // resolve order id if provided
     let orderRef = undefined;
     if (orderId) {
-      try { orderRef = await Order.findOne({ _id: orderId, user: req.user.id }); } catch { }
+      try { orderRef = await Order.findOne({ where: { id: orderId, userId: req.user.id } }); } catch { }
     }
     const tracking = await Tracking.create({
-      user: req.user.id,
-      order: orderRef?._id,
+      userId: req.user.id,
+      orderId: orderRef?.id || null,
       orderNumber,
       status: status || 'picked_up',
       currentLocation,
@@ -84,23 +93,17 @@ exports.createTrackingItem = async (req, res) => {
 
     res.status(201).json({ success: true, message: 'Tracking item created successfully', tracking });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error creating tracking item',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error creating tracking item', error: error.message });
   }
 };
 
 // Update tracking item
 exports.updateTrackingItem = async (req, res) => {
   try {
-    const item = await Tracking.findOne({ _id: req.params.id, user: req.user.id });
+    const Tracking = getTrackingModel();
+    const item = await Tracking.findOne({ where: { id: req.params.id, userId: req.user.id } });
     if (!item) {
-      return res.status(404).json({
-        success: false,
-        message: 'Tracking item not found'
-      });
+      return res.status(404).json({ success: false, message: 'Tracking item not found' });
     }
 
     const { status, currentLocation, estimatedDelivery, timeline } = req.body;
@@ -110,62 +113,53 @@ exports.updateTrackingItem = async (req, res) => {
     if (estimatedDelivery) updateData.estimatedDelivery = estimatedDelivery;
     if (timeline) updateData.timeline = timeline;
 
-    const updatedTracking = await Tracking.findOneAndUpdate(
-      { _id: req.params.id, user: req.user.id },
-      updateData,
-      { new: true }
-    );
+    await Tracking.update(updateData, { where: { id: req.params.id, userId: req.user.id } });
+    const updatedTracking = await Tracking.findByPk(req.params.id);
     res.json({ success: true, message: 'Tracking updated successfully', tracking: updatedTracking });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error updating tracking item',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error updating tracking item', error: error.message });
   }
 };
 
 // Track order by order number
 exports.trackByOrderNumber = async (req, res) => {
   try {
+    const Tracking = getTrackingModel();
+    const Order = getOrderModel();
     const { orderNumber } = req.params;
-    const item = await Tracking.findOne({ orderNumber }).populate('order');
+    const item = await Tracking.findOne({
+      where: { orderNumber },
+      include: [{ model: Order, as: 'order' }]
+    });
     if (!item) {
-      return res.status(404).json({
-        success: false,
-        message: 'Order not found'
-      });
+      return res.status(404).json({ success: false, message: 'Order not found' });
     }
     res.json({ success: true, tracking: item });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error tracking order',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error tracking order', error: error.message });
   }
 };
 
-// Upsert tracking by order number for Laundry Dashboard (secured via API key or dev mode)
-// Upsert tracking by order number for Laundry Dashboard (secured via API key or dev mode)
+// Upsert tracking by order number for Laundry Dashboard
 exports.upsertByOrderNumberForLaundry = async (req, res) => {
-  const mongoose = require('mongoose');
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  const sequelize = getSequelize();
+  const t = await sequelize.transaction();
 
   try {
+    const Tracking = getTrackingModel();
+    const Order = getOrderModel();
+    const User = getUserModel();
+
     // Strictly require authenticated admin access
     if (!req.user || !req.user.id) {
-      await session.abortTransaction();
-      session.endSession();
+      await t.rollback();
       return res.status(401).json({ success: false, message: 'Authentication required' });
     }
 
-    // Check admin status from database (session may not have isAdmin field)
-    const adminUser = await require('../models/User').findById(req.user.id);
+    // Check admin status from database
+    const adminUser = await User.findByPk(req.user.id);
     if (!adminUser || !adminUser.isAdmin) {
-      await session.abortTransaction();
-      session.endSession();
+      await t.rollback();
       return res.status(403).json({ success: false, message: 'Forbidden: Admin access required' });
     }
 
@@ -173,55 +167,48 @@ exports.upsertByOrderNumberForLaundry = async (req, res) => {
     const { status, estimatedDelivery, note } = req.body || {};
 
     if (!orderNumber) {
-      await session.abortTransaction();
-      session.endSession();
+      await t.rollback();
       return res.status(400).json({ success: false, message: 'orderNumber is required' });
     }
     if (!status) {
-      await session.abortTransaction();
-      session.endSession();
+      await t.rollback();
       return res.status(400).json({ success: false, message: 'status is required' });
     }
 
     // Try to link to an existing order to resolve user
-    const order = await Order.findOne({ orderNumber }).session(session);
+    const order = await Order.findOne({ where: { orderNumber }, transaction: t });
 
     if (!order) {
-      await session.abortTransaction();
-      session.endSession();
+      await t.rollback();
       console.warn('⚠️  Upsert failed: order not found for', orderNumber);
       return res.status(404).json({ success: false, message: 'Order not found for this token/orderNumber' });
     }
 
     const now = new Date();
-    const update = {
-      user: order.user,
-      order: order._id,
-      orderNumber,
-      status,
-      estimatedDelivery: estimatedDelivery || undefined,
-    };
+    let tracking = await Tracking.findOne({ where: { orderNumber }, transaction: t });
 
-    let tracking = await Tracking.findOne({ orderNumber }).session(session);
     if (!tracking) {
-      // Create new tracking doc
-      // Model.create with session returns array unless using new Model + save
-      const [newTracking] = await Tracking.create([{
-        ...update,
+      tracking = await Tracking.create({
+        userId: order.userId,
+        orderId: order.id,
+        orderNumber,
+        status,
+        estimatedDelivery: estimatedDelivery || null,
         timeline: [{ status, timestamp: now, note: note || `Updated to ${status}` }],
-      }], { session });
-      tracking = newTracking;
+      }, { transaction: t });
     } else {
       const timeline = tracking.timeline || [];
       timeline.push({ status, timestamp: now, note: note || `Updated to ${status}` });
       tracking.status = status;
       if (estimatedDelivery) tracking.estimatedDelivery = estimatedDelivery;
       tracking.timeline = timeline;
-      await tracking.save({ session });
+      // Force Sequelize to detect JSON change
+      tracking.changed('timeline', true);
+      await tracking.save({ transaction: t });
     }
 
     // Keep the Order document in sync with latest status
-    console.log(`📦 Updating order ${order._id} status from "${order.status}" to "${status}"`);
+    console.log(`📦 Updating order ${order.id} status from "${order.status}" to "${status}"`);
     order.status = status;
     if (status === 'ready-for-pickup' || status === 'completed') {
       const d = estimatedDelivery ? new Date(estimatedDelivery) : now;
@@ -234,7 +221,10 @@ exports.upsertByOrderNumberForLaundry = async (req, res) => {
         try {
           const { Resend } = require('resend');
           const resend = new Resend(process.env.RESEND_API_KEY);
-          const userEmail = order.userEmail;
+
+          // Get user email
+          const orderUser = await User.findByPk(order.userId);
+          const userEmail = orderUser?.email;
 
           if (userEmail) {
             console.log(`📧 Sending 'Ready' notification email to ${userEmail}`);
@@ -245,28 +235,25 @@ exports.upsertByOrderNumberForLaundry = async (req, res) => {
               html: `<p>Hello!</p><p>Your laundry order <strong>${orderNumber}</strong> is now <strong>${status}</strong>.</p><p>You can pick it up at your convenience.</p><p>Thanks,<br>Laundry Buddy Team</p>`
             });
 
-            // Add note to timeline
             const timeline = tracking.timeline || [];
             timeline.push({ status: 'notification_sent', timestamp: new Date(), note: 'Email notification sent to user' });
             tracking.timeline = timeline;
-            await tracking.save({ session });
+            tracking.changed('timeline', true);
+            await tracking.save({ transaction: t });
           }
         } catch (emailErr) {
           console.error('Failed to send notification email:', emailErr);
-          // Don't fail the transaction just for email
         }
       }
     }
-    await order.save({ session });
-    console.log(`✅ Order ${order._id} status updated to "${status}" successfully`);
+    await order.save({ transaction: t });
+    console.log(`✅ Order ${order.id} status updated to "${status}" successfully`);
 
-    await session.commitTransaction();
-    session.endSession();
+    await t.commit();
 
     return res.json({ success: true, message: 'Tracking upserted', tracking });
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
+    await t.rollback();
     console.error('❌ Upsert tracking error:', error);
     return res.status(500).json({ success: false, message: 'Error updating tracking', error: error.message });
   }
@@ -275,17 +262,16 @@ exports.upsertByOrderNumberForLaundry = async (req, res) => {
 // Toggle notification preference
 exports.toggleNotifyWhenReady = async (req, res) => {
   try {
+    const Tracking = getTrackingModel();
     const { orderNumber } = req.params;
-    const tracking = await Tracking.findOne({ orderNumber });
+    const tracking = await Tracking.findOne({ where: { orderNumber } });
 
     if (!tracking) {
       return res.status(404).json({ success: false, message: 'Tracking not found' });
     }
 
-    // Toggle the value (default is false if undefined)
     const currentValue = tracking.notifyWhenReady || false;
     tracking.notifyWhenReady = !currentValue;
-
     await tracking.save();
 
     res.json({

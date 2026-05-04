@@ -1,3 +1,16 @@
+/**
+ * ============================================================================
+ * LAUNDRY BUDDY - Smart Laundry Management System
+ * ============================================================================
+ * 
+ * @project   Laundry Buddy
+ * @author    Ayush
+ * @status    Production Ready
+ * @description Part of the Laundry Buddy Evaluation Project. 
+ *              Handles core application logic, API routing, and database integrations.
+ * ============================================================================
+ */
+
 require('dotenv').config();
 
 // Validate environment variables before starting
@@ -5,25 +18,24 @@ const { validateEnv } = require('./config/env-validator');
 validateEnv();
 
 // Initialize monitoring (Sentry, etc.)
-const { initSentry, getSentryMiddleware, setupHealthCheck, setupDatabaseQueryLogging } = require('./config/monitoring');
+const { initSentry, getSentryMiddleware, setupHealthCheck } = require('./config/monitoring');
 
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const compression = require('compression');
-const mongoSanitize = require('express-mongo-sanitize');
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
+const pgSession = require('connect-pg-simple')(session);
+const { Pool } = require('pg');
 const cookieParser = require('cookie-parser');
-const connectDB = require('./config/db');
+const { connectDB, getSequelize } = require('./config/db');
 const { apiLimiter, helmetConfig } = require('./middleware/security');
 const { logger, httpLogger } = require('./middleware/logger');
 const { httpsSecurityMiddleware } = require('./middleware/https');
 const path = require('path');
 const {
   ipBlockingMiddleware,
-  sanitizeInputMiddleware,
-  preventSQLInjection
+  sanitizeInputMiddleware
 } = require('./middleware/advanced-security');
 
 const app = express();
@@ -63,28 +75,19 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
-
-    // Log for debugging in production
     logger.debug(`CORS check for origin: ${origin}`);
     logger.debug(`Allowed origins: ${allowedOrigins.join(', ')}`);
 
-    // In production, check allowed origins strictly
     if (isProduction) {
-      // Check exact match first
       if (allowedOrigins.indexOf(origin) !== -1) {
         return callback(null, true);
       }
-
-      // Allow Cloudflare Pages, Render, and other deployment platforms
       if (origin.includes('.pages.dev') ||
         origin.includes('.onrender.com') ||
         origin.includes('cloudflare')) {
         return callback(null, true);
       }
-
-      // Check if origin domain matches any allowed domain (without protocol)
       const originDomain = origin.replace(/https?:\/\//, '');
       if (allowedOrigins.some(allowed => {
         const allowedDomain = allowed.replace(/https?:\/\//, '');
@@ -92,16 +95,13 @@ app.use(cors({
       })) {
         return callback(null, true);
       }
-
       logger.warn(`CORS blocked origin: ${origin}`);
       return callback(new Error('Not allowed by CORS'));
     }
 
-    // In development, allow localhost
     if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
       return callback(null, true);
     }
-
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
@@ -109,7 +109,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With', 'x-laundry-key', 'x-csrf-token']
 }));
 
-// Session configuration with MongoDB store
+// Session configuration with PostgreSQL store (Supabase)
 const getSessionSecret = () => {
   if (!process.env.SESSION_SECRET) {
     if (isProduction) {
@@ -121,24 +121,32 @@ const getSessionSecret = () => {
   return process.env.SESSION_SECRET;
 };
 
+// PostgreSQL pool for session store
+const pgPool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
+
+const sessionStore = new pgSession({
+  pool: pgPool,
+  tableName: 'sessions',
+  createTableIfMissing: true,
+  pruneSessionInterval: 60 * 15 // Prune every 15 minutes
+});
+
 app.use(session({
   name: 'connect.sid',
   secret: getSessionSecret(),
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/laundry_buddy',
-    ttl: 24 * 60 * 60,
-    touchAfter: 24 * 3600,
-    autoRemove: 'native'
-  }),
+  store: sessionStore,
   cookie: {
-    secure: isProduction, // true in production (HTTPS)
+    secure: isProduction,
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000,
-    sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-site in production
+    sameSite: isProduction ? 'none' : 'lax',
     path: '/',
-    domain: isProduction ? '.ayushmaanyadav.me' : undefined // Required for cross-subdomain cookie sharing
+    domain: isProduction ? '.ayushmaanyadav.me' : undefined
   }
 }));
 
@@ -152,14 +160,12 @@ app.use(ipBlockingMiddleware);
 // Advanced input sanitization
 app.use(sanitizeInputMiddleware);
 
-// Prevent SQL injection attempts
-app.use(preventSQLInjection);
-
-// Sanitize data to prevent MongoDB injection
-app.use(mongoSanitize());
-
 // HTTP request logging
 app.use(httpLogger);
+
+// Activity logging (stores every API request in Supabase)
+const { activityLoggerMiddleware } = require('./middleware/activityLogger');
+app.use(activityLoggerMiddleware);
 
 // Apply rate limiting to all API routes
 app.use('/api/', apiLimiter);
@@ -180,10 +186,10 @@ app.use('/api/contact', require('./routes/contact'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/users', require('./routes/user'));
 
-// Health check route (before error handlers)
+// Health check route
 setupHealthCheck(app);
 
-// Sentry error handler (must be before any other error middleware)
+// Sentry error handler
 app.use(sentryMiddleware.errorHandler);
 app.get('/api/health', (req, res) => {
   res.json({
@@ -193,7 +199,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Root route for API info (moved from / to /api)
 app.get('/api', (req, res) => {
   res.json({
     success: true,
@@ -208,50 +213,46 @@ app.get('/api', (req, res) => {
   });
 });
 
-// Explicitly serve index.html for root if static didn't catch it (fallback)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found'
-  });
+  res.status(404).json({ success: false, message: 'Route not found' });
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   logger.error(`Error: ${err.message}`, { stack: err.stack });
-
-  // Don't leak error details in production
   const errorResponse = {
     success: false,
-    message: process.env.NODE_ENV === 'production'
-      ? 'An error occurred'
-      : err.message
+    message: process.env.NODE_ENV === 'production' ? 'An error occurred' : err.message
   };
-
   if (process.env.NODE_ENV === 'development') {
     errorResponse.error = err.stack;
   }
-
   res.status(err.status || 500).json(errorResponse);
 });
 
 let server;
 
-// Start server function
 async function start() {
   try {
-    // Connect to MongoDB
-    await connectDB();
-    const mongoose = require('mongoose');
-    app.locals.db = mongoose.connection.db;
+    // Connect to PostgreSQL (Supabase)
+    const sequelize = await connectDB();
 
-    // Setup database query logging
-    setupDatabaseQueryLogging(mongoose);
+    // Initialize all models and associations
+    const { initModels } = require('./models/index');
+    initModels(sequelize);
+
+    // Sync database (create tables if they don't exist)
+    // Note: Use { force: false } (default) to avoid ALTER TABLE issues with Supabase pooler
+    // For schema changes, use Sequelize migrations or the Supabase SQL editor
+    await sequelize.sync();
+    console.log('✅ Database tables synced');
+
+    app.locals.sequelize = sequelize;
 
     // Start scheduler
     const { startScheduler } = require('./cron/scheduler');
@@ -265,7 +266,7 @@ async function start() {
       logger.info(`📍 Server URL: http://localhost:${PORT}`);
       logger.info(`📊 Health Check: http://localhost:${PORT}/api/health`);
       logger.info(`🔍 Environment: ${process.env.NODE_ENV || 'development'}`);
-      logger.info(`💾 Database: ${process.env.MONGODB_URI ? 'Connected' : 'Not configured'}`);
+      logger.info(`💾 Database: PostgreSQL (Supabase) Connected`);
       logger.info('========================================');
     });
   } catch (err) {
@@ -278,7 +279,9 @@ async function start() {
 process.on('SIGINT', async () => {
   logger.info('🛑 Shutting down gracefully...');
   if (server) {
-    server.close(() => {
+    server.close(async () => {
+      const sequelize = getSequelize();
+      if (sequelize) await sequelize.close();
       logger.info('✅ Server closed');
       process.exit(0);
     });
@@ -290,7 +293,9 @@ process.on('SIGINT', async () => {
 process.on('SIGTERM', async () => {
   logger.info('🛑 Shutting down gracefully...');
   if (server) {
-    server.close(() => {
+    server.close(async () => {
+      const sequelize = getSequelize();
+      if (sequelize) await sequelize.close();
       logger.info('✅ Server closed');
       process.exit(0);
     });

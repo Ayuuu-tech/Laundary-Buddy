@@ -41,6 +41,8 @@ public class UserFieldAdapter implements JsonDeserializer<Order.PopulatedUser>, 
                 idField.setAccessible(true);
                 if (obj.has("_id") && !obj.get("_id").isJsonNull()) {
                     idField.set(user, obj.get("_id").getAsString());
+                } else if (obj.has("id") && !obj.get("id").isJsonNull()) {
+                    idField.set(user, obj.get("id").getAsString());
                 }
                 
                 java.lang.reflect.Field nameField = Order.PopulatedUser.class.getDeclaredField("name");

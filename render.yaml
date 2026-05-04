@@ -13,8 +13,8 @@ services:
         value: production
       - key: PORT
         value: 10000
-      - key: MONGODB_URI
-        sync: false
+      - key: DATABASE_URL
+        sync: false  # Paste your Supabase connection string here
       - key: SESSION_SECRET
         generateValue: true
       - key: JWT_SECRET
@@ -36,20 +36,15 @@ services:
     name: laundry-buddy-frontend
     env: static
     rootDir: frontend
-    buildCommand: "" # No build needed for raw HTML/JS
+    buildCommand: ""
     staticPublishPath: .
     routes:
       - type: rewrite
         source: /*
         destination: /index.html
 
-databases:
-  # MongoDB Database
-  - name: laundry-buddy-db
-    databaseName: laundry-buddy
-    user: laundry_user
-    plan: free
-
-# Note: After deploying:
-# 1. Update ALLOWED_ORIGINS in Backend with Frontend URL
-# 2. Update API URL in frontend/assests/api-config.js with Backend URL
+# After deploying:
+# 1. Get your Supabase DATABASE_URL from: Dashboard → Settings → Database → Connection string
+# 2. Paste it in the DATABASE_URL env var on Render
+# 3. Update ALLOWED_ORIGINS with your Frontend URL
+# 4. Update API URL in frontend/assests/api-config.js with Backend URL

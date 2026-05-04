@@ -1,3 +1,16 @@
+/**
+ * ============================================================================
+ * LAUNDRY BUDDY - Smart Laundry Management System
+ * ============================================================================
+ * 
+ * @project   Laundry Buddy
+ * @author    Ayush
+ * @status    Production Ready
+ * @description Part of the Laundry Buddy Evaluation Project. 
+ *              Handles core application logic, API routing, and database integrations.
+ * ============================================================================
+ */
+
 const { body, validationResult } = require('express-validator');
 
 // Validation middleware
@@ -106,9 +119,10 @@ const validationRules = {
   ],
   createTicket: [
     body('type').notEmpty().withMessage('Type is required'),
-    body('details').notEmpty().withMessage('Details are required').isLength({ min: 10 }).withMessage('Details must be at least 10 characters'),
+    body('items').notEmpty().withMessage('Items description is required'),
+    body('details').optional({ checkFalsy: true }).isLength({ min: 5 }).withMessage('Details must be at least 5 characters if provided'),
     body('orderNumber').optional().trim(),
-    body('orderId').optional().isMongoId().withMessage('Invalid Order ID')
+    body('orderId').optional().isInt().withMessage('Invalid Order ID')
   ],
   contact: [
     body('name').trim().notEmpty().withMessage('Name is required'),

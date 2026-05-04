@@ -1,82 +1,173 @@
+/**
+ * ============================================================================
+ * LAUNDRY BUDDY - Smart Laundry Management System
+ * ============================================================================
+ * 
+ * @project   Laundry Buddy
+ * @author    Ayush
+ * @status    Production Ready
+ * @description Part of the Laundry Buddy Evaluation Project. 
+ *              Handles core application logic, API routing, and database integrations.
+ * ============================================================================
+ */
 
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { getSequelize } = require('../config/db');
 
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true },
-  email: { type: String, required: true, unique: true, lowercase: true, index: true },
-  password: { type: String, required: true },
-  phone: { type: String, default: '' },
-  address: { type: String, default: '' },
-  hostelRoom: { type: String, default: '' },
-  googleId: { type: String, default: null },
-  profilePhoto: { type: String, default: null },
-  isAdmin: { type: Boolean, default: false },
-  resetOTP: { type: String, default: null }, // OTP for password reset
-  resetOTPExpiry: { type: Date, default: null }, // OTP expiry time
-  signupOTP: { type: String, default: null },
-  signupOTPExpiry: { type: Date, default: null },
-  loginOTP: { type: String, default: null },
-  loginOTPExpiry: { type: Date, default: null },
+let User;
 
-  // Account security fields
-  failedLoginAttempts: { type: Number, default: 0 },
-  accountLockedUntil: { type: Date, default: null },
-  lastLoginAt: { type: Date, default: null },
-  lastLoginIP: { type: String, default: null },
-  passwordChangedAt: { type: Date, default: null },
+function initUser(sequelize) {
+  User = sequelize.define('User', {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true
+    },
+    name: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    email: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      unique: true,
+      validate: { isEmail: true },
+      set(value) {
+        this.setDataValue('email', value ? value.toLowerCase() : value);
+      }
+    },
+    password: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    phone: {
+      type: DataTypes.STRING(20),
+      defaultValue: ''
+    },
+    address: {
+      type: DataTypes.STRING(500),
+      defaultValue: ''
+    },
+    hostelRoom: {
+      type: DataTypes.STRING(50),
+      defaultValue: ''
+    },
+    googleId: {
+      type: DataTypes.STRING(255),
+      defaultValue: null
+    },
+    profilePhoto: {
+      type: DataTypes.TEXT,
+      defaultValue: null
+    },
+    isAdmin: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    resetOTP: {
+      type: DataTypes.STRING(10),
+      defaultValue: null
+    },
+    resetOTPExpiry: {
+      type: DataTypes.DATE,
+      defaultValue: null
+    },
+    signupOTP: {
+      type: DataTypes.STRING(10),
+      defaultValue: null
+    },
+    signupOTPExpiry: {
+      type: DataTypes.DATE,
+      defaultValue: null
+    },
+    loginOTP: {
+      type: DataTypes.STRING(10),
+      defaultValue: null
+    },
+    loginOTPExpiry: {
+      type: DataTypes.DATE,
+      defaultValue: null
+    },
+    // Account security fields
+    failedLoginAttempts: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    },
+    accountLockedUntil: {
+      type: DataTypes.DATE,
+      defaultValue: null
+    },
+    lastLoginAt: {
+      type: DataTypes.DATE,
+      defaultValue: null
+    },
+    lastLoginIP: {
+      type: DataTypes.STRING(45),
+      defaultValue: null
+    },
+    passwordChangedAt: {
+      type: DataTypes.DATE,
+      defaultValue: null
+    },
+    // Account deletion fields
+    deletionRequested: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    deletionRequestedAt: {
+      type: DataTypes.DATE,
+      defaultValue: null
+    },
+    deletionReason: {
+      type: DataTypes.TEXT,
+      defaultValue: null
+    }
+  }, {
+    tableName: 'users',
+    timestamps: true,
+    indexes: [
+      { fields: ['email'], unique: true }
+    ]
+  });
 
-  // Refresh token for JWT rotation
-  refreshTokens: [{
-    token: String,
-    createdAt: { type: Date, default: Date.now },
-    expiresAt: Date
-  }]
-}, { timestamps: true });
+  // Instance method: check if account is locked
+  User.prototype.isAccountLocked = function () {
+    return this.accountLockedUntil && this.accountLockedUntil > Date.now();
+  };
 
-// Method to check if account is locked
-userSchema.methods.isAccountLocked = function () {
-  return this.accountLockedUntil && this.accountLockedUntil > Date.now();
-};
+  // Instance method: increment failed login attempts
+  User.prototype.incrementLoginAttempts = async function () {
+    const maxAttempts = parseInt(process.env.MAX_LOGIN_ATTEMPTS) || 5;
+    const lockoutDuration = parseInt(process.env.ACCOUNT_LOCKOUT_DURATION) || 15 * 60 * 1000;
 
-// Method to increment failed login attempts
-userSchema.methods.incrementLoginAttempts = async function () {
-  const maxAttempts = parseInt(process.env.MAX_LOGIN_ATTEMPTS) || 5;
-  const lockoutDuration = parseInt(process.env.ACCOUNT_LOCKOUT_DURATION) || 15 * 60 * 1000; // 15 minutes
+    this.failedLoginAttempts += 1;
 
-  this.failedLoginAttempts += 1;
+    if (this.failedLoginAttempts >= maxAttempts) {
+      this.accountLockedUntil = new Date(Date.now() + lockoutDuration);
+    }
 
-  if (this.failedLoginAttempts >= maxAttempts) {
-    this.accountLockedUntil = new Date(Date.now() + lockoutDuration);
+    return this.save();
+  };
+
+  // Instance method: reset failed login attempts
+  User.prototype.resetLoginAttempts = async function () {
+    this.failedLoginAttempts = 0;
+    this.accountLockedUntil = null;
+    return this.save();
+  };
+
+  return User;
+}
+
+function getUserModel() {
+  if (!User) {
+    const sequelize = getSequelize();
+    if (sequelize) {
+      return initUser(sequelize);
+    }
+    throw new Error('Database not initialized. Call connectDB first.');
   }
+  return User;
+}
 
-  return this.save();
-};
-
-// Method to reset failed login attempts
-userSchema.methods.resetLoginAttempts = async function () {
-  this.failedLoginAttempts = 0;
-  this.accountLockedUntil = null;
-  return this.save();
-};
-
-// Method to add refresh token
-userSchema.methods.addRefreshToken = async function (token) {
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-
-  this.refreshTokens.push({ token, expiresAt });
-
-  // Keep only last 5 tokens
-  if (this.refreshTokens.length > 5) {
-    this.refreshTokens = this.refreshTokens.slice(-5);
-  }
-
-  return this.save();
-};
-
-// Method to remove refresh token
-userSchema.methods.removeRefreshToken = async function (token) {
-  this.refreshTokens = this.refreshTokens.filter(rt => rt.token !== token);
-  return this.save();
-};
-
-module.exports = mongoose.model('User', userSchema);
+module.exports = { initUser, getUserModel };

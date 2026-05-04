@@ -1,3 +1,16 @@
+/**
+ * ============================================================================
+ * LAUNDRY BUDDY - Smart Laundry Management System
+ * ============================================================================
+ * 
+ * @project   Laundry Buddy
+ * @author    Ayush
+ * @status    Production Ready
+ * @description Part of the Laundry Buddy Evaluation Project. 
+ *              Handles core application logic, API routing, and database integrations.
+ * ============================================================================
+ */
+
 // support.js - Support center page functionality
 (function () {
   'use strict';
@@ -394,7 +407,7 @@
             body: JSON.stringify({
               type: 'missing-clothes',
               orderNumber: tokenNumber,
-              orderId: order._id,
+              orderId: order.id || order._id,
               items: missingItems,
               details: additionalDetails,
               status: 'pending'
@@ -449,7 +462,7 @@
             body: JSON.stringify({
               type: 'damage',
               orderNumber: tokenNumber,
-              orderId: order._id,
+              orderId: order.id || order._id,
               items: damagedItems,
               damageType: damageType,
               details: damageDetails,

@@ -19,12 +19,13 @@ android {
 
     buildTypes {
         debug {
-            // Use production API for physical devices
-            buildConfigField "String", "API_BASE_URL", '"https://laundry-buddy-api.onrender.com/api"'
+            // Local backend for Android Emulator (10.0.2.2 points to localhost:3000)
+            buildConfigField "String", "API_BASE_URL", '"http://10.0.2.2:3000/api"'
         }
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // Official production API
             buildConfigField "String", "API_BASE_URL", '"https://laundry-buddy-api.onrender.com/api"'
         }
     }

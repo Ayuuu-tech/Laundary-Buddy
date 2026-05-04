@@ -1,23 +1,6 @@
 version: '3.8'
 
 services:
-  # MongoDB Database
-  mongodb:
-    image: mongo:7
-    container_name: laundry-buddy-db
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-admin}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-password123}
-      MONGO_INITDB_DATABASE: laundry-buddy
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-      - mongodb_config:/data/configdb
-    networks:
-      - laundry-network
-
   # Backend API
   backend:
     build:
@@ -30,12 +13,11 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      MONGODB_URI: mongodb://${MONGO_USERNAME:-admin}:${MONGO_PASSWORD:-password123}@mongodb:27017/laundry-buddy?authSource=admin
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL_REQUIRED}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET_REQUIRED}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET_REQUIRED}
       JWT_EXPIRE: 7d
       ALLOWED_ORIGINS: http://localhost:3000,http://localhost:8080,http://frontend:3000
-    depends_on:
-      - mongodb
     networks:
       - laundry-network
     healthcheck:
@@ -64,9 +46,3 @@ services:
 networks:
   laundry-network:
     driver: bridge
-
-volumes:
-  mongodb_data:
-    driver: local
-  mongodb_config:
-    driver: local

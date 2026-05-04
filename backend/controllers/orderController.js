@@ -1,52 +1,60 @@
-const Order = require('../models/Order');
+/**
+ * ============================================================================
+ * LAUNDRY BUDDY - Smart Laundry Management System
+ * ============================================================================
+ * 
+ * @project   Laundry Buddy
+ * @author    Ayush
+ * @status    Production Ready
+ * @description Part of the Laundry Buddy Evaluation Project. 
+ *              Handles core application logic, API routing, and database integrations.
+ * ============================================================================
+ */
+
+const { getOrderModel } = require('../models/Order');
+const { getTrackingModel } = require('../models/Tracking');
+const { getSequelize } = require('../config/db');
 const crypto = require('crypto');
 
 // Get all orders for user
 exports.getOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user.id }).sort({ createdAt: -1 });
+    const Order = getOrderModel();
+    const orders = await Order.findAll({
+      where: { userId: req.user.id },
+      order: [['createdAt', 'DESC']]
+    });
     res.json({ success: true, orders });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching orders',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error fetching orders', error: error.message });
   }
 };
 
 // Get single order
 exports.getOrder = async (req, res) => {
   try {
-    const order = await Order.findOne({ _id: req.params.id, user: req.user.id });
+    const Order = getOrderModel();
+    const order = await Order.findOne({ where: { id: req.params.id, userId: req.user.id } });
     if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: 'Order not found'
-      });
+      return res.status(404).json({ success: false, message: 'Order not found' });
     }
-
     res.json({ success: true, order });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching order',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error fetching order', error: error.message });
   }
 };
 
 // Create new order
 exports.createOrder = async (req, res) => {
-  const mongoose = require('mongoose');
-  const Tracking = require('../models/Tracking');
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  const sequelize = getSequelize();
+  const t = await sequelize.transaction();
 
   try {
+    const Order = getOrderModel();
+    const Tracking = getTrackingModel();
+
     if (!req.user?.id) {
-      await session.abortTransaction();
-      session.endSession();
+      await t.rollback();
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 
@@ -63,8 +71,7 @@ exports.createOrder = async (req, res) => {
     } = req.body || {};
 
     if (!serviceType) {
-      await session.abortTransaction();
-      session.endSession();
+      await t.rollback();
       return res.status(400).json({ success: false, message: 'serviceType is required' });
     }
 
@@ -72,8 +79,6 @@ exports.createOrder = async (req, res) => {
       ? items.map((it) => ({
         type: it.type || it.name || 'unknown',
         count: typeof it.count === 'number' ? it.count : (typeof it.quantity === 'number' ? it.quantity : parseInt(it.count || it.quantity || 0, 10)),
-        quantity: undefined,
-        name: undefined,
         color: it.color || 'mixed',
       }))
       : [];
@@ -81,9 +86,9 @@ exports.createOrder = async (req, res) => {
     const orderNumber = 'ORD' + Date.now() + crypto.randomInt(1000, 9999).toString();
     const initialStatus = 'submitted';
 
-    // Create Order with session
-    const [order] = await Order.create([{
-      user: req.user.id,
+    // Create Order with transaction
+    const order = await Order.create({
+      userId: req.user.id,
       orderNumber,
       serviceType,
       pickupDate,
@@ -96,129 +101,104 @@ exports.createOrder = async (req, res) => {
       specialInstructions,
       status: initialStatus,
       paymentStatus: 'pending',
-    }], { session });
+    }, { transaction: t });
 
-    // Create Initial Tracking with session
-    await Tracking.create([{
-      user: req.user.id,
-      order: order._id,
+    // Create Initial Tracking with transaction
+    await Tracking.create({
+      userId: req.user.id,
+      orderId: order.id,
       orderNumber,
       status: initialStatus,
       timeline: [{ status: initialStatus, timestamp: new Date(), note: 'Order placed' }]
-    }], { session });
+    }, { transaction: t });
 
-    await session.commitTransaction();
-    session.endSession();
+    await t.commit();
 
     res.status(201).json({ success: true, message: 'Order created successfully', order });
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
+    await t.rollback();
     console.error('❌ Error creating order:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error creating order',
-      error: error.message,
-      details: error?.errors || undefined
-    });
+    res.status(500).json({ success: false, message: 'Error creating order', error: error.message });
   }
 };
 
 // Update order
 exports.updateOrder = async (req, res) => {
   try {
-    const order = await Order.findOne({ _id: req.params.id, user: req.user.id });
+    const Order = getOrderModel();
+    const order = await Order.findOne({ where: { id: req.params.id, userId: req.user.id } });
     if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: 'Order not found'
-      });
+      return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
-
-    // Whitelist allowed fields
-    // List allowed fields to prevent mass assignment
     const { items, totalAmount, serviceType, pickupDate, deliveryDate, deliveryAddress, specialInstructions, status, paymentStatus, feedback } = req.body;
 
-    // Only admins can update status/paymentStatus via this generic route?
-    // Usually status updates have their own flow, but if we allow it here for now,
-    // we should at least not allow updating user or _id.
-    const updateData = { items, totalAmount, serviceType, pickupDate, deliveryDate, deliveryAddress, specialInstructions };
-
-    // If admin, allow status updates (or valid roles)
-    // Checking req.user.isAdmin or role from session if available?
-    // Since this controller is for general usage, maybe we should restricted critical fields?
-    // For now, removing status/paymentStatus unless specific logic handles it.
-    // Wait, the user might need to update status through other endpoints.
-    // Let's include them if present but sanitize.
+    const updateData = {};
+    if (items !== undefined) updateData.items = items;
+    if (totalAmount !== undefined) updateData.totalAmount = totalAmount;
+    if (serviceType !== undefined) updateData.serviceType = serviceType;
+    if (pickupDate !== undefined) updateData.pickupDate = pickupDate;
+    if (deliveryDate !== undefined) updateData.deliveryDate = deliveryDate;
+    if (specialInstructions !== undefined) updateData.specialInstructions = specialInstructions;
     if (status) updateData.status = status;
     if (paymentStatus) updateData.paymentStatus = paymentStatus;
-    if (feedback) updateData.feedback = feedback;
+    if (feedback) {
+      if (feedback.rating) updateData.feedbackRating = feedback.rating;
+      if (feedback.comment) updateData.feedbackComment = feedback.comment;
+      updateData.feedbackSubmittedAt = new Date();
+    }
 
-    const updatedOrder = await Order.findOneAndUpdate(
-      { _id: req.params.id, user: req.user.id },
-      { $set: updateData },
-      { new: true }
-    );
+    await Order.update(updateData, { where: { id: req.params.id, userId: req.user.id } });
+    const updatedOrder = await Order.findByPk(req.params.id);
 
     // Send Push Notification if status changed
     if (status && status !== order.status) {
       const notificationController = require('./notificationController');
       try {
-        await notificationController.sendNotificationToUser(order.user, {
+        await notificationController.sendNotificationToUser(order.userId, {
           title: 'Order Updated',
           body: `Your order #${order.orderNumber} status is now: ${status}`,
-          url: `/track.html?id=${order._id}` // Link to open
+          url: `/track.html?id=${order.id}`
         });
       } catch (notifyErr) {
         console.error('Failed to send push notification:', notifyErr);
-        // Don't fail the request if notification fails
       }
     }
 
     res.json({ success: true, message: 'Order updated successfully', order: updatedOrder });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error updating order',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error updating order', error: error.message });
   }
 };
 
 // Delete order
 exports.deleteOrder = async (req, res) => {
   try {
-    const order = await Order.findOneAndDelete({ _id: req.params.id, user: req.user.id });
-    if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: 'Order not found'
-      });
+    const Order = getOrderModel();
+    const deleted = await Order.destroy({ where: { id: req.params.id, userId: req.user.id } });
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
     }
     res.json({ success: true, message: 'Order deleted successfully' });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error deleting order',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error deleting order', error: error.message });
   }
 };
 
 // Get order history
 exports.getOrderHistory = async (req, res) => {
   try {
-    const completedOrders = await Order.find({
-      user: req.user.id,
-      status: { $in: ['completed', 'delivered'] }
-    }).sort({ updatedAt: -1 });
+    const { Op } = require('sequelize');
+    const Order = getOrderModel();
+    const completedOrders = await Order.findAll({
+      where: {
+        userId: req.user.id,
+        status: { [Op.in]: ['completed', 'delivered'] }
+      },
+      order: [['updatedAt', 'DESC']]
+    });
     res.json({ success: true, orders: completedOrders });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching order history',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error fetching order history', error: error.message });
   }
 };

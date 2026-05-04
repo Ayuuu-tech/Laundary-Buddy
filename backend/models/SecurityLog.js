@@ -1,42 +1,98 @@
-const mongoose = require('mongoose');
+/**
+ * ============================================================================
+ * LAUNDRY BUDDY - Smart Laundry Management System
+ * ============================================================================
+ * 
+ * @project   Laundry Buddy
+ * @author    Ayush
+ * @status    Production Ready
+ * @description Part of the Laundry Buddy Evaluation Project. 
+ *              Handles core application logic, API routing, and database integrations.
+ * ============================================================================
+ */
 
-const securityLogSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    index: true
-  },
-  event: {
-    type: String,
-    required: true,
-    enum: [
-      'LOGIN_SUCCESS',
-      'LOGIN_FAILED',
-      'LOGIN_LOCKED',
-      'PASSWORD_RESET_REQUEST',
-      'PASSWORD_RESET_SUCCESS',
-      'PASSWORD_CHANGED',
-      'ACCOUNT_CREATED',
-      'SUSPICIOUS_ACTIVITY',
-      'TOKEN_REFRESH',
-      'LOGOUT',
-      'SQL_INJECTION_ATTEMPT',
-      'XSS_ATTEMPT',
-      'RATE_LIMIT_EXCEEDED',
-      'ADMIN_ACCESS'
+const { DataTypes } = require('sequelize');
+const { getSequelize } = require('../config/db');
+
+let SecurityLog;
+
+function initSecurityLog(sequelize) {
+  SecurityLog = sequelize.define('SecurityLog', {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      defaultValue: null,
+      references: {
+        model: 'users',
+        key: 'id'
+      }
+    },
+    event: {
+      type: DataTypes.ENUM(
+        'LOGIN_SUCCESS',
+        'LOGIN_FAILED',
+        'LOGIN_LOCKED',
+        'PASSWORD_RESET_REQUEST',
+        'PASSWORD_RESET_SUCCESS',
+        'PASSWORD_CHANGED',
+        'ACCOUNT_CREATED',
+        'SUSPICIOUS_ACTIVITY',
+        'TOKEN_REFRESH',
+        'LOGOUT',
+        'SQL_INJECTION_ATTEMPT',
+        'XSS_ATTEMPT',
+        'RATE_LIMIT_EXCEEDED',
+        'ADMIN_ACCESS',
+        'DATA_EXPORT_REQUEST',
+        'ACCOUNT_DELETION_REQUEST',
+        'ACCOUNT_DELETION_REQUESTED'
+      ),
+      allowNull: false
+    },
+    ipAddress: {
+      type: DataTypes.STRING(45),
+      defaultValue: null
+    },
+    userAgent: {
+      type: DataTypes.TEXT,
+      defaultValue: null
+    },
+    metadata: {
+      type: DataTypes.JSON,
+      defaultValue: null
+    },
+    timestamp: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW
+    }
+  }, {
+    tableName: 'security_logs',
+    timestamps: false,
+    indexes: [
+      { fields: ['userId'] },
+      { fields: ['event'] },
+      { fields: ['timestamp'] },
+      { fields: ['userId', 'timestamp'] },
+      { fields: ['event', 'timestamp'] }
     ]
-  },
-  ipAddress: { type: String },
-  userAgent: { type: String },
-  metadata: { type: mongoose.Schema.Types.Mixed },
-  timestamp: { type: Date, default: Date.now, index: true }
-});
+  });
 
-// Index for querying logs
-securityLogSchema.index({ userId: 1, timestamp: -1 });
-securityLogSchema.index({ event: 1, timestamp: -1 });
+  return SecurityLog;
+}
 
-// TTL index - automatically delete logs older than 90 days
-securityLogSchema.index({ timestamp: 1 }, { expireAfterSeconds: 7776000 });
+function getSecurityLogModel() {
+  if (!SecurityLog) {
+    const sequelize = getSequelize();
+    if (sequelize) {
+      return initSecurityLog(sequelize);
+    }
+    throw new Error('Database not initialized.');
+  }
+  return SecurityLog;
+}
 
-module.exports = mongoose.model('SecurityLog', securityLogSchema);
+module.exports = { initSecurityLog, getSecurityLogModel };

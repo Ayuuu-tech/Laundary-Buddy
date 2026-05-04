@@ -1,3 +1,16 @@
+/**
+ * ============================================================================
+ * LAUNDRY BUDDY - Smart Laundry Management System
+ * ============================================================================
+ * 
+ * @project   Laundry Buddy
+ * @author    Ayush
+ * @status    Production Ready
+ * @description Part of the Laundry Buddy Evaluation Project. 
+ *              Handles core application logic, API routing, and database integrations.
+ * ============================================================================
+ */
+
 // Authentication Security Enhancement Middleware
 
 const jwt = require('jsonwebtoken');
@@ -10,7 +23,7 @@ const jwt = require('jsonwebtoken');
 function generateAccessToken(user) {
   return jwt.sign(
     {
-      id: user._id,
+      id: user.id,
       email: user.email,
       isAdmin: user.isAdmin
     },
@@ -27,7 +40,7 @@ function generateAccessToken(user) {
 function generateRefreshToken(user) {
   return jwt.sign(
     {
-      id: user._id,
+      id: user.id,
       type: 'refresh'
     },
     process.env.JWT_SECRET,
@@ -43,60 +56,50 @@ async function refreshAccessToken(req, res) {
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
-      return res.status(401).json({
-        success: false,
-        message: 'Refresh token required'
-      });
+      return res.status(401).json({ success: false, message: 'Refresh token required' });
     }
 
     // Verify refresh token
     const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
 
     if (decoded.type !== 'refresh') {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid token type'
-      });
+      return res.status(401).json({ success: false, message: 'Invalid token type' });
     }
 
     // Find user and check if refresh token exists
-    const User = require('../models/User');
-    const user = await User.findById(decoded.id);
+    const { getUserModel } = require('../models/User');
+    const { getRefreshTokenModel } = require('../models/RefreshToken');
+    const User = getUserModel();
+    const RefreshToken = getRefreshTokenModel();
+    const { Op } = require('sequelize');
+
+    const user = await User.findByPk(decoded.id);
 
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'User not found'
-      });
+      return res.status(401).json({ success: false, message: 'User not found' });
     }
 
     // Check if refresh token is in user's tokens list
-    const tokenExists = user.refreshTokens.some(rt => {
-      return rt.token === refreshToken && rt.expiresAt > Date.now();
+    const tokenRecord = await RefreshToken.findOne({
+      where: {
+        userId: user.id,
+        token: refreshToken,
+        expiresAt: { [Op.gt]: new Date() }
+      }
     });
 
-    if (!tokenExists) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid or expired refresh token'
-      });
+    if (!tokenRecord) {
+      return res.status(401).json({ success: false, message: 'Invalid or expired refresh token' });
     }
 
     // Generate new access token
     const newAccessToken = generateAccessToken(user);
 
-    return res.json({
-      success: true,
-      token: newAccessToken,
-      message: 'Token refreshed successfully'
-    });
+    return res.json({ success: true, token: newAccessToken, message: 'Token refreshed successfully' });
 
   } catch (error) {
     console.error('Refresh token error:', error);
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid or expired refresh token'
-    });
+    return res.status(401).json({ success: false, message: 'Invalid or expired refresh token' });
   }
 }
 
@@ -109,30 +112,20 @@ async function revokeRefreshToken(req, res) {
     const userId = req.user?.id;
 
     if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: 'Unauthorized'
-      });
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 
-    const User = require('../models/User');
-    const user = await User.findById(userId);
-
-    if (user && refreshToken) {
-      await user.removeRefreshToken(refreshToken);
+    if (refreshToken) {
+      const { getRefreshTokenModel } = require('../models/RefreshToken');
+      const RefreshToken = getRefreshTokenModel();
+      await RefreshToken.destroy({ where: { userId, token: refreshToken } });
     }
 
-    return res.json({
-      success: true,
-      message: 'Logged out successfully'
-    });
+    return res.json({ success: true, message: 'Logged out successfully' });
 
   } catch (error) {
     console.error('Revoke token error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Logout failed'
-    });
+    return res.status(500).json({ success: false, message: 'Logout failed' });
   }
 }
 
@@ -166,9 +159,10 @@ function sessionTimeoutMiddleware(req, res, next) {
  * Middleware to log security events
  */
 async function logSecurityEvent(userId, event, metadata = {}) {
-  const SecurityLog = require('../models/SecurityLog');
-
   try {
+    const { getSecurityLogModel } = require('../models/SecurityLog');
+    const SecurityLog = getSecurityLogModel();
+
     await SecurityLog.create({
       userId,
       event,

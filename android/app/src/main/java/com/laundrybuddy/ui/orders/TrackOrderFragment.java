@@ -132,8 +132,9 @@ public class TrackOrderFragment extends Fragment {
     private void setupQrScanner() {
         if (binding.scanButton != null) {
             binding.scanButton.setOnClickListener(v -> {
-                if (!isAdded() || getContext() == null) return;
-                
+                if (!isAdded() || getContext() == null)
+                    return;
+
                 Intent intent = new Intent(getContext(), QrScannerActivity.class);
                 scannerLauncher.launch(intent);
             });
@@ -234,8 +235,9 @@ public class TrackOrderFragment extends Fragment {
     }
 
     private void searchOrder(String query) {
-        if (binding == null) return;
-        
+        if (binding == null)
+            return;
+
         binding.loadingProgress.setVisibility(View.VISIBLE);
         if (binding.orderDetailsLayout != null) {
             binding.orderDetailsLayout.setVisibility(View.GONE);
@@ -248,8 +250,9 @@ public class TrackOrderFragment extends Fragment {
                     public void onResponse(Call<ApiResponse<Tracking>> call,
                             Response<ApiResponse<Tracking>> response) {
                         // Check if fragment is still attached
-                        if (binding == null || !isAdded()) return;
-                        
+                        if (binding == null || !isAdded())
+                            return;
+
                         binding.loadingProgress.setVisibility(View.GONE);
 
                         if (response.isSuccessful() && response.body() != null) {
@@ -271,12 +274,19 @@ public class TrackOrderFragment extends Fragment {
                     @Override
                     public void onFailure(Call<ApiResponse<Tracking>> call, Throwable t) {
                         // Check if fragment is still attached
-                        if (binding == null || !isAdded()) return;
-                        
+                        if (binding == null || !isAdded())
+                            return;
+
                         binding.loadingProgress.setVisibility(View.GONE);
                         Log.e(TAG, "Search failed", t);
                         if (getContext() != null) {
-                            ToastManager.showError(getContext(), getString(R.string.error_network));
+                            String msg;
+                            if (t instanceof java.net.SocketTimeoutException) {
+                                msg = "Server is waking up, please try again";
+                            } else {
+                                msg = getString(R.string.error_network);
+                            }
+                            ToastManager.showError(getContext(), msg);
                         }
                     }
                 });
@@ -298,8 +308,9 @@ public class TrackOrderFragment extends Fragment {
     }
 
     private void showQrDialog(Order order) {
-        if (!isAdded() || getContext() == null) return;
-        
+        if (!isAdded() || getContext() == null)
+            return;
+
         try {
             // Build QR dialog inline since QrCodeDialog class is not available
             String orderNumber = order.getOrderNumber();
@@ -326,8 +337,9 @@ public class TrackOrderFragment extends Fragment {
                 qrCodeImage.setImageBitmap(qrBitmap);
             }
 
-            if (!isAdded() || getContext() == null) return;
-            
+            if (!isAdded() || getContext() == null)
+                return;
+
             AlertDialog dialog = new MaterialAlertDialogBuilder(getContext())
                     .setView(dialogView)
                     .setCancelable(true)
@@ -454,15 +466,17 @@ public class TrackOrderFragment extends Fragment {
     }
 
     private void toggleNotification(String orderNumber) {
-        if (binding == null) return;
+        if (binding == null)
+            return;
         binding.loadingProgress.setVisibility(View.VISIBLE);
         ApiClient.getInstance().getTrackingApi().toggleNotify(orderNumber)
                 .enqueue(new Callback<ApiResponse<Tracking>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<Tracking>> call, Response<ApiResponse<Tracking>> response) {
                         // Check if fragment is still attached
-                        if (binding == null || !isAdded()) return;
-                        
+                        if (binding == null || !isAdded())
+                            return;
+
                         binding.loadingProgress.setVisibility(View.GONE);
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                             String message = response.body().getMessage();
@@ -491,8 +505,9 @@ public class TrackOrderFragment extends Fragment {
                     @Override
                     public void onFailure(Call<ApiResponse<Tracking>> call, Throwable t) {
                         // Check if fragment is still attached
-                        if (binding == null || !isAdded()) return;
-                        
+                        if (binding == null || !isAdded())
+                            return;
+
                         binding.loadingProgress.setVisibility(View.GONE);
                         if (getContext() != null) {
                             ToastManager.showError(getContext(), getString(R.string.error_network));
@@ -502,8 +517,9 @@ public class TrackOrderFragment extends Fragment {
     }
 
     private void startTrackingWorker(String orderNumber) {
-        if (getContext() == null || !isAdded()) return;
-        
+        if (getContext() == null || !isAdded())
+            return;
+
         try {
             Data inputData = new Data.Builder()
                     .putString(OrderTrackingWorker.KEY_ORDER_NUMBER, orderNumber)
@@ -525,8 +541,9 @@ public class TrackOrderFragment extends Fragment {
     }
 
     private void stopTrackingWorker(String orderNumber) {
-        if (getContext() == null || !isAdded()) return;
-        
+        if (getContext() == null || !isAdded())
+            return;
+
         try {
             WorkManager.getInstance(getContext()).cancelUniqueWork("track_" + orderNumber);
         } catch (Exception e) {

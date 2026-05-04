@@ -1,13 +1,29 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const User = require('../models/User');
+/**
+ * ============================================================================
+ * LAUNDRY BUDDY - Smart Laundry Management System
+ * ============================================================================
+ * 
+ * @project   Laundry Buddy
+ * @author    Ayush
+ * @status    Production Ready
+ * @description Part of the Laundry Buddy Evaluation Project. 
+ *              Handles core application logic, API routing, and database integrations.
+ * ============================================================================
+ */
+
 require('dotenv').config();
+const bcrypt = require('bcryptjs');
+const { connectDB } = require('../config/db');
+const { initModels } = require('../models/index');
+const { getUserModel } = require('../models/User');
 
 async function registerLaundryStaff() {
   try {
-    // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ Connected to MongoDB');
+    const sequelize = await connectDB();
+    initModels(sequelize);
+    const User = getUserModel();
+
+    console.log('✅ Connected to PostgreSQL');
 
     // Laundry staff credentials
     const staffData = {
@@ -20,16 +36,15 @@ async function registerLaundryStaff() {
     };
 
     // Check if staff already exists
-    const existingStaff = await User.findOne({ email: staffData.email });
+    const existingStaff = await User.findOne({ where: { email: staffData.email } });
     if (existingStaff) {
-      // Update if missing admin privileges
       if (!existingStaff.isAdmin) {
         console.log('⚠️  Staff exists but missing admin privileges. Updating...');
         existingStaff.isAdmin = true;
         const hashedPassword = await bcrypt.hash(staffData.password, 10);
         existingStaff.password = hashedPassword;
         await existingStaff.save();
-        
+
         console.log('✅ Laundry staff updated successfully!');
         console.log('📧 Email:', staffData.email);
         console.log('🔑 Password:', staffData.password);
@@ -42,6 +57,7 @@ async function registerLaundryStaff() {
           isAdmin: existingStaff.isAdmin
         });
       }
+      await sequelize.close();
       process.exit(0);
     }
 
@@ -65,6 +81,7 @@ async function registerLaundryStaff() {
     console.log('⚡ Admin privileges: Enabled');
     console.log('\n🚀 You can now login to laundry dashboard with these credentials!');
 
+    await sequelize.close();
     process.exit(0);
   } catch (error) {
     console.error('❌ Error:', error.message);

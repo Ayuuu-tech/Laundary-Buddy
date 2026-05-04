@@ -20,7 +20,7 @@ public class Order {
 
     @PrimaryKey
     @NonNull
-    @SerializedName("_id")
+    @SerializedName(value = "_id", alternate = {"id"})
     private String id;
 
     @SerializedName("orderNumber")
@@ -104,7 +104,7 @@ public class Order {
 
     // Nested PopulatedUser class for backend .populate('user') response
     public static class PopulatedUser {
-        @SerializedName("_id")
+        @SerializedName(value = "_id", alternate = {"id"})
         private String id;
 
         @SerializedName("name")

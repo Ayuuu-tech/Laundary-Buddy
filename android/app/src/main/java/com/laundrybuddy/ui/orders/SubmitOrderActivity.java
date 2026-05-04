@@ -189,7 +189,8 @@ public class SubmitOrderActivity extends AppCompatActivity {
         // Add required fields
         body.put("serviceType", "Wash & Fold"); // Default service
         // Format dates as proper ISO8601 (yyyy-MM-dd'T'HH:mm:ss.SSS'Z')
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US);
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                java.util.Locale.US);
         sdf.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
         java.util.Calendar calendar = java.util.Calendar.getInstance();
         String today = sdf.format(calendar.getTime());
@@ -251,7 +252,8 @@ public class SubmitOrderActivity extends AppCompatActivity {
                             if (json.has("message")) {
                                 msg = json.getString("message");
                             }
-                        } catch (Exception ignored) {}
+                        } catch (Exception ignored) {
+                        }
                     }
                     ToastManager.showError(SubmitOrderActivity.this, msg);
                 }
@@ -261,7 +263,13 @@ public class SubmitOrderActivity extends AppCompatActivity {
             public void onFailure(Call<ApiResponse<Order>> call, Throwable t) {
                 setLoading(false);
                 Log.e(TAG, "Network Failed", t);
-                ToastManager.showError(SubmitOrderActivity.this, "Network Error: " + t.getMessage());
+                String errorMsg;
+                if (t instanceof java.net.SocketTimeoutException) {
+                    errorMsg = "Server is waking up, please try again in a moment";
+                } else {
+                    errorMsg = "Network Error: " + t.getMessage();
+                }
+                ToastManager.showError(SubmitOrderActivity.this, errorMsg);
             }
         });
     }

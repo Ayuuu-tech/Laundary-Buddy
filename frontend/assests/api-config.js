@@ -1,16 +1,29 @@
+/**
+ * ============================================================================
+ * LAUNDRY BUDDY - Smart Laundry Management System
+ * ============================================================================
+ * 
+ * @project   Laundry Buddy
+ * @author    Ayush
+ * @status    Production Ready
+ * @description Part of the Laundry Buddy Evaluation Project. 
+ *              Handles core application logic, API routing, and database integrations.
+ * ============================================================================
+ */
+
 // API Configuration
 // Automatically detects environment and uses appropriate API URL
 const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
 
-  // Always use production API URL unless running on localhost
+  // Always use local API URL when running on localhost
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    // Development (localhost)
-    return 'http://localhost:3000/api';
+    // Development - match the hostname to avoid cross-domain cookie drops!
+    return `http://${hostname}:3000/api`;
   }
 
-  // Production (deployed domain)
-  return 'https://api.ayushmaanyadav.me/api';
+  // Production (deployed domain) matches the Android App exactly
+  return 'https://laundry-buddy-api.onrender.com/api';
 };
 
 const API_CONFIG = {

@@ -14,7 +14,7 @@ public class SupportTicket {
 
     @PrimaryKey
     @NonNull
-    @SerializedName("_id")
+    @SerializedName(value = "_id", alternate = {"id"})
     private String id;
 
     @SerializedName("userId")
